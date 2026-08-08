@@ -46,6 +46,14 @@ service cloud.firestore {
         && (resource.data.creadoPorUid == request.auth.uid || esAdmin());
     }
 
+    // ---- Configuración de la empresa (datos fiscales, logo) ----
+    match /configuracion/{docId} {
+      // Cualquier empleado activo puede leerla (para pintar el logo, etc.)
+      allow read: if estoyActivo();
+      // Solo Admin puede modificarla.
+      allow write: if esAdmin();
+    }
+
     // A medida que se añadan colecciones (bookings, producciones, clientes...)
     // define aquí sus reglas, apoyándote en estoyActivo() / esAdmin()
     // y, si hace falta, en el propio campo "rol" del usuario.

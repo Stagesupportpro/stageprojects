@@ -114,6 +114,16 @@ sencillo es que, al guardar su propio registro, también añadan un
 documento a esta misma colección `documentos` — así aparecerán en el
 calendario sin tocar nada más.
 
+## Configuración de la empresa
+
+Los datos fiscales (nombre, CIF, dirección, teléfono, web, email) y el
+logo se guardan en Firestore, en un único documento:
+**`configuracion/empresa`**. Solo Admin puede editarlos (ruta
+Configuración en el menú); cualquier empleado activo puede leerlos.
+El logo se guarda igual que las fotos de perfil: como imagen PNG
+comprimida directamente en el documento, sin necesitar Firebase
+Storage.
+
 ## Notas técnicas importantes
 
 - **Alta de usuarios**: se crea desde el panel de Admin usando una

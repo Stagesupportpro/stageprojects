@@ -1,0 +1,111 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Stage Support · Configuración</title>
+<link rel="icon" href="assets/logo_stagesupport.png" />
+<link rel="stylesheet" href="css/styles.css" />
+</head>
+<body>
+
+<div class="app-shell">
+
+  <aside class="sidebar" id="sidebar">
+    <div class="brand-mark">
+      <img src="assets/logo_stagesupport.png" alt="Stage Support" onerror="this.style.display='none'" />
+    </div>
+
+    <nav id="nav-container" style="flex:1; overflow-y:auto;"></nav>
+
+    <div class="sidebar-footer">
+      <div class="access-pass">
+        <div class="pass-top">
+          <div class="pass-avatar" id="pass-avatar">—</div>
+          <div>
+            <div class="pass-name" id="pass-name">—</div>
+            <div class="pass-role" id="pass-role">—</div>
+          </div>
+        </div>
+        <button class="pass-logout" onclick="cerrarSesion()">Cerrar sesión</button>
+      </div>
+    </div>
+  </aside>
+
+  <main class="main">
+    <div class="topbar">
+      <button class="mobile-menu-btn" onclick="document.getElementById('sidebar').classList.toggle('open')">☰</button>
+      <div>
+        <div class="eyebrow">Administración</div>
+        <h1>Configuración</h1>
+      </div>
+    </div>
+
+    <div class="card">
+      <form id="form-empresa">
+
+        <div class="settings-section">
+          <div class="section-title">Logo</div>
+          <div class="logo-picker">
+            <div class="logo-preview" id="logo-preview">Sin logo</div>
+            <div class="logo-actions">
+              <button type="button" class="btn-ghost" onclick="document.getElementById('logo-input').click()">Subir logo (PNG)</button>
+              <button type="button" class="btn-ghost" id="btn-quitar-logo" style="display:none;" onclick="quitarLogo()">Quitar logo</button>
+              <input type="file" id="logo-input" accept="image/png,image/webp,image/svg+xml" onchange="procesarLogo(event)" />
+            </div>
+            <p class="logo-hint">Se usará en el login y el menú lateral. Sube preferiblemente un PNG con fondo transparente.</p>
+          </div>
+        </div>
+
+        <div class="settings-section">
+          <div class="section-title">Datos de la empresa</div>
+          <div class="form-grid">
+            <div class="field field-wide">
+              <label for="e-nombre">Nombre / razón social</label>
+              <input type="text" id="e-nombre" placeholder="Stage Support S.L." />
+            </div>
+            <div class="field">
+              <label for="e-cif">CIF / NIF</label>
+              <input type="text" id="e-cif" placeholder="B12345678" />
+            </div>
+            <div class="field">
+              <label for="e-telefono">Teléfono</label>
+              <input type="tel" id="e-telefono" placeholder="+34 600 000 000" />
+            </div>
+            <div class="field field-wide">
+              <label for="e-direccion">Dirección</label>
+              <input type="text" id="e-direccion" placeholder="Calle, número, ciudad, código postal" />
+            </div>
+            <div class="field">
+              <label for="e-web">Web</label>
+              <input type="url" id="e-web" placeholder="https://stagesupport.com" />
+            </div>
+            <div class="field">
+              <label for="e-email">Correo electrónico</label>
+              <input type="email" id="e-email" placeholder="info@stagesupport.com" />
+            </div>
+          </div>
+        </div>
+
+        <div class="form-msg" id="form-empresa-msg"></div>
+
+        <div class="settings-footer">
+          <button type="submit" class="btn-accent" id="btn-guardar-empresa">Guardar cambios</button>
+        </div>
+      </form>
+    </div>
+  </main>
+
+</div>
+
+<div class="toast" id="toast"><span class="dot"></span><span id="toast-msg"></span></div>
+
+<script src="https://www.gstatic.com/firebasejs/10.13.0/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.13.0/firebase-auth-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.13.0/firebase-firestore-compat.js"></script>
+<script src="js/firebase-config.js"></script>
+<script src="js/auth.js"></script>
+<script src="js/nav.js"></script>
+<script src="js/configuracion.js"></script>
+</body>
+</html>
