@@ -80,6 +80,32 @@ Para publicarlo gratis con **GitHub Pages**:
 > `firestore.rules`): la clave solo identifica el proyecto, no da acceso
 > por sí sola.
 
+## Producción — Taquilla (Fourvenues)
+
+Nueva pestaña que aparece solo cuando la producción tiene un
+**Booking vinculado** (siempre "como promotora", ya que solo esos
+bookings aparecen en ese selector). De momento es **entrada manual**:
+entradas vendidas, % de comisión de la tiquetera (opcional) y notas.
+Calcula ingreso bruto, comisión, ingreso neto, y lo compara contra el
+**break even** ya calculado en Cifras (cuántas entradas faltan, o el
+margen si ya está superado).
+
+Solo cuenta el **precio de entrada general** definido en Cifras — si
+una entrada lleva un servicio adicional (ej. "entrada + cena"), ese
+extra no se incluye porque no corresponde a la producción.
+
+> **Sobre conectar la API de verdad**: ya está investigada — Fourvenues
+> tiene una API REST (`api.fourvenues.com/integrations`, cabecera
+> `X-Api-Key`) donde `GET /tickets` devuelve, por cada entrada, el
+> `price` (precio base) separado de `total_extras` (los suplementos
+> tipo "cena") — encaja exactamente con lo que necesitáis. Pero está
+> pensada para llamarse desde un servidor, no desde el navegador
+> (riesgo de exponer la clave + posible bloqueo por CORS), así que
+> conectarla de verdad requiere un pequeño intermediario (Cloud
+> Function de Firebase, lo que implica pasar del plan gratuito Spark
+> al de pago Blaze — tiene una capa gratuita amplia). Cuando queráis
+> dar ese paso, ya tengo mapeados los endpoints exactos a usar.
+
 ## Bookings — Venue obligatorio en los dos tipos
 
 El selector de Venue (búsqueda + modalidad) ya no es exclusivo del

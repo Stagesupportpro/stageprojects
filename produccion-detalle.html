@@ -46,6 +46,7 @@
       <div class="rst-tabs" id="pd-tabs">
         <button type="button" data-tab="general" onclick="cambiarTabProd('general')">Información general</button>
         <button type="button" data-tab="cifras" onclick="cambiarTabProd('cifras')">Cifras</button>
+        <button type="button" data-tab="taquilla" id="pd-btn-tab-taquilla" style="display:none;" onclick="cambiarTabProd('taquilla')">Taquilla</button>
         <button type="button" data-tab="documentos" onclick="cambiarTabProd('documentos')">Documentos</button>
         <button type="button" data-tab="hospitalidad" onclick="cambiarTabProd('hospitalidad')">Hospitalidad</button>
       </div>
@@ -121,6 +122,46 @@
             <div class="calc-item"><div class="calc-label">Coste total (Gastos)</div><div class="calc-value" id="pd-calc-costes">0,00 €</div></div>
             <div class="calc-item"><div class="calc-label">Precio entrada</div><div class="calc-value" id="pd-calc-precio">0,00 €</div></div>
             <div class="calc-item calc-total"><div class="calc-label">Break even real</div><div class="calc-value" id="pd-calc-breakeven">—</div></div>
+          </div>
+        </div>
+      </div>
+
+      <!-- ============ TAQUILLA ============ -->
+      <div class="rst-tab-panel" id="pd-panel-taquilla">
+        <div class="hr-section">
+          <div class="hr-section-head"><h3>Taquilla — Fourvenues</h3></div>
+          <div class="empty-state" style="text-align:left; padding:14px 18px; margin-bottom:18px;">
+            <strong>Entrada manual (de momento)</strong>
+            La conexión automática con la API de Fourvenues está preparada a nivel de diseño, pero requiere un pequeño servidor intermediario por seguridad de la clave — la activamos cuando lo decidáis. Mientras tanto, actualiza aquí las cifras a mano.
+          </div>
+
+          <div class="form-grid">
+            <div class="field">
+              <label for="pd-tq-vendidas">Entradas vendidas</label>
+              <input type="number" id="pd-tq-vendidas" min="0" step="1" oninput="recalcularTaquillaProd()" />
+            </div>
+            <div class="field">
+              <label for="pd-tq-comision">% Comisión tiquetera</label>
+              <input type="number" id="pd-tq-comision" min="0" max="100" step="0.1" oninput="recalcularTaquillaProd()" placeholder="Ej. 5" />
+            </div>
+            <div class="field field-wide">
+              <label for="pd-tq-notas">Notas (opcional)</label>
+              <input type="text" id="pd-tq-notas" placeholder="Ej. Datos a fecha 8 de agosto" />
+            </div>
+          </div>
+          <p style="font-size:12px; color:var(--color-text-muted); margin:-4px 0 16px;">
+            Se cuenta solo el precio de la entrada general (el de la pestaña Cifras) — si una entrada lleva un servicio adicional (ej. "entrada + cena"), ese extra no se incluye aquí porque no nos corresponde.
+          </p>
+
+          <div class="calc-box">
+            <div class="calc-item"><div class="calc-label">Precio entrada (Cifras)</div><div class="calc-value" id="pd-tq-precio">0,00 €</div></div>
+            <div class="calc-item"><div class="calc-label">Ingreso bruto</div><div class="calc-value" id="pd-tq-bruto">0,00 €</div></div>
+            <div class="calc-item"><div class="calc-label">Comisión tiquetera</div><div class="calc-value" id="pd-tq-comision-importe">0,00 €</div></div>
+            <div class="calc-item calc-total"><div class="calc-label">Ingreso neto</div><div class="calc-value" id="pd-tq-neto">0,00 €</div></div>
+          </div>
+
+          <div class="calc-box" style="margin-top:12px;">
+            <div class="calc-item calc-total"><div class="calc-label">Frente al break even</div><div class="calc-value" id="pd-tq-vs-breakeven">—</div></div>
           </div>
         </div>
       </div>
