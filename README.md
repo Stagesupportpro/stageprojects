@@ -114,6 +114,26 @@ en Firestore — por eso no se veía nada, sin ningún aviso claro. Se
 quitó el `orderBy` de las consultas y ahora se ordena directamente en
 el navegador. No hace falta crear ningún índice ni tocar las reglas.
 
+## Venues — Aforo (total o segmentado)
+
+En la ficha del venue, antes de Contactos: **Aforo total** (un solo
+número) o **Aforo segmentado** (varias zonas con nombre y capacidad —
+Platea, Grada, VIP...), con el total sumado automáticamente. Se
+guarda en `venues/{id}.aforo` (`{ tipo, total, segmentos[] }`).
+
+El listado de Venues muestra ya la columna Aforo. Y en Producción, al
+pulsar "Importar coste de alquiler del booking" en Cifras, el aforo
+del venue vinculado se trae solo (sea total o la suma de segmentos).
+
+## Venues — Aforo (total o segmentado)
+
+Cada venue tiene un campo `aforo`: o bien **total** (una sola
+capacidad), o bien **segmentado** (por zonas — platea, grada, VIP...
+cada una con su propio nombre y capacidad, sumadas automáticamente).
+Se ve en el listado de Venues, y **Producción** lo importa solo al
+pulsar "Importar coste de alquiler del booking" en Cifras — así el
+campo Aforo de la simulación no hay que rellenarlo dos veces.
+
 ## Venues — modalidades por porcentaje
 
 Cada modalidad de un venue (`venues/{id}.tarifas[]`) ahora es:
