@@ -72,7 +72,11 @@
         <div class="hr-section">
           <div class="hr-section-head"><h3>Datos de la actuación</h3></div>
           <div class="form-grid">
-            <div class="field"><label for="da-artista">Artista / Grupo</label><input type="text" id="da-artista" /></div>
+            <div class="field"><label for="da-artista">Artista / Grupo</label>
+              <select id="da-artista" onchange="alSeleccionarArtista()">
+                <option value="">— Selecciona del Roster —</option>
+              </select>
+            </div>
             <div class="field"><label for="da-fecha">Fecha</label><input type="date" id="da-fecha" /></div>
             <div class="field"><label for="da-ciudad">Ciudad</label><input type="text" id="da-ciudad" placeholder="Ej. Vilajoyosa, Alc" /></div>
             <div class="field"><label for="da-local">Local / Recinto / Festival</label><input type="text" id="da-local" /></div>

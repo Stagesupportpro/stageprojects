@@ -71,6 +71,20 @@
           </div>
         </div>
 
+        <!-- Logo -->
+        <div class="hr-section">
+          <div class="hr-section-head"><h3>Logo (PNG)</h3></div>
+          <p style="font-size:12px; color:var(--color-text-muted); margin:-4px 0 12px;">Se usará automáticamente como logo del evento al elegir este artista en una Hoja de Ruta.</p>
+          <div class="logo-picker">
+            <div class="logo-preview" id="logo-rst-preview">Sin logo</div>
+            <div class="logo-actions">
+              <button type="button" class="btn-ghost" onclick="document.getElementById('logo-rst-input').click()">Subir logo (PNG)</button>
+              <button type="button" class="btn-ghost" id="btn-quitar-logo-rst" style="display:none;" onclick="quitarLogoRst()">Quitar</button>
+              <input type="file" id="logo-rst-input" accept="image/png,image/webp" onchange="procesarLogoRst(event)" style="display:none;" />
+            </div>
+          </div>
+        </div>
+
         <!-- Contactos -->
         <div class="hr-section">
           <div class="hr-section-head"><h3>Contactos</h3></div>

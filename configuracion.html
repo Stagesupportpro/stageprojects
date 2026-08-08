@@ -58,6 +58,19 @@
         </div>
 
         <div class="settings-section">
+          <div class="section-title">Logo para documentos (fondo blanco)</div>
+          <div class="logo-picker">
+            <div class="logo-preview" id="logo-doc-preview">Sin logo</div>
+            <div class="logo-actions">
+              <button type="button" class="btn-ghost" onclick="document.getElementById('logo-doc-input').click()">Subir logo (PNG)</button>
+              <button type="button" class="btn-ghost" id="btn-quitar-logo-doc" style="display:none;" onclick="quitarLogoDoc()">Quitar logo</button>
+              <input type="file" id="logo-doc-input" accept="image/png,image/webp" onchange="procesarLogoDoc(event)" />
+            </div>
+            <p class="logo-hint">Se usará en las Hojas de Ruta, propuestas y demás documentos exportados (imprimir / PDF). Sube una versión en color oscuro u negro, pensada para fondo blanco — normalmente distinta a la del login.</p>
+          </div>
+        </div>
+
+        <div class="settings-section">
           <div class="section-title">Datos de la empresa</div>
           <div class="form-grid">
             <div class="field field-wide">
