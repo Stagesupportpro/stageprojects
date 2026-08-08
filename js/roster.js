@@ -62,7 +62,8 @@ function pintarTablaRoster(items) {
           <td>${cacheTexto}</td>
           <td>
             <div class="row-actions" style="justify-content:flex-end;">
-              <a class="btn-ghost" style="text-decoration:none; padding:6px 12px; font-size:12px;" href="roster-detalle.html?id=${r.id}">Abrir</a>
+              <a class="btn-ghost" style="text-decoration:none; padding:6px 12px; font-size:12px;" href="roster-ver.html?id=${r.id}">Ver</a>
+              <a class="btn-ghost" style="text-decoration:none; padding:6px 12px; font-size:12px;" href="roster-detalle.html?id=${r.id}">Editar</a>
               <button class="icon-btn danger" title="Eliminar" onclick="confirmarEliminarRoster('${r.id}', '${escaparHtmlRoster(r.nombre).replace(/'/g, "\\'")}')">🗑</button>
             </div>
           </td>

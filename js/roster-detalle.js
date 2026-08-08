@@ -1,5 +1,12 @@
 // =========================================================
 // STAGE SUPPORT — roster-detalle.js
+// Colección: /roster/{id} → { nombre, oficinaRepresentacion,
+//   descripcionComercial, imagenCartel, logo, contactos[], redesSociales[],
+//   cache, comisionPorcentaje, ivaPorcentaje (tarifa estándar),
+//   tarifas[] (otros formatos), ridersPdf[], hospitalidadCondiciones,
+//   hospitalidadPdf[], pressKit[], notas }
+// El contrato jurídico vive aparte, en /rosterJuridico/{id}, con
+// permisos exclusivos de Admin (no solo ocultado en el UI).
 // =========================================================
 
 let usuarioActualRstD = null;
@@ -8,8 +15,15 @@ let contactosRst = [];
 let redesRst = [];
 let posterDataUrl = null;
 let logoRstDataUrl = null;
-let riderPdf = null; // { nombre, tamano, data }
 let comisionesCache = [];
+let tarifasRst = [];
+let ridersRst = [];
+let hospPdfsRst = [];
+let pressKitRst = [];
+let contratoRst = [];
+let juridicoyaCargado = false;
+
+const LIMITE_PDF_BYTES = 600 * 1024;
 
 (async function () {
   const params = new URLSearchParams(window.location.search);
@@ -30,9 +44,28 @@ let comisionesCache = [];
     avatarEl.textContent = inicialesDe(nombreCompletoDe(usuarioActualRstD) || usuarioActualRstD.email);
   }
 
+  if (usuarioActualRstD.rol === "Admin") {
+    document.getElementById("btn-tab-juridico").style.display = "block";
+  }
+
+  cambiarTabRoster("general");
   await cargarComisionesPreset();
   await cargarRoster();
 })();
+
+// ---------- Pestañas ----------
+
+function cambiarTabRoster(tab) {
+  document.querySelectorAll("#rst-tabs button").forEach((b) => b.classList.toggle("active", b.dataset.tab === tab));
+  document.querySelectorAll(".rst-tab-panel").forEach((p) => p.classList.remove("active"));
+  document.getElementById(`panel-${tab}`).classList.add("active");
+
+  if (tab === "juridico" && usuarioActualRstD.rol === "Admin" && !juridicoyaCargado) {
+    cargarJuridico();
+  }
+}
+
+// ---------- Comisiones preset ----------
 
 async function cargarComisionesPreset() {
   const sel = document.getElementById("rst-comision-preset");
@@ -55,6 +88,8 @@ function aplicarComisionPreset() {
   }
 }
 
+// ---------- Cargar ficha ----------
+
 async function cargarRoster() {
   try {
     const snap = await db.collection("roster").doc(docIdRoster).get();
@@ -68,6 +103,7 @@ async function cargarRoster() {
     document.getElementById("rst-titulo-cabecera").textContent = d.nombre || "Espectáculo";
     document.getElementById("rst-nombre").value = d.nombre || "";
     document.getElementById("rst-oficina").value = d.oficinaRepresentacion || "";
+    document.getElementById("rst-descripcion").value = d.descripcionComercial || "";
     document.getElementById("rst-notas").value = d.notas || "";
     document.getElementById("rst-cache").value = d.cache != null ? d.cache : "";
     document.getElementById("rst-comision-pct").value = d.comisionPorcentaje != null ? d.comisionPorcentaje : "";
@@ -79,19 +115,41 @@ async function cargarRoster() {
     logoRstDataUrl = d.logo || null;
     mostrarPreviewLogoRst(logoRstDataUrl);
 
-    riderPdf = d.riderPdf || null;
-    pintarRiderChip();
-
     contactosRst = Array.isArray(d.contactos) ? d.contactos : [];
     renderContactosRst();
 
     redesRst = Array.isArray(d.redesSociales) ? d.redesSociales : [];
     renderRedes();
 
+    tarifasRst = Array.isArray(d.tarifas) ? d.tarifas : [];
+    renderTarifasRst();
+
+    ridersRst = Array.isArray(d.ridersPdf) ? d.ridersPdf : [];
+    renderRidersRst();
+
+    document.getElementById("rst-hosp-condiciones").value = d.hospitalidadCondiciones || "";
+    hospPdfsRst = Array.isArray(d.hospitalidadPdf) ? d.hospitalidadPdf : [];
+    renderHospRst();
+
+    pressKitRst = Array.isArray(d.pressKit) ? d.pressKit : [];
+    renderPressKitRst();
+
     recalcular();
   } catch (err) {
     console.error(err);
     mostrarToast("No se pudo cargar la ficha.");
+  }
+}
+
+async function cargarJuridico() {
+  try {
+    const snap = await db.collection("rosterJuridico").doc(docIdRoster).get();
+    contratoRst = snap.exists && Array.isArray(snap.data().contratos) ? snap.data().contratos : [];
+    juridicoyaCargado = true;
+    renderContratoRst();
+  } catch (err) {
+    console.error(err);
+    mostrarToast("No se pudo cargar el apartado jurídico.");
   }
 }
 
@@ -139,7 +197,7 @@ function renderRedes() {
   cont.innerHTML = redesRst
     .map(
       (r, i) => `
-        <div class="repeat-row" style="grid-template-columns: 1fr 2fr auto;">
+        <div class="repeat-row rider-row">
           <input placeholder="Plataforma (Instagram, Web…)" value="${escaparAttrRst(r.plataforma)}" oninput="redesRst[${i}].plataforma=this.value" />
           <input placeholder="URL" value="${escaparAttrRst(r.url)}" oninput="redesRst[${i}].url=this.value" />
           <button type="button" class="remove-row-btn" onclick="eliminarRed(${i})">✕</button>
@@ -159,7 +217,7 @@ function eliminarRed(i) {
   renderRedes();
 }
 
-// ---------- Calculadora ----------
+// ---------- Calculadora (tarifa estándar) ----------
 
 function formatoEuro(n) {
   return Number(n || 0).toLocaleString("es-ES", { minimumFractionDigits: 2, maximumFractionDigits: 2 }) + " €";
@@ -179,6 +237,47 @@ function recalcular() {
   document.getElementById("calc-comision").textContent = formatoEuro(comisionImporte);
   document.getElementById("calc-total").textContent = formatoEuro(total);
   document.getElementById("calc-total-iva").textContent = formatoEuro(totalConIva);
+}
+
+// ---------- Otras tarifas / formatos ----------
+
+function renderTarifasRst() {
+  const cont = document.getElementById("lista-tarifas-rst");
+  if (tarifasRst.length === 0) {
+    cont.innerHTML = `<p style="color:var(--color-text-muted); font-size:13px;">Todavía no hay tarifas adicionales.</p>`;
+    return;
+  }
+  cont.innerHTML = tarifasRst
+    .map((t, i) => {
+      const pvp = (t.coste || 0) * (1 + (t.comisionPct || 0) / 100);
+      return `
+        <div class="repeat-row tarifa-row">
+          <input placeholder="Concepto (Ej. Showcase acústico)" value="${escaparAttrRst(t.concepto)}" oninput="tarifasRst[${i}].concepto=this.value" />
+          <input type="number" min="0" step="0.01" placeholder="Coste €" value="${t.coste != null ? t.coste : ""}" oninput="tarifasRst[${i}].coste=this.value===''?null:parseFloat(this.value); actualizarPvpTarifa(${i})" />
+          <input type="number" min="0" max="100" step="0.1" placeholder="Comisión %" value="${t.comisionPct != null ? t.comisionPct : ""}" oninput="tarifasRst[${i}].comisionPct=this.value===''?null:parseFloat(this.value); actualizarPvpTarifa(${i})" />
+          <button type="button" class="remove-row-btn" onclick="eliminarTarifaRst(${i})">✕</button>
+        </div>
+        <div style="font-size:12px; color:var(--color-text-muted); margin:-4px 0 10px 2px;" id="pvp-tarifa-${i}">PVP: ${formatoEuro(pvp)}</div>
+      `;
+    })
+    .join("");
+}
+
+function actualizarPvpTarifa(i) {
+  const t = tarifasRst[i];
+  const pvp = (t.coste || 0) * (1 + (t.comisionPct || 0) / 100);
+  const el = document.getElementById(`pvp-tarifa-${i}`);
+  if (el) el.textContent = `PVP: ${formatoEuro(pvp)}`;
+}
+
+function anadirTarifaRst() {
+  tarifasRst.push({ concepto: "", coste: null, comisionPct: null });
+  renderTarifasRst();
+}
+
+function eliminarTarifaRst(i) {
+  tarifasRst.splice(i, 1);
+  renderTarifasRst();
 }
 
 // ---------- Cartel ----------
@@ -253,7 +352,6 @@ function procesarLogoRst(event) {
       const ctx = canvas.getContext("2d");
       ctx.clearRect(0, 0, w, h);
       ctx.drawImage(img, 0, 0, w, h);
-      // PNG para conservar la transparencia
       logoRstDataUrl = canvas.toDataURL("image/png");
       mostrarPreviewLogoRst(logoRstDataUrl);
     };
@@ -280,9 +378,7 @@ function quitarLogoRst() {
   mostrarPreviewLogoRst(null);
 }
 
-// ---------- Rider PDF ----------
-
-const LIMITE_PDF_BYTES = 600 * 1024;
+// ---------- Riders (varios PDF) ----------
 
 function procesarRiderPdf(event) {
   const archivo = event.target.files[0];
@@ -295,37 +391,222 @@ function procesarRiderPdf(event) {
     mostrarToast(`El PDF pesa ${(archivo.size / 1024).toFixed(0)} KB — intenta comprimirlo por debajo de 600 KB.`);
     return;
   }
-
   const lector = new FileReader();
   lector.onload = (e) => {
-    riderPdf = { nombre: archivo.name, tamano: archivo.size, data: e.target.result };
-    pintarRiderChip();
+    ridersRst.push({ etiqueta: archivo.name.replace(/\.pdf$/i, ""), nombre: archivo.name, tamano: archivo.size, data: e.target.result });
+    renderRidersRst();
+    event.target.value = "";
   };
   lector.readAsDataURL(archivo);
 }
 
-function pintarRiderChip() {
-  const cont = document.getElementById("rider-chip");
-  if (!riderPdf) {
-    cont.innerHTML = "";
+function renderRidersRst() {
+  const cont = document.getElementById("lista-riders-rst");
+  if (ridersRst.length === 0) {
+    cont.innerHTML = `<p style="color:var(--color-text-muted); font-size:13px;">Todavía no hay riders subidos.</p>`;
     return;
   }
-  cont.innerHTML = `
-    <div class="pdf-chip">
-      📄 ${escaparHtmlRstD(riderPdf.nombre)} (${(riderPdf.tamano / 1024).toFixed(0)} KB)
-      <a href="${riderPdf.data}" download="${escaparAttrRst(riderPdf.nombre)}" style="color:var(--color-text);">Descargar</a>
-      <button type="button" class="icon-btn danger" onclick="quitarRiderPdf()" title="Quitar">✕</button>
-    </div>
-  `;
+  cont.innerHTML = ridersRst
+    .map(
+      (r, i) => `
+        <div class="repeat-row rider-row">
+          <input placeholder="Etiqueta (Ej. Sonido, Luces…)" value="${escaparAttrRst(r.etiqueta)}" oninput="ridersRst[${i}].etiqueta=this.value" />
+          <div class="pdf-chip">📄 ${escaparHtmlRstD(r.nombre)} (${(r.tamano / 1024).toFixed(0)} KB) — <a href="${r.data}" download="${escaparAttrRst(r.nombre)}" style="color:var(--color-text);">Descargar</a></div>
+          <button type="button" class="remove-row-btn" onclick="eliminarRiderRst(${i})">✕</button>
+        </div>
+      `
+    )
+    .join("");
 }
 
-function quitarRiderPdf() {
-  riderPdf = null;
-  document.getElementById("rider-input").value = "";
-  pintarRiderChip();
+function eliminarRiderRst(i) {
+  ridersRst.splice(i, 1);
+  renderRidersRst();
 }
 
-// ---------- Guardar ----------
+// ---------- Hospitalidad ----------
+
+function procesarHospPdf(event) {
+  const archivo = event.target.files[0];
+  if (!archivo) return;
+  if (archivo.type !== "application/pdf") {
+    mostrarToast("Solo se admiten archivos PDF.");
+    return;
+  }
+  if (archivo.size > LIMITE_PDF_BYTES) {
+    mostrarToast(`El PDF pesa ${(archivo.size / 1024).toFixed(0)} KB — intenta comprimirlo por debajo de 600 KB.`);
+    return;
+  }
+  const lector = new FileReader();
+  lector.onload = (e) => {
+    hospPdfsRst.push({ etiqueta: archivo.name.replace(/\.pdf$/i, ""), nombre: archivo.name, tamano: archivo.size, data: e.target.result });
+    renderHospRst();
+    event.target.value = "";
+  };
+  lector.readAsDataURL(archivo);
+}
+
+function renderHospRst() {
+  const cont = document.getElementById("lista-hosp-rst");
+  if (hospPdfsRst.length === 0) {
+    cont.innerHTML = `<p style="color:var(--color-text-muted); font-size:13px;">Todavía no hay PDF de hospitalidad.</p>`;
+    return;
+  }
+  cont.innerHTML = hospPdfsRst
+    .map(
+      (r, i) => `
+        <div class="repeat-row rider-row">
+          <input placeholder="Etiqueta" value="${escaparAttrRst(r.etiqueta)}" oninput="hospPdfsRst[${i}].etiqueta=this.value" />
+          <div class="pdf-chip">📄 ${escaparHtmlRstD(r.nombre)} (${(r.tamano / 1024).toFixed(0)} KB) — <a href="${r.data}" download="${escaparAttrRst(r.nombre)}" style="color:var(--color-text);">Descargar</a></div>
+          <button type="button" class="remove-row-btn" onclick="eliminarHospRst(${i})">✕</button>
+        </div>
+      `
+    )
+    .join("");
+}
+
+function eliminarHospRst(i) {
+  hospPdfsRst.splice(i, 1);
+  renderHospRst();
+}
+
+// ---------- PressKit (imágenes o PDF) ----------
+
+function procesarPressKit(event) {
+  const archivo = event.target.files[0];
+  if (!archivo) return;
+  const esImagen = archivo.type.startsWith("image/");
+  const esPdf = archivo.type === "application/pdf";
+  if (!esImagen && !esPdf) {
+    mostrarToast("Solo se admiten imágenes o PDF.");
+    return;
+  }
+
+  if (esImagen) {
+    const lector = new FileReader();
+    lector.onload = (e) => {
+      const img = new Image();
+      img.onload = () => {
+        const MAX = 500;
+        let w = img.width;
+        let h = img.height;
+        if (w > MAX || h > MAX) {
+          const ratio = Math.min(MAX / w, MAX / h);
+          w = Math.round(w * ratio);
+          h = Math.round(h * ratio);
+        }
+        const canvas = document.createElement("canvas");
+        canvas.width = w;
+        canvas.height = h;
+        canvas.getContext("2d").drawImage(img, 0, 0, w, h);
+        const dataUrl = canvas.toDataURL("image/jpeg", 0.82);
+        pressKitRst.push({ tipo: "imagen", nombre: archivo.name, tamano: dataUrl.length, data: dataUrl });
+        renderPressKitRst();
+        event.target.value = "";
+      };
+      img.src = e.target.result;
+    };
+    lector.readAsDataURL(archivo);
+  } else {
+    if (archivo.size > LIMITE_PDF_BYTES) {
+      mostrarToast(`El PDF pesa ${(archivo.size / 1024).toFixed(0)} KB — intenta comprimirlo por debajo de 600 KB.`);
+      return;
+    }
+    const lector = new FileReader();
+    lector.onload = (e) => {
+      pressKitRst.push({ tipo: "pdf", nombre: archivo.name, tamano: archivo.size, data: e.target.result });
+      renderPressKitRst();
+      event.target.value = "";
+    };
+    lector.readAsDataURL(archivo);
+  }
+}
+
+function renderPressKitRst() {
+  const cont = document.getElementById("lista-presskit-rst");
+  if (pressKitRst.length === 0) {
+    cont.innerHTML = `<p style="color:var(--color-text-muted); font-size:13px;">Todavía no hay archivos de prensa.</p>`;
+    return;
+  }
+  cont.innerHTML = pressKitRst
+    .map((p, i) => {
+      const thumb = p.tipo === "imagen" ? `<img class="press-thumb" src="${p.data}" alt="" />` : `<div class="press-thumb" style="display:flex; align-items:center; justify-content:center;">📄</div>`;
+      return `
+        <div class="press-item">
+          ${thumb}
+          <div class="press-name">${escaparHtmlRstD(p.nombre)}</div>
+          <a href="${p.data}" download="${escaparAttrRst(p.nombre)}" class="btn-ghost" style="text-decoration:none; padding:6px 12px; font-size:12px;">Descargar</a>
+          <button type="button" class="icon-btn danger" onclick="eliminarPressKit(${i})" title="Quitar">✕</button>
+        </div>
+      `;
+    })
+    .join("");
+}
+
+function eliminarPressKit(i) {
+  pressKitRst.splice(i, 1);
+  renderPressKitRst();
+}
+
+// ---------- Jurídico (Admin, colección aparte) ----------
+
+function procesarContratoPdf(event) {
+  const archivo = event.target.files[0];
+  if (!archivo) return;
+  if (archivo.type !== "application/pdf") {
+    mostrarToast("Solo se admiten archivos PDF.");
+    return;
+  }
+  if (archivo.size > LIMITE_PDF_BYTES) {
+    mostrarToast(`El PDF pesa ${(archivo.size / 1024).toFixed(0)} KB — intenta comprimirlo por debajo de 600 KB.`);
+    return;
+  }
+  const lector = new FileReader();
+  lector.onload = async (e) => {
+    contratoRst.push({ nombre: archivo.name, tamano: archivo.size, data: e.target.result, subidoEl: new Date().toISOString() });
+    renderContratoRst();
+    event.target.value = "";
+    try {
+      await db.collection("rosterJuridico").doc(docIdRoster).set({ contratos: contratoRst }, { merge: true });
+      mostrarToast("Contrato guardado (solo visible para Admin).");
+    } catch (err) {
+      console.error(err);
+      mostrarToast("No se pudo guardar el contrato.");
+    }
+  };
+  lector.readAsDataURL(archivo);
+}
+
+function renderContratoRst() {
+  const cont = document.getElementById("lista-contrato-rst");
+  if (contratoRst.length === 0) {
+    cont.innerHTML = `<p style="color:var(--color-text-muted); font-size:13px;">Todavía no hay contratos subidos.</p>`;
+    return;
+  }
+  cont.innerHTML = contratoRst
+    .map(
+      (c, i) => `
+        <div class="repeat-row rider-row">
+          <div class="pdf-chip">📄 ${escaparHtmlRstD(c.nombre)} (${(c.tamano / 1024).toFixed(0)} KB) — <a href="${c.data}" download="${escaparAttrRst(c.nombre)}" style="color:var(--color-text);">Descargar</a></div>
+          <div></div>
+          <button type="button" class="remove-row-btn" onclick="eliminarContratoRst(${i})">✕</button>
+        </div>
+      `
+    )
+    .join("");
+}
+
+async function eliminarContratoRst(i) {
+  contratoRst.splice(i, 1);
+  renderContratoRst();
+  try {
+    await db.collection("rosterJuridico").doc(docIdRoster).set({ contratos: contratoRst }, { merge: true });
+  } catch (err) {
+    console.error(err);
+  }
+}
+
+// ---------- Guardar (ficha general — no incluye Jurídico) ----------
 
 async function guardarRoster() {
   const btn = document.getElementById("btn-guardar-rst");
@@ -334,15 +615,20 @@ async function guardarRoster() {
   const datos = {
     nombre: document.getElementById("rst-nombre").value.trim(),
     oficinaRepresentacion: document.getElementById("rst-oficina").value.trim(),
+    descripcionComercial: document.getElementById("rst-descripcion").value.trim(),
     notas: document.getElementById("rst-notas").value.trim(),
     cache: parseFloat(document.getElementById("rst-cache").value) || 0,
     comisionPorcentaje: parseFloat(document.getElementById("rst-comision-pct").value) || 0,
     ivaPorcentaje: parseFloat(document.getElementById("rst-iva-pct").value) || 0,
     imagenCartel: posterDataUrl,
     logo: logoRstDataUrl,
-    riderPdf: riderPdf,
     contactos: contactosRst,
     redesSociales: redesRst,
+    tarifas: tarifasRst,
+    ridersPdf: ridersRst,
+    hospitalidadCondiciones: document.getElementById("rst-hosp-condiciones").value.trim(),
+    hospitalidadPdf: hospPdfsRst,
+    pressKit: pressKitRst,
   };
 
   try {
@@ -351,7 +637,7 @@ async function guardarRoster() {
     mostrarToast("Ficha guardada.");
   } catch (err) {
     console.error(err);
-    mostrarToast("No se pudo guardar. Puede que el PDF o la imagen sean demasiado grandes.");
+    mostrarToast("No se pudo guardar. Puede que algún archivo sea demasiado grande.");
   } finally {
     btn.disabled = false;
   }

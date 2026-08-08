@@ -1,6 +1,9 @@
 // =========================================================
 // STAGE SUPPORT — nav.js
 // Define el menú lateral según el rol y pinta el estado activo.
+// El menú es tipo acordeón: al hacer clic en una sección se abre y
+// se cierran las demás. La sección que contiene la página activa
+// empieza abierta.
 // Añade aquí nuevas secciones a medida que crees más páginas.
 // =========================================================
 
@@ -13,12 +16,18 @@ const NAV_ESTRUCTURA = [
     ],
   },
   {
-    grupo: "Booking & Comercial",
+    grupo: "Comercial",
+    items: [
+      { id: "catalogo", label: "Catálogo", href: "catalogo.html", roles: ["Comercial", "Admin"], listo: true },
+      { id: "propuestas", label: "Preparar Propuesta", href: "propuestas.html", roles: ["Comercial", "Admin"], listo: true },
+    ],
+  },
+  {
+    grupo: "Booking & Management",
     items: [
       { id: "bookings", label: "Bookings", href: "bookings.html", roles: ["Comercial", "Admin"], listo: true },
       { id: "roster", label: "Roster", href: "roster.html", roles: ["Comercial", "Admin"], listo: true },
       { id: "venues", label: "Venues", href: "venues.html", roles: ["Comercial", "Admin"], listo: true },
-      { id: "propuestas", label: "Propuestas", href: "propuestas.html", roles: ["Comercial", "Admin"], listo: true },
       { id: "clientes", label: "Clientes", href: "clientes.html", roles: ["Comercial", "Admin"], listo: true },
     ],
   },
@@ -44,6 +53,8 @@ const NAV_ESTRUCTURA = [
 
 /**
  * Pinta el menú lateral filtrando por rol y marca la página activa.
+ * Tipo acordeón: solo una sección abierta a la vez, empezando por la
+ * que contiene la página activa.
  * @param {string} rol - rol del usuario ("Comercial" | "Producción" | "Admin")
  * @param {string} paginaActiva - id de la página actual (ej. "dashboard")
  */
@@ -52,17 +63,25 @@ function pintarNav(rol, paginaActiva) {
   if (!cont) return;
   cont.innerHTML = "";
 
-  NAV_ESTRUCTURA.forEach((grupo) => {
+  NAV_ESTRUCTURA.forEach((grupo, indiceGrupo) => {
     const itemsVisibles = grupo.items.filter((it) => it.roles.includes(rol));
     if (itemsVisibles.length === 0) return;
 
-    const wrap = document.createElement("div");
-    wrap.className = "nav-group";
+    const contieneActiva = itemsVisibles.some((it) => it.id === paginaActiva);
 
-    const label = document.createElement("div");
-    label.className = "nav-label";
-    label.textContent = grupo.grupo;
-    wrap.appendChild(label);
+    const wrap = document.createElement("div");
+    wrap.className = "nav-group" + (contieneActiva ? " open" : "");
+    wrap.dataset.grupoIndex = indiceGrupo;
+
+    const header = document.createElement("button");
+    header.type = "button";
+    header.className = "nav-group-header";
+    header.innerHTML = `<span>${grupo.grupo}</span><span class="nav-chevron">›</span>`;
+    header.addEventListener("click", () => toggleNavGroup(wrap));
+    wrap.appendChild(header);
+
+    const itemsCont = document.createElement("div");
+    itemsCont.className = "nav-group-items";
 
     itemsVisibles.forEach((it) => {
       const el = document.createElement(it.listo ? "a" : "div");
@@ -84,9 +103,20 @@ function pintarNav(rol, paginaActiva) {
         el.appendChild(soon);
       }
 
-      wrap.appendChild(el);
+      itemsCont.appendChild(el);
     });
 
+    wrap.appendChild(itemsCont);
     cont.appendChild(wrap);
   });
+}
+
+/**
+ * Abre la sección pulsada y cierra el resto (acordeón: una sola
+ * sección abierta a la vez). Si ya estaba abierta, la cierra.
+ */
+function toggleNavGroup(wrapPulsado) {
+  const yaAbierto = wrapPulsado.classList.contains("open");
+  document.querySelectorAll("#nav-container .nav-group").forEach((g) => g.classList.remove("open"));
+  if (!yaAbierto) wrapPulsado.classList.add("open");
 }
