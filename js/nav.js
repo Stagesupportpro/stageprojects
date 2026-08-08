@@ -15,7 +15,7 @@ const NAV_ESTRUCTURA = [
   {
     grupo: "Booking & Comercial",
     items: [
-      { id: "bookings", label: "Bookings", href: "bookings.html", roles: ["Comercial", "Admin"], listo: false },
+      { id: "bookings", label: "Bookings", href: "bookings.html", roles: ["Comercial", "Admin"], listo: true },
       { id: "roster", label: "Roster", href: "roster.html", roles: ["Comercial", "Admin"], listo: true },
       { id: "propuestas", label: "Propuestas", href: "propuestas.html", roles: ["Comercial", "Admin"], listo: true },
       { id: "clientes", label: "Clientes", href: "clientes.html", roles: ["Comercial", "Admin"], listo: true },
