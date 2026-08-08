@@ -46,8 +46,30 @@ service cloud.firestore {
         && (resource.data.creadoPorUid == request.auth.uid || esAdmin());
     }
 
+    // ---- Roster de espectáculos ----
+    match /roster/{id} {
+      allow read, write: if estoyActivo();
+    }
+
+    // ---- Propuestas a clientes (con ID correlativo PROV<año>-0001) ----
+    match /propuestas/{id} {
+      allow read, write: if estoyActivo();
+    }
+
+    // ---- Clientes ----
+    match /clientes/{id} {
+      allow read, write: if estoyActivo();
+    }
+
     // ---- Producciones (con ID correlativo PRO<año>-0001) ----
     match /producciones/{id} {
+      allow read, create: if estoyActivo();
+      allow update, delete: if estoyActivo()
+        && (resource.data.creadoPorUid == request.auth.uid || esAdmin());
+    }
+
+    // ---- Hojas de Ruta (con ID correlativo HR<año>-0001) ----
+    match /hojasDeRuta/{id} {
       allow read, create: if estoyActivo();
       allow update, delete: if estoyActivo()
         && (resource.data.creadoPorUid == request.auth.uid || esAdmin());

@@ -1,0 +1,110 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Stage Support · Propuesta</title>
+<link rel="icon" href="assets/logo_stagesupport.png" />
+<link rel="stylesheet" href="css/styles.css" />
+</head>
+<body>
+
+<div class="app-shell">
+
+  <aside class="sidebar" id="sidebar">
+    <div class="brand-mark">
+      <img src="assets/logo_stagesupport.png" alt="Stage Support" onerror="this.style.display='none'" />
+    </div>
+
+    <nav id="nav-container" style="flex:1; overflow-y:auto;"></nav>
+
+    <div class="sidebar-footer">
+      <div class="access-pass">
+        <div class="pass-top">
+          <div class="pass-avatar" id="pass-avatar">—</div>
+          <div>
+            <div class="pass-name" id="pass-name">—</div>
+            <div class="pass-role" id="pass-role">—</div>
+          </div>
+        </div>
+        <button class="pass-logout" onclick="cerrarSesion()">Cerrar sesión</button>
+      </div>
+    </div>
+  </aside>
+
+  <main class="main">
+    <div class="topbar">
+      <button class="mobile-menu-btn" onclick="document.getElementById('sidebar').classList.toggle('open')">☰</button>
+      <div>
+        <div class="eyebrow">Booking &amp; Comercial · <a href="propuestas.html" style="color:inherit;">Propuestas</a></div>
+        <h1 id="prop-titulo-cabecera">Propuesta</h1>
+      </div>
+    </div>
+
+    <div class="card" style="margin-bottom:20px;">
+      <div style="display:flex; align-items:center; justify-content:space-between; flex-wrap:wrap; gap:14px;">
+        <div>
+          <div style="font-size:12px; color:var(--color-text-muted); font-weight:600; margin-bottom:6px;">ID</div>
+          <span class="id-badge" id="prop-id-badge">—</span>
+        </div>
+        <div class="doc-actions-bar">
+          <button class="btn-ghost" onclick="verComoCliente()">👁️ Ver como cliente</button>
+          <button class="btn-accent" onclick="guardarPropuesta()" id="btn-guardar-prop">Guardar cambios</button>
+        </div>
+      </div>
+    </div>
+
+    <div class="card">
+      <form id="form-propuesta-detalle" onsubmit="return false;">
+
+        <div class="hr-section">
+          <div class="form-grid">
+            <div class="field field-wide"><label for="pd-nombre">Nombre de la propuesta</label><input type="text" id="pd-nombre" required /></div>
+            <div class="field"><label for="pd-cliente">Cliente</label><select id="pd-cliente"><option value="">— Sin vincular —</option></select></div>
+            <div class="field">
+              <label for="pd-estado">Estado</label>
+              <select id="pd-estado">
+                <option value="Borrador">Borrador</option>
+                <option value="Enviada">Enviada</option>
+                <option value="Aceptada">Aceptada</option>
+                <option value="Rechazada">Rechazada</option>
+              </select>
+            </div>
+          </div>
+        </div>
+
+        <div class="hr-section">
+          <div class="hr-section-head">
+            <h3>Opciones propuestas</h3>
+          </div>
+          <div style="display:flex; gap:10px; margin-bottom:14px; flex-wrap:wrap;">
+            <select id="pd-roster-select" style="max-width:280px;"><option value="">Añadir desde Roster…</option></select>
+            <button type="button" class="btn-ghost" onclick="anadirItemManual()">+ Añadir manual</button>
+          </div>
+          <div id="lista-items-propuesta"></div>
+        </div>
+
+        <div class="hr-section">
+          <div class="field">
+            <label for="pd-notas">Notas internas (opcional, no se muestran al cliente)</label>
+            <input type="text" id="pd-notas" />
+          </div>
+        </div>
+
+      </form>
+    </div>
+  </main>
+
+</div>
+
+<div class="toast" id="toast"><span class="dot"></span><span id="toast-msg"></span></div>
+
+<script src="https://www.gstatic.com/firebasejs/10.13.0/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.13.0/firebase-auth-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.13.0/firebase-firestore-compat.js"></script>
+<script src="js/firebase-config.js"></script>
+<script src="js/auth.js"></script>
+<script src="js/nav.js"></script>
+<script src="js/propuesta-detalle.js"></script>
+</body>
+</html>

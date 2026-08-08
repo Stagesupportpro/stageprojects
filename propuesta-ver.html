@@ -1,0 +1,32 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Stage Support · Propuesta</title>
+<link rel="icon" href="assets/logo_stagesupport.png" />
+<link rel="stylesheet" href="css/styles.css" />
+<style>
+  body { background: var(--color-bg-soft); }
+</style>
+</head>
+<body>
+
+<div class="propuesta-view" id="propuesta-view">
+  <div class="pv-header">
+    <img src="assets/logo_stagesupport.png" alt="Stage Support" onerror="this.style.display='none'" />
+    <h1 id="pv-nombre">Propuesta</h1>
+    <p id="pv-subtitulo">—</p>
+  </div>
+
+  <div id="pv-items"></div>
+</div>
+
+<script src="https://www.gstatic.com/firebasejs/10.13.0/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.13.0/firebase-auth-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.13.0/firebase-firestore-compat.js"></script>
+<script src="js/firebase-config.js"></script>
+<script src="js/auth.js"></script>
+<script src="js/propuesta-ver.js"></script>
+</body>
+</html>

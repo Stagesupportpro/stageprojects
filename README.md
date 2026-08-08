@@ -114,6 +114,44 @@ sencillo es que, al guardar su propio registro, también añadan un
 documento a esta misma colección `documentos` — así aparecerán en el
 calendario sin tocar nada más.
 
+## Roster, Propuestas y Clientes
+
+**Clientes** (`clientes.html`) — listado simple con categoría
+(`privado`, `admin_publica`, `otros`), CIF, persona de contacto,
+teléfono, email, dirección. Colección **`clientes/{id}`**.
+
+**Roster** (`roster.html` + editor `roster-detalle.html`) — ficha por
+cada espectáculo/artista, colección **`roster/{id}`**:
+- Nombre, oficina de representación, notas.
+- Cartel/imagen (comprimida y guardada en Firestore, igual que el
+  logo de la empresa).
+- Contactos en lista libre (nombre, cargo, teléfono, email).
+- Redes sociales en lista libre (plataforma + URL).
+- Rider técnico en PDF — se guarda directamente en Firestore como
+  base64; por eso hay un límite práctico de ~600 KB por archivo (sin
+  Firebase Storage, que en el plan Spark actual requiere activar
+  facturación). Si algún rider pesa más, habría que comprimirlo o, más
+  adelante, pasar a Blaze + Storage.
+- **Calculadora**: Caché (BI) + Comisión (elegida de Administración →
+  Comisiones, o manual) = Total; Total + IVA (% manual) = Total con
+  IVA. Se recalcula en vivo al escribir.
+
+**Propuestas** (`propuestas.html` + editor `propuesta-detalle.html` +
+vista `propuesta-ver.html`) — colección **`propuestas/{id}`**, ID
+correlativo `PROV<año>-0001`:
+- Nombre, cliente vinculado (opcional), estado (Borrador / Enviada /
+  Aceptada / Rechazada), notas internas.
+- Opciones (`items`): se añaden desde el Roster (copian imagen y
+  nombre automáticamente) o a mano, cada una con descripción y precio
+  opcional.
+- Botón **"Ver como cliente"** abre `propuesta-ver.html?id=...` en una
+  pestaña nueva: una vista limpia, sin menú lateral, pensada para
+  enseñar en una tablet u otro dispositivo delante del cliente.
+  Sigue requiriendo sesión iniciada (la abre el propio empleado ya
+  logueado) — no es un enlace público para compartir por WhatsApp o
+  email; eso sería un paso más (habría que abrir permisos de lectura
+  pública para esa propuesta concreta).
+
 ## Hojas de Ruta
 
 El listado (`hojasderuta.html`) funciona igual que Producciones: ID
