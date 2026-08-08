@@ -960,6 +960,9 @@ table.users-table {
   display: grid;
   grid-template-columns: 1fr 1fr;
   gap: 4px 12px;
+  max-height: 360px;
+  overflow-y: auto;
+  padding-right: 4px;
 }
 @media (max-width: 480px) {
   .permisos-grid { grid-template-columns: 1fr; }
@@ -1410,6 +1413,73 @@ table.doc-table td.label { font-weight: 700; background: #fafafa; width: 22%; }
   width: 32px; height: 32px; border-radius: 50%;
   border: none; background: rgba(255,255,255,0.9);
   cursor: pointer; font-size: 14px;
+}
+
+/* ---------- Notificaciones ---------- */
+
+.notif-row {
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+  padding: 12px 4px;
+  border-bottom: 1px solid var(--color-border);
+  cursor: pointer;
+}
+.notif-row:last-child { border-bottom: none; }
+.notif-row:hover { background: var(--color-bg-soft); }
+.notif-row .notif-dot {
+  width: 8px; height: 8px; border-radius: 50%;
+  background: var(--color-accent);
+  margin-top: 6px; flex-shrink: 0;
+}
+.notif-row.leida .notif-dot { background: var(--color-border); }
+.notif-row .notif-msg { font-size: 13.5px; }
+.notif-row .notif-msg strong { font-weight: 700; }
+.notif-row .notif-meta { font-size: 11.5px; color: var(--color-text-muted); margin-top: 2px; }
+
+.nav-badge {
+  background: var(--color-accent);
+  color: #14151A;
+  font-size: 10px;
+  font-weight: 700;
+  padding: 1px 6px;
+  border-radius: 20px;
+  margin-left: auto;
+}
+
+/* ---------- Agenda / Notas ---------- */
+
+.item-card-list { display: flex; flex-direction: column; gap: 10px; }
+.item-card {
+  background: #fff;
+  border: 1px solid var(--color-border);
+  border-radius: 12px;
+  padding: 16px;
+}
+.item-card .item-card-top {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 10px;
+  margin-bottom: 6px;
+}
+.item-card .item-card-title { font-weight: 700; font-size: 15px; }
+.item-card .item-card-meta { font-size: 12px; color: var(--color-text-muted); margin-bottom: 8px; }
+.item-card .item-card-desc { font-size: 13.5px; line-height: 1.5; white-space: pre-line; }
+.item-card .item-card-shared {
+  display: flex;
+  gap: 6px;
+  flex-wrap: wrap;
+  margin-top: 10px;
+}
+.item-card .item-card-shared .permiso-tag { font-size: 10.5px; }
+
+.share-list {
+  max-height: 180px;
+  overflow-y: auto;
+  border: 1.5px solid var(--color-border);
+  border-radius: 10px;
+  padding: 6px 10px;
 }
 
 /* ---------- Calculadora (Roster) ---------- */
