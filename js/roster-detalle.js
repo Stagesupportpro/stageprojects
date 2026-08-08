@@ -7,6 +7,7 @@ let docIdRoster = null;
 let contactosRst = [];
 let redesRst = [];
 let posterDataUrl = null;
+let logoRstDataUrl = null;
 let riderPdf = null; // { nombre, tamano, data }
 let comisionesCache = [];
 
@@ -74,6 +75,9 @@ async function cargarRoster() {
 
     posterDataUrl = d.imagenCartel || null;
     mostrarPreviewPoster(posterDataUrl);
+
+    logoRstDataUrl = d.logo || null;
+    mostrarPreviewLogoRst(logoRstDataUrl);
 
     riderPdf = d.riderPdf || null;
     pintarRiderChip();
@@ -225,6 +229,57 @@ function quitarPoster() {
   mostrarPreviewPoster(null);
 }
 
+// ---------- Logo ----------
+
+function procesarLogoRst(event) {
+  const archivo = event.target.files[0];
+  if (!archivo || !archivo.type.startsWith("image/")) return;
+
+  const lector = new FileReader();
+  lector.onload = (e) => {
+    const img = new Image();
+    img.onload = () => {
+      const MAX = 260;
+      let w = img.width;
+      let h = img.height;
+      if (w > MAX || h > MAX) {
+        const ratio = Math.min(MAX / w, MAX / h);
+        w = Math.round(w * ratio);
+        h = Math.round(h * ratio);
+      }
+      const canvas = document.createElement("canvas");
+      canvas.width = w;
+      canvas.height = h;
+      const ctx = canvas.getContext("2d");
+      ctx.clearRect(0, 0, w, h);
+      ctx.drawImage(img, 0, 0, w, h);
+      // PNG para conservar la transparencia
+      logoRstDataUrl = canvas.toDataURL("image/png");
+      mostrarPreviewLogoRst(logoRstDataUrl);
+    };
+    img.src = e.target.result;
+  };
+  lector.readAsDataURL(archivo);
+}
+
+function mostrarPreviewLogoRst(dataUrl) {
+  const preview = document.getElementById("logo-rst-preview");
+  const btnQuitar = document.getElementById("btn-quitar-logo-rst");
+  if (dataUrl) {
+    preview.innerHTML = `<img src="${dataUrl}" alt="" />`;
+    btnQuitar.style.display = "inline-flex";
+  } else {
+    preview.textContent = "Sin logo";
+    btnQuitar.style.display = "none";
+  }
+}
+
+function quitarLogoRst() {
+  logoRstDataUrl = null;
+  document.getElementById("logo-rst-input").value = "";
+  mostrarPreviewLogoRst(null);
+}
+
 // ---------- Rider PDF ----------
 
 const LIMITE_PDF_BYTES = 600 * 1024;
@@ -284,6 +339,7 @@ async function guardarRoster() {
     comisionPorcentaje: parseFloat(document.getElementById("rst-comision-pct").value) || 0,
     ivaPorcentaje: parseFloat(document.getElementById("rst-iva-pct").value) || 0,
     imagenCartel: posterDataUrl,
+    logo: logoRstDataUrl,
     riderPdf: riderPdf,
     contactos: contactosRst,
     redesSociales: redesRst,

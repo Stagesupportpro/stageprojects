@@ -30,8 +30,43 @@ let previsionTiempoActual = null;
     avatarEl.textContent = inicialesDe(nombreCompletoDe(usuarioActualHRD) || usuarioActualHRD.email);
   }
 
+  await cargarOpcionesArtista();
+  await cargarLogoDocumentoEmpresa();
   await cargarHR();
 })();
+
+let rosterCache = [];
+let logoDocumentoEmpresa = null;
+
+async function cargarOpcionesArtista() {
+  const sel = document.getElementById("da-artista");
+  try {
+    const snap = await db.collection("roster").orderBy("nombre").get();
+    rosterCache = snap.docs.map((d) => ({ id: d.id, ...d.data() }));
+    const opciones = rosterCache.map((r) => `<option value="${r.id}">${escaparHtmlHRD(r.nombre)}</option>`).join("");
+    sel.innerHTML = `<option value="">— Selecciona del Roster —</option>${opciones}`;
+  } catch (err) {
+    console.error(err);
+  }
+}
+
+async function cargarLogoDocumentoEmpresa() {
+  try {
+    const snap = await db.collection("configuracion").doc("empresa").get();
+    if (snap.exists) logoDocumentoEmpresa = snap.data().logoDocumentos || null;
+  } catch (err) {
+    console.error(err);
+  }
+}
+
+function alSeleccionarArtista() {
+  const id = document.getElementById("da-artista").value;
+  const artista = rosterCache.find((r) => r.id === id);
+  if (artista && artista.logo) {
+    logoEventoDataUrl = artista.logo;
+    mostrarPreviewLogoEvento(logoEventoDataUrl);
+  }
+}
 
 function fechaISOHRD(date) {
   const y = date.getFullYear();
@@ -58,7 +93,7 @@ async function cargarHR() {
     document.getElementById("d-observaciones").value = d.observaciones || "";
 
     const da = d.datosActuacion || {};
-    document.getElementById("da-artista").value = da.artista || "";
+    document.getElementById("da-artista").value = da.artistaRosterId || "";
     document.getElementById("da-fecha").value = da.fecha || d.fecha || "";
     document.getElementById("da-ciudad").value = da.ciudad || "";
     document.getElementById("da-local").value = da.local || "";
@@ -334,7 +369,11 @@ function recopilarDatosHR() {
     nombre: document.getElementById("d-nombre").value.trim(),
     observaciones: document.getElementById("d-observaciones").value.trim(),
     datosActuacion: {
-      artista: document.getElementById("da-artista").value.trim(),
+      artistaRosterId: document.getElementById("da-artista").value,
+      artista: (() => {
+        const sel = document.getElementById("da-artista");
+        return sel.value && sel.selectedIndex >= 0 ? sel.options[sel.selectedIndex].text : "";
+      })(),
       fecha: document.getElementById("da-fecha").value,
       ciudad: document.getElementById("da-ciudad").value.trim(),
       local: document.getElementById("da-local").value.trim(),
@@ -481,7 +520,7 @@ function construirHtmlImprimible(datos, idVisible) {
   return `
     <div class="doc-page">
       <div class="doc-header">
-        <img class="doc-logo" src="assets/logo_stagesupport.png" onerror="this.style.display='none'" />
+        <img class="doc-logo" src="${logoDocumentoEmpresa || "assets/logo_stagesupport.png"}" onerror="this.style.display='none'" />
         ${logoEventoDataUrl ? `<img class="doc-logo-evento" src="${logoEventoDataUrl}" />` : ""}
       </div>
       <div class="doc-title-block">

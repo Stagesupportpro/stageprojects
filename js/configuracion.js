@@ -5,6 +5,7 @@
 // =========================================================
 
 let logoDataUrl = null;
+let logoDocDataUrl = null;
 const REF_EMPRESA = () => db.collection("configuracion").doc("empresa");
 
 (async function () {
@@ -38,6 +39,10 @@ async function cargarDatosEmpresa() {
     if (d.logo) {
       logoDataUrl = d.logo;
       mostrarPreviewLogo(d.logo);
+    }
+    if (d.logoDocumentos) {
+      logoDocDataUrl = d.logoDocumentos;
+      mostrarPreviewLogoDoc(d.logoDocumentos);
     }
   } catch (err) {
     console.error(err);
@@ -103,6 +108,56 @@ function quitarLogo() {
   mostrarPreviewLogo(null);
 }
 
+// ---------- Logo para documentos ----------
+
+function procesarLogoDoc(event) {
+  const archivo = event.target.files[0];
+  if (!archivo || !archivo.type.startsWith("image/")) return;
+
+  const lector = new FileReader();
+  lector.onload = (e) => {
+    const img = new Image();
+    img.onload = () => {
+      const MAX = 320;
+      let w = img.width;
+      let h = img.height;
+      if (w > MAX || h > MAX) {
+        const ratio = Math.min(MAX / w, MAX / h);
+        w = Math.round(w * ratio);
+        h = Math.round(h * ratio);
+      }
+      const canvas = document.createElement("canvas");
+      canvas.width = w;
+      canvas.height = h;
+      const ctx = canvas.getContext("2d");
+      ctx.clearRect(0, 0, w, h);
+      ctx.drawImage(img, 0, 0, w, h);
+      logoDocDataUrl = canvas.toDataURL("image/png");
+      mostrarPreviewLogoDoc(logoDocDataUrl);
+    };
+    img.src = e.target.result;
+  };
+  lector.readAsDataURL(archivo);
+}
+
+function mostrarPreviewLogoDoc(dataUrl) {
+  const preview = document.getElementById("logo-doc-preview");
+  const btnQuitar = document.getElementById("btn-quitar-logo-doc");
+  if (dataUrl) {
+    preview.innerHTML = `<img src="${dataUrl}" alt="" />`;
+    btnQuitar.style.display = "inline-flex";
+  } else {
+    preview.textContent = "Sin logo";
+    btnQuitar.style.display = "none";
+  }
+}
+
+function quitarLogoDoc() {
+  logoDocDataUrl = null;
+  document.getElementById("logo-doc-input").value = "";
+  mostrarPreviewLogoDoc(null);
+}
+
 // ---------- Guardar ----------
 
 document.getElementById("form-empresa").addEventListener("submit", async (e) => {
@@ -121,6 +176,7 @@ document.getElementById("form-empresa").addEventListener("submit", async (e) => 
         web: document.getElementById("e-web").value.trim(),
         email: document.getElementById("e-email").value.trim(),
         logo: logoDataUrl || null,
+        logoDocumentos: logoDocDataUrl || null,
         actualizadoEl: firebase.firestore.FieldValue.serverTimestamp(),
       },
       { merge: true }
