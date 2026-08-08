@@ -23,6 +23,7 @@ const NAV_ESTRUCTURA = [
     grupo: "Producción",
     items: [
       { id: "producciones", label: "Producciones", href: "producciones.html", roles: ["Producción", "Admin"], listo: true },
+      { id: "hojasderuta", label: "Hojas de Ruta", href: "hojasderuta.html", roles: ["Producción", "Admin"], listo: true },
       { id: "personal", label: "Personal", href: "personal.html", roles: ["Comercial", "Producción", "Admin"], listo: true },
       { id: "riders", label: "Riders técnicos", href: "riders.html", roles: ["Producción", "Admin"], listo: false },
     ],

@@ -60,7 +60,7 @@ function pintarTablaPersonal(personas) {
     personas.length + (personas.length === 1 ? " contacto" : " contactos");
 
   if (personas.length === 0) {
-    tbody.innerHTML = `<tr><td colspan="4" style="text-align:center; padding:36px; color:var(--color-text-muted);">
+    tbody.innerHTML = `<tr><td colspan="5" style="text-align:center; padding:36px; color:var(--color-text-muted);">
       Todavía no hay contactos en la bolsa de personal.
     </td></tr>`;
     return;
@@ -69,6 +69,8 @@ function pintarTablaPersonal(personas) {
   tbody.innerHTML = personas
     .map((p) => {
       const nombreCompleto = [p.nombre, p.apellidos].filter(Boolean).join(" ") || "—";
+      const tarifaTexto = p.tarifa != null && p.tarifa !== "" ? `${Number(p.tarifa).toLocaleString("es-ES")} €` : "—";
+      const situacionTexto = p.situacion === "autonomo" ? "Autónomo" : "Alta en SS";
       return `
         <tr>
           <td>
@@ -82,6 +84,10 @@ function pintarTablaPersonal(personas) {
           </td>
           <td>${escaparHtmlPersonal(p.telefono || "—")}</td>
           <td>${p.rol ? `<span class="role-badge">${escaparHtmlPersonal(p.rol)}</span>` : "—"}</td>
+          <td>
+            <div>${tarifaTexto}</div>
+            <div style="color:var(--color-text-muted); font-size:12px;">${situacionTexto}</div>
+          </td>
           <td>
             <div class="row-actions" style="justify-content:flex-end;">
               <button class="icon-btn" title="Editar" onclick='abrirModalEdicionPersonal(${JSON.stringify(p).replace(/'/g, "&#39;")})'>✎</button>
@@ -102,6 +108,11 @@ function escaparHtmlPersonal(str) {
 
 // ---------- Modal ----------
 
+function alCambiarSituacion() {
+  const esAutonomo = document.getElementById("p-situacion").value === "autonomo";
+  document.getElementById("campos-autonomo").style.display = esAutonomo ? "block" : "none";
+}
+
 const formPersonal = document.getElementById("form-personal");
 const overlayPersonal = document.getElementById("modal-overlay");
 
@@ -110,6 +121,7 @@ function abrirModalPersonal() {
   document.getElementById("personal-id-edicion").value = "";
   document.getElementById("modal-titulo").textContent = "Nuevo contacto";
   document.getElementById("btn-guardar").textContent = "Crear contacto";
+  alCambiarSituacion();
   ocultarMsgModalPersonal();
   overlayPersonal.classList.add("show");
 }
@@ -122,7 +134,12 @@ function abrirModalEdicionPersonal(p) {
   document.getElementById("p-telefono").value = p.telefono || "";
   document.getElementById("p-email").value = p.email || "";
   document.getElementById("p-notas").value = p.notas || "";
+  document.getElementById("p-tarifa").value = p.tarifa != null ? p.tarifa : "";
+  document.getElementById("p-situacion").value = p.situacion || "ss";
+  document.getElementById("p-retencion").value = p.retencion != null ? p.retencion : "";
+  document.getElementById("p-iva").value = p.iva != null ? p.iva : "";
   if (p.rol) document.getElementById("p-rol").value = p.rol;
+  alCambiarSituacion();
   document.getElementById("modal-titulo").textContent = "Editar contacto";
   document.getElementById("btn-guardar").textContent = "Guardar cambios";
   ocultarMsgModalPersonal();
@@ -151,6 +168,9 @@ formPersonal.addEventListener("submit", async (e) => {
   const btn = document.getElementById("btn-guardar");
   btn.disabled = true;
 
+  const situacion = document.getElementById("p-situacion").value;
+  const tarifaValor = document.getElementById("p-tarifa").value;
+
   const datos = {
     nombre: document.getElementById("p-nombre").value.trim(),
     apellidos: document.getElementById("p-apellidos").value.trim(),
@@ -158,6 +178,14 @@ formPersonal.addEventListener("submit", async (e) => {
     email: document.getElementById("p-email").value.trim(),
     rol: document.getElementById("p-rol").value,
     notas: document.getElementById("p-notas").value.trim(),
+    tarifa: tarifaValor !== "" ? parseFloat(tarifaValor) : null,
+    situacion,
+    retencion: situacion === "autonomo" && document.getElementById("p-retencion").value !== ""
+      ? parseFloat(document.getElementById("p-retencion").value)
+      : null,
+    iva: situacion === "autonomo" && document.getElementById("p-iva").value !== ""
+      ? parseFloat(document.getElementById("p-iva").value)
+      : null,
   };
 
   try {
