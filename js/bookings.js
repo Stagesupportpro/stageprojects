@@ -18,6 +18,7 @@ let clientesCacheBk = [];
 let propuestasCacheBk = [];
 let comisionesCacheBk = [];
 let venuesCacheBk = [];
+let bookingRepartoSalaPct = null;
 
 (async function () {
   usuarioActualBk = await protegerPagina(["Comercial", "Admin"]);
@@ -140,6 +141,7 @@ function alSeleccionarModalidadBooking() {
   document.getElementById("bk-cache").value = tarifa.importe || 0;
   // Si la tarifa del venue ya incluye impuestos, no hace falta sumar IVA aparte encima.
   document.getElementById("bk-iva-pct").value = tarifa.impuestos === "con" ? 0 : document.getElementById("bk-iva-pct").value || 21;
+  bookingRepartoSalaPct = tarifa.repartoSalaPct != null ? tarifa.repartoSalaPct : null;
   recalcularBooking();
 }
 
@@ -297,6 +299,7 @@ const overlayBooking = document.getElementById("modal-overlay");
 
 function abrirModalBooking() {
   formBooking.reset();
+  bookingRepartoSalaPct = null;
   document.getElementById("bk-id-edicion").value = "";
   document.getElementById("campo-id-existente").style.display = "none";
   document.getElementById("bk-fecha").value = fechaISOBk(new Date());
@@ -313,6 +316,7 @@ function abrirModalBooking() {
 
 function abrirModalEdicionBooking(b) {
   formBooking.reset();
+  bookingRepartoSalaPct = b.repartoSalaPct != null ? b.repartoSalaPct : null;
   document.getElementById("bk-id-edicion").value = b.id;
   document.getElementById("campo-id-existente").style.display = "block";
   document.getElementById("bk-id-badge").textContent = b.idVisible || "—";
@@ -405,6 +409,7 @@ formBooking.addEventListener("submit", async (e) => {
     datosBase.espacio = document.getElementById("bk-espacio-buscar").value.trim();
     datosBase.venueId = document.getElementById("bk-venue-id").value || null;
     datosBase.modalidadIndice = document.getElementById("bk-modalidad").value !== "" ? document.getElementById("bk-modalidad").value : null;
+    datosBase.repartoSalaPct = bookingRepartoSalaPct;
     datosBase.espacioDireccion = document.getElementById("bk-espacio-direccion").value.trim();
     datosBase.origenCache = null;
     datosBase.clienteId = null;

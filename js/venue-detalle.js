@@ -163,13 +163,14 @@ function renderTarifasVen() {
   cont.innerHTML = tarifasVen
     .map(
       (t, i) => `
-        <div class="repeat-row tarifa-row">
+        <div class="repeat-row tarifa-row" style="grid-template-columns: 1.3fr 0.8fr 0.8fr 0.7fr auto;">
           <input placeholder="Concepto (Ej. Alquiler de sala)" value="${escaparAttrVen(t.concepto)}" oninput="tarifasVen[${i}].concepto=this.value" />
           <input type="number" min="0" step="0.01" placeholder="Importe €" value="${t.importe != null ? t.importe : ""}" oninput="tarifasVen[${i}].importe=this.value===''?null:parseFloat(this.value)" />
           <select onchange="tarifasVen[${i}].impuestos=this.value">
             <option value="sin" ${t.impuestos !== "con" ? "selected" : ""}>Sin impuestos</option>
             <option value="con" ${t.impuestos === "con" ? "selected" : ""}>Con impuestos</option>
           </select>
+          <input type="number" min="0" max="100" step="0.1" placeholder="% venue taquilla" value="${t.repartoSalaPct != null ? t.repartoSalaPct : ""}" oninput="tarifasVen[${i}].repartoSalaPct=this.value===''?null:parseFloat(this.value)" title="Deja en blanco si es solo alquiler fijo, sin reparto de taquilla" />
           <button type="button" class="remove-row-btn" onclick="eliminarTarifaVen(${i})">✕</button>
         </div>
       `
@@ -178,7 +179,7 @@ function renderTarifasVen() {
 }
 
 function anadirTarifaVen() {
-  tarifasVen.push({ concepto: "", importe: null, impuestos: "sin" });
+  tarifasVen.push({ concepto: "", importe: null, impuestos: "sin", repartoSalaPct: null });
   renderTarifasVen();
 }
 

@@ -112,8 +112,15 @@ function importarCosteVenueProd() {
   const total = cache * (1 + ivaPct / 100);
   costesProd.push({ concepto: `Alquiler venue — ${bookingVinculado.espacio || ""}`, importe: total });
   renderCostesProd();
+
+  document.getElementById("pd-sala-nombre").value = bookingVinculado.espacio || "";
+  if (bookingVinculado.repartoSalaPct != null) {
+    document.getElementById("pd-reparto-sala").value = bookingVinculado.repartoSalaPct;
+  }
+
   cambiarTabProd("cifras");
-  mostrarToast("Coste del venue importado.");
+  recalcularCifrasProd();
+  mostrarToast("Coste de alquiler y datos de la sala importados.");
 }
 
 // ---------- Cargar ----------
@@ -140,14 +147,23 @@ async function cargarProduccion() {
     }
 
     costesProd = Array.isArray(d.costes) ? d.costes : [];
+    if (costesProd.length === 0) {
+      // Se siembran las categorías típicas la primera vez, todas editables/eliminables.
+      costesProd = ["Caché", "Comisión / Agente", "Técnica", "Alojamiento", "Logística", "Dietas", "Promoción", "Otros"].map((concepto) => ({
+        concepto,
+        importe: null,
+        nota: "",
+      }));
+    }
     renderCostesProd();
 
-    const tipoIngreso = d.ingresoTipo || "aforo";
-    document.querySelector(`input[name="pd-ingreso-tipo"][value="${tipoIngreso}"]`).checked = true;
+    document.getElementById("pd-sala-nombre").value = d.salaNombre || "";
+    document.getElementById("pd-sala-provincia").value = d.salaProvincia || "";
     document.getElementById("pd-aforo").value = d.aforo != null ? d.aforo : "";
+    document.getElementById("pd-venta-prevista").value = d.ventaPrevista != null ? d.ventaPrevista : "";
+    document.getElementById("pd-venta-nota").value = d.ventaNota || "";
     document.getElementById("pd-precio-entrada").value = d.precioEntrada != null ? d.precioEntrada : "";
-    document.getElementById("pd-ingreso-fijo").value = d.ingresoFijo != null ? d.ingresoFijo : "";
-    alCambiarTipoIngresoProd();
+    document.getElementById("pd-reparto-sala").value = d.repartoSalaPct != null ? d.repartoSalaPct : "";
 
     documentosProd = Array.isArray(d.documentos) ? d.documentos : [];
     renderDocumentosProd();
@@ -172,10 +188,6 @@ function escaparAttrPD(str) {
   return (str || "").replace(/&/g, "&amp;").replace(/"/g, "&quot;");
 }
 
-function formatoEuroPD(n) {
-  return Number(n || 0).toLocaleString("es-ES", { minimumFractionDigits: 2, maximumFractionDigits: 2 }) + " €";
-}
-
 // ---------- Costes ----------
 
 function renderCostesProd() {
@@ -186,9 +198,10 @@ function renderCostesProd() {
     cont.innerHTML = costesProd
       .map(
         (c, i) => `
-          <div class="repeat-row tramo-row" style="grid-template-columns: 2fr 1fr auto;">
-            <input placeholder="Concepto (Ej. Equipos, Desplazamiento…)" value="${escaparAttrPD(c.concepto)}" oninput="costesProd[${i}].concepto=this.value" />
-            <input type="number" min="0" step="0.01" placeholder="Importe €" value="${c.importe != null ? c.importe : ""}" oninput="costesProd[${i}].importe=this.value===''?0:parseFloat(this.value); recalcularCifrasProd()" />
+          <div class="repeat-row" style="grid-template-columns: 1.2fr 1fr 1.6fr auto;">
+            <input placeholder="Concepto" value="${escaparAttrPD(c.concepto)}" oninput="costesProd[${i}].concepto=this.value" />
+            <input type="number" min="0" step="0.01" placeholder="Importe €" value="${c.importe != null ? c.importe : ""}" oninput="costesProd[${i}].importe=this.value===''?null:parseFloat(this.value); recalcularCifrasProd()" />
+            <input placeholder="Nota (opcional, ej. 2 habitaciones dobles…)" value="${escaparAttrPD(c.nota)}" oninput="costesProd[${i}].nota=this.value" />
             <button type="button" class="remove-row-btn" onclick="eliminarCosteProd(${i})">✕</button>
           </div>
         `
@@ -199,7 +212,7 @@ function renderCostesProd() {
 }
 
 function anadirCosteProd() {
-  costesProd.push({ concepto: "", importe: 0 });
+  costesProd.push({ concepto: "", importe: null, nota: "" });
   renderCostesProd();
 }
 
@@ -208,43 +221,65 @@ function eliminarCosteProd(i) {
   renderCostesProd();
 }
 
-// ---------- Ingresos y break even ----------
+// ---------- Simulación, reparto y break even ----------
+// Verificado contra el modelo real: la Sala cobra su % sobre la
+// VENTA BRUTA de cada tramo; el Artista/Promotor se queda su % sobre
+// el BENEFICIO NETO de ese tramo (venta − gastos totales).
 
-function alCambiarTipoIngresoProd() {
-  const tipo = document.querySelector('input[name="pd-ingreso-tipo"]:checked').value;
-  document.getElementById("pd-ingreso-aforo-campos").style.display = tipo === "aforo" ? "grid" : "none";
-  document.getElementById("pd-ingreso-fijo-campo").style.display = tipo === "fijo" ? "block" : "none";
-  recalcularCifrasProd();
+const TRAMOS_AFORO = [10, 20, 30, 40, 50, 60, 70, 80, 90, 100];
+
+function formatoEuroPD(n) {
+  return Number(n || 0).toLocaleString("es-ES", { minimumFractionDigits: 2, maximumFractionDigits: 2 }) + " €";
 }
 
 function recalcularCifrasProd() {
   const totalHosp = hospitalidadProd.reduce((sum, h) => sum + (h.precio || 0), 0);
   const totalCostesManual = costesProd.reduce((sum, c) => sum + (c.importe || 0), 0);
-  const totalCostes = totalCostesManual + totalHosp;
+  const gastos = totalCostesManual + totalHosp;
 
-  const tipoIngreso = document.querySelector('input[name="pd-ingreso-tipo"]:checked')?.value || "aforo";
-  let ingresos = 0;
-  if (tipoIngreso === "aforo") {
-    const aforo = parseFloat(document.getElementById("pd-aforo").value) || 0;
-    const precio = parseFloat(document.getElementById("pd-precio-entrada").value) || 0;
-    ingresos = aforo * precio;
+  const aforoTotal = parseFloat(document.getElementById("pd-venta-prevista").value) || parseFloat(document.getElementById("pd-aforo").value) || 0;
+  const precio = parseFloat(document.getElementById("pd-precio-entrada").value) || 0;
+  const repartoSalaInput = document.getElementById("pd-reparto-sala").value;
+  const repartoSalaPct = repartoSalaInput !== "" ? parseFloat(repartoSalaInput) : null;
+  const hayReparto = repartoSalaPct != null && !isNaN(repartoSalaPct);
+
+  document.getElementById("pd-th-sala").style.display = hayReparto ? "table-cell" : "none";
+  document.getElementById("pd-th-artista").style.display = hayReparto ? "table-cell" : "none";
+
+  const cuerpo = document.getElementById("pd-cuerpo-simulacion");
+  cuerpo.innerHTML = TRAMOS_AFORO.map((pct) => {
+    const entradas = Math.round((aforoTotal * pct) / 100);
+    const venta = entradas * precio;
+    const beneficio = venta - gastos;
+
+    let colsReparto = "";
+    if (hayReparto) {
+      const salaCut = venta * (repartoSalaPct / 100);
+      const artistaCut = beneficio * (1 - repartoSalaPct / 100);
+      colsReparto = `<td>${formatoEuroPD(salaCut)}</td><td>${formatoEuroPD(artistaCut)}</td>`;
+    }
+
+    return `
+      <tr>
+        <td>${pct}%</td>
+        <td>${entradas}</td>
+        <td>${formatoEuroPD(venta)}</td>
+        <td style="font-weight:600; color:${beneficio < 0 ? "#B3221F" : "#2FA84F"};">${formatoEuroPD(beneficio)}</td>
+        ${colsReparto}
+      </tr>
+    `;
+  }).join("");
+
+  document.getElementById("pd-calc-costes").textContent = formatoEuroPD(gastos);
+  document.getElementById("pd-calc-precio").textContent = formatoEuroPD(precio);
+
+  const breakEvenEl = document.getElementById("pd-calc-breakeven");
+  if (precio > 0) {
+    const breakEven = Math.round(gastos / precio);
+    const pctAforo = aforoTotal > 0 ? Math.round((breakEven / aforoTotal) * 100) : null;
+    breakEvenEl.textContent = `${breakEven} entradas${pctAforo != null ? ` (${pctAforo}% del aforo)` : ""}`;
   } else {
-    ingresos = parseFloat(document.getElementById("pd-ingreso-fijo").value) || 0;
-  }
-
-  const resultado = ingresos - totalCostes;
-
-  document.getElementById("pd-calc-costes").textContent = formatoEuroPD(totalCostes);
-  document.getElementById("pd-calc-ingresos").textContent = formatoEuroPD(ingresos);
-  document.getElementById("pd-calc-resultado").textContent = formatoEuroPD(resultado);
-
-  const itemBreakeven = document.getElementById("pd-calc-item-breakeven");
-  if (tipoIngreso === "aforo") {
-    const precio = parseFloat(document.getElementById("pd-precio-entrada").value) || 0;
-    itemBreakeven.style.display = "flex";
-    document.getElementById("pd-calc-breakeven").textContent = precio > 0 ? Math.ceil(totalCostes / precio) + " entradas" : "—";
-  } else {
-    itemBreakeven.style.display = "none";
+    breakEvenEl.textContent = "—";
   }
 }
 
@@ -341,7 +376,6 @@ async function guardarProduccion() {
 
   const [pmTipo, pmId] = (document.getElementById("pd-pm").value || "").split(":");
   const pmEncontrado = opcionesPMProd.find((o) => o.tipo === pmTipo && o.id === pmId);
-  const tipoIngreso = document.querySelector('input[name="pd-ingreso-tipo"]:checked').value;
 
   const datos = {
     nombre: document.getElementById("pd-nombre").value.trim(),
@@ -352,10 +386,13 @@ async function guardarProduccion() {
     pmNombre: pmEncontrado ? pmEncontrado.nombre : "",
     bookingId: document.getElementById("pd-booking").value || null,
     costes: costesProd,
-    ingresoTipo: tipoIngreso,
+    salaNombre: document.getElementById("pd-sala-nombre").value.trim(),
+    salaProvincia: document.getElementById("pd-sala-provincia").value.trim(),
     aforo: parseFloat(document.getElementById("pd-aforo").value) || null,
+    ventaPrevista: parseFloat(document.getElementById("pd-venta-prevista").value) || null,
+    ventaNota: document.getElementById("pd-venta-nota").value.trim(),
     precioEntrada: parseFloat(document.getElementById("pd-precio-entrada").value) || null,
-    ingresoFijo: parseFloat(document.getElementById("pd-ingreso-fijo").value) || null,
+    repartoSalaPct: document.getElementById("pd-reparto-sala").value !== "" ? parseFloat(document.getElementById("pd-reparto-sala").value) : null,
     documentos: documentosProd,
     hospitalidad: hospitalidadProd,
   };
