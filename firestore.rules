@@ -46,6 +46,35 @@ service cloud.firestore {
         && (resource.data.creadoPorUid == request.auth.uid || esAdmin());
     }
 
+    // ---- Producciones (con ID correlativo PRO<año>-0001) ----
+    match /producciones/{id} {
+      allow read, create: if estoyActivo();
+      allow update, delete: if estoyActivo()
+        && (resource.data.creadoPorUid == request.auth.uid || esAdmin());
+    }
+
+    // ---- Bolsa de personal externo (técnicos, PMs, tour managers...) ----
+    match /personal/{id} {
+      allow read, write: if estoyActivo();
+    }
+
+    // ---- Contador de IDs correlativos (PRO25-0001, HR25-0001...) ----
+    match /contadores/{id} {
+      allow read, write: if estoyActivo();
+    }
+
+    // ---- Roles y permisos ----
+    match /roles/{id} {
+      allow read: if estoyActivo();
+      allow write: if esAdmin();
+    }
+
+    // ---- Comisiones estándar ----
+    match /comisiones/{id} {
+      allow read: if estoyActivo();
+      allow write: if esAdmin();
+    }
+
     // ---- Configuración de la empresa (datos fiscales, logo) ----
     match /configuracion/{docId} {
       // Cualquier empleado activo puede leerla (para pintar el logo, etc.)

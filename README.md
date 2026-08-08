@@ -114,6 +114,72 @@ sencillo es que, al guardar su propio registro, también añadan un
 documento a esta misma colección `documentos` — así aparecerán en el
 calendario sin tocar nada más.
 
+## Producciones y numeración correlativa
+
+Cada producción se guarda en **`producciones/{id}`** con un ID visible
+correlativo con formato `PREFIJO<año 2 dígitos>-0001`, generado
+automáticamente al crear (nunca se repite, incluso si dos personas
+crean a la vez, gracias a una transacción de Firestore sobre
+`contadores/{PREFIJO<año>}`). El generador (`js/ids.js`) ya tiene
+preparados los prefijos para cuando construyamos el resto de módulos:
+
+| Módulo | Prefijo | Ejemplo |
+|---|---|---|
+| Producciones | `PRO` | `PRO25-0001` |
+| Hojas de Ruta | `HR` | `HR25-0001` |
+| Propuestas a clientes | `PROV` | `PROV25-0001` |
+| Booking | `BO` | `BO25-0001` |
+| Presupuestos | `PR` | `PR25-0001` |
+
+Al crear una producción, además de guardarse en `producciones`, se
+añade automáticamente un registro en `documentos` (tipo `Evento`) para
+que quede marcada en el Calendario el día de creación — así no hay que
+apuntarlo dos veces.
+
+Cada producción tiene un **Project Manager**, elegido de dos fuentes:
+los empleados de la plataforma (`usuarios`) o la bolsa de personal
+externo (`personal`). Se guarda como `pmTipo` (`usuario` o `personal`),
+`pmId` y `pmNombre` (para no depender de una consulta extra al listar).
+
+## Personal (bolsa de contactos externos)
+
+En **Producción → Personal**, cualquier empleado activo puede mantener
+una lista de contactos externos —técnicos, project managers, tour
+managers, etc.— que no tienen cuenta de acceso a la plataforma. Viven
+en **`personal/{id}`** con `nombre`, `apellidos`, `telefono`, `email`,
+`rol` (reutiliza los roles creados en Administración → Roles) y
+`notas`. Esta lista alimenta el selector de Project Manager en
+Producciones.
+
+## Roles y permisos
+
+En **Administración → Roles**, un Admin puede crear roles personalizados
+además de los 3 que ya existían (Admin, Comercial, Producción, que se
+siembran automáticamente la primera vez que se entra en esta sección).
+Cada rol vive en Firestore en **`roles/{id}`**:
+
+- `nombre` (string)
+- `permisos` — mapa de booleanos por sección (`dashboard`, `calendario`,
+  `bookings`, `producciones`, `clientes`, `usuarios`, `roles`,
+  `comisiones`, `configuracion`)
+
+> ⚠️ De momento estos permisos son **informativos**: se guardan y se
+> muestran, pero el menú lateral (`js/nav.js`) todavía decide qué
+> secciones ve cada persona según el nombre de rol fijo (Admin,
+> Comercial, Producción), no según estos permisos. Conectar el menú y
+> las reglas de Firestore a los permisos reales de cada rol es el
+> siguiente paso natural cuando lo necesites.
+
+Al eliminar un rol, la plataforma comprueba primero que ningún usuario
+lo tenga asignado.
+
+## Comisiones estándar
+
+En **Administración → Comisiones**, un Admin puede mantener una lista
+de comisiones predeterminadas (nombre, porcentaje, notas) en
+**`comisiones/{id}`**, pensadas para reutilizarse más adelante al crear
+bookings o propuestas.
+
 ## Configuración de la empresa
 
 Los datos fiscales (nombre, CIF, dirección, teléfono, web, email) y el
