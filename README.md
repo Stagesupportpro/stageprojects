@@ -164,6 +164,37 @@ seleccionar uno, si tiene tarifas guardadas aparece un desplegable de
 **modalidad** con cada tarifa del venue — al elegirla, el coste se
 autocompleta.
 
+## Producción — Cifras (modelo verificado)
+
+Reconstruido a partir de vuestra plantilla real (Roger'S Temple —
+Vilajoyosa), con las fórmulas comprobadas al céntimo:
+
+- **Costes**: lista libre (concepto + importe + nota), sembrada la
+  primera vez con las categorías típicas — Caché, Comisión/Agente,
+  Técnica, Alojamiento, Logística, Dietas, Promoción, Otros — todas
+  editables o eliminables.
+- **Sala**: nombre, provincia, aforo, venta de entradas prevista (+
+  nota, ej. "+10 invitaciones banda"), precio de entrada, y un
+  **% de reparto de taquilla para la Sala** (opcional — si el venue
+  no reparte taquilla, se deja en blanco).
+- **Simulación por % de aforo** (10% a 100%): para cada tramo,
+  Entradas, Venta, Beneficio (venta − gastos) y, si hay reparto,
+  Sala y Artista/Promotor.
+- **Fórmulas de reparto** (verificadas contra la plantilla real):
+  - `Sala = % Sala × Venta bruta del tramo` — la sala cobra su
+    porcentaje de la venta, independientemente de los gastos.
+  - `Artista/Promotor = (100% − % Sala) × Beneficio neto del tramo`
+    — el resto se calcula sobre lo que queda tras los gastos.
+- **Break even real** = gastos totales ÷ precio de entrada
+  (redondeado), mostrado también como % sobre el aforo previsto.
+
+El **% de reparto de taquilla** se define por modalidad en la ficha
+de cada **Venue** (pestaña Tarifas: además de importe e impuestos,
+ahora hay un campo "% venue taquilla"). Al elegir esa modalidad en un
+Booking "como promotora", el % viaja con el booking; y al vincular
+ese booking a una Producción e importar el coste, el % se
+autocompleta también en Cifras.
+
 ## Producción — ficha por pestañas
 
 Cada producción tiene ahora su propia ficha (`produccion-detalle.html`,
@@ -172,13 +203,9 @@ se llega con "Abrir" desde el listado):
 - **Información general** — lo de siempre + un **Booking vinculado**
   opcional (solo bookings "como promotora"): con un clic se importa su
   coste de venue a Cifras.
-- **Cifras** — lista de costes libres (concepto + importe), Ingresos
-  (por aforo × precio, o un ingreso fijo), y un cálculo de **break
-  even** (costes totales, ingresos, resultado, y entradas necesarias
-  para cubrir costes si el modelo es por aforo). El total del checklist
-  de Hospitalidad se suma automáticamente a los costes.
-  > Es una primera versión — en cuanto compartas vuestra plantilla real
-  > de simulación, la ajustamos a ese formato exacto.
+- **Cifras** — ver sección detallada arriba ("Producción — Cifras").
+  El total del checklist de Hospitalidad se suma automáticamente a
+  los costes.
 - **Documentos** — varios PDF (contratos, contrarriders...), cada uno
   con su etiqueta.
 - **Hospitalidad** — checklist de ítems con precio y casilla de

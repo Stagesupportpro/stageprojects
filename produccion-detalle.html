@@ -86,33 +86,41 @@
           <div class="hr-section-head"><h3>Costes</h3></div>
           <div id="pd-lista-costes"></div>
           <button type="button" class="add-row-link" onclick="anadirCosteProd()">+ Añadir coste</button>
-          <button type="button" class="btn-ghost" id="btn-importar-venue" style="margin-left:10px; display:none;" onclick="importarCosteVenueProd()">Importar coste del venue del booking</button>
         </div>
 
         <div class="hr-section">
-          <div class="hr-section-head"><h3>Ingresos</h3></div>
-          <div class="tipo-toggle">
-            <label><input type="radio" name="pd-ingreso-tipo" value="aforo" checked onchange="alCambiarTipoIngresoProd()" /><span>Por aforo × precio<span class="tipo-sub">Venta de entradas estimada</span></span></label>
-            <label><input type="radio" name="pd-ingreso-tipo" value="fijo" onchange="alCambiarTipoIngresoProd()" /><span>Ingreso fijo<span class="tipo-sub">Caché cobrado, subvención, etc.</span></span></label>
+          <div class="hr-section-head">
+            <h3>Sala</h3>
+            <button type="button" class="btn-ghost" id="btn-importar-venue" style="display:none;" onclick="importarCosteVenueProd()">Importar coste de alquiler del booking</button>
           </div>
-          <div class="form-grid" id="pd-ingreso-aforo-campos">
-            <div class="field"><label for="pd-aforo">Aforo estimado</label><input type="number" id="pd-aforo" min="0" step="1" oninput="recalcularCifrasProd()" /></div>
+          <div class="form-grid">
+            <div class="field"><label for="pd-sala-nombre">Nombre</label><input type="text" id="pd-sala-nombre" /></div>
+            <div class="field"><label for="pd-sala-provincia">Provincia</label><input type="text" id="pd-sala-provincia" /></div>
+            <div class="field"><label for="pd-aforo">Aforo (capacidad total)</label><input type="number" id="pd-aforo" min="0" step="1" oninput="recalcularCifrasProd()" /></div>
+            <div class="field"><label for="pd-venta-prevista">Venta de entradas prevista</label><input type="number" id="pd-venta-prevista" min="0" step="1" oninput="recalcularCifrasProd()" /></div>
+            <div class="field field-wide"><label for="pd-venta-nota">Nota sobre la venta prevista (opcional)</label><input type="text" id="pd-venta-nota" placeholder="Ej. +10 invitaciones banda" /></div>
             <div class="field"><label for="pd-precio-entrada">Precio entrada (€)</label><input type="number" id="pd-precio-entrada" min="0" step="0.01" oninput="recalcularCifrasProd()" /></div>
-          </div>
-          <div class="field" id="pd-ingreso-fijo-campo" style="display:none;">
-            <label for="pd-ingreso-fijo">Ingreso fijo (€)</label>
-            <input type="number" id="pd-ingreso-fijo" min="0" step="0.01" oninput="recalcularCifrasProd()" />
+            <div class="field"><label for="pd-reparto-sala">% Sala en taquilla (opcional)</label><input type="number" id="pd-reparto-sala" min="0" max="100" step="0.1" oninput="recalcularCifrasProd()" placeholder="Deja en blanco si no hay reparto" /></div>
           </div>
         </div>
 
+        <div class="hr-section">
+          <div class="hr-section-head"><h3>Simulación por % de aforo</h3></div>
+          <p style="font-size:12px; color:var(--color-text-muted); margin:-4px 0 12px;">La Sala cobra su % sobre la venta bruta; el Artista/Promotor se queda con su % sobre el beneficio neto (venta − gastos).</p>
+          <table class="users-table" id="pd-tabla-simulacion">
+            <thead>
+              <tr><th>% Aforo</th><th>Entradas</th><th>Venta</th><th>Beneficio</th><th id="pd-th-sala" style="display:none;">Sala</th><th id="pd-th-artista" style="display:none;">Artista/Promotor</th></tr>
+            </thead>
+            <tbody id="pd-cuerpo-simulacion"></tbody>
+          </table>
+        </div>
+
         <div class="hr-section" style="border:none;">
-          <div class="hr-section-head"><h3>Break even</h3></div>
-          <p style="font-size:12px; color:var(--color-text-muted); margin:-4px 0 12px;">Primera versión — la afinamos en cuanto compartas vuestra plantilla real.</p>
+          <div class="hr-section-head"><h3>Resumen</h3></div>
           <div class="calc-box">
-            <div class="calc-item"><div class="calc-label">Costes totales</div><div class="calc-value" id="pd-calc-costes">0,00 €</div></div>
-            <div class="calc-item"><div class="calc-label">Ingresos estimados</div><div class="calc-value" id="pd-calc-ingresos">0,00 €</div></div>
-            <div class="calc-item calc-total"><div class="calc-label">Resultado</div><div class="calc-value" id="pd-calc-resultado">0,00 €</div></div>
-            <div class="calc-item" id="pd-calc-item-breakeven" style="display:none;"><div class="calc-label">Entradas para cubrir costes</div><div class="calc-value" id="pd-calc-breakeven">—</div></div>
+            <div class="calc-item"><div class="calc-label">Coste total (Gastos)</div><div class="calc-value" id="pd-calc-costes">0,00 €</div></div>
+            <div class="calc-item"><div class="calc-label">Precio entrada</div><div class="calc-value" id="pd-calc-precio">0,00 €</div></div>
+            <div class="calc-item calc-total"><div class="calc-label">Break even real</div><div class="calc-value" id="pd-calc-breakeven">—</div></div>
           </div>
         </div>
       </div>
