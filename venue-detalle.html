@@ -1,0 +1,134 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Stage Support · Venue</title>
+<link rel="icon" href="assets/logo_stagesupport.png" />
+<link rel="stylesheet" href="css/styles.css" />
+</head>
+<body>
+
+<div class="app-shell">
+
+  <aside class="sidebar" id="sidebar">
+    <div class="brand-mark">
+      <img src="assets/logo_stagesupport.png" alt="Stage Support" onerror="this.style.display='none'" />
+    </div>
+
+    <nav id="nav-container" style="flex:1; overflow-y:auto;"></nav>
+
+    <div class="sidebar-footer">
+      <div class="access-pass">
+        <div class="pass-top">
+          <div class="pass-avatar" id="pass-avatar">—</div>
+          <div>
+            <div class="pass-name" id="pass-name">—</div>
+            <div class="pass-role" id="pass-role">—</div>
+          </div>
+        </div>
+        <button class="pass-logout" onclick="cerrarSesion()">Cerrar sesión</button>
+      </div>
+    </div>
+  </aside>
+
+  <main class="main">
+    <div class="topbar">
+      <button class="mobile-menu-btn" onclick="document.getElementById('sidebar').classList.toggle('open')">☰</button>
+      <div>
+        <div class="eyebrow">Booking &amp; Comercial · <a href="venues.html" style="color:inherit;">Venues</a></div>
+        <h1 id="ven-titulo-cabecera">Venue</h1>
+      </div>
+      <button class="btn-accent" onclick="guardarVenue()" id="btn-guardar-ven">Guardar cambios</button>
+    </div>
+
+    <div class="card">
+      <form id="form-venue-detalle" onsubmit="return false;">
+
+        <!-- Datos básicos -->
+        <div class="hr-section">
+          <div class="form-grid">
+            <div class="field field-wide">
+              <label for="v-nombre">Nombre</label>
+              <input type="text" id="v-nombre" required />
+            </div>
+            <div class="field field-wide">
+              <label for="v-direccion">Dirección</label>
+              <input type="text" id="v-direccion" />
+            </div>
+            <div class="field field-wide">
+              <label for="v-maps">Enlace de mapa (opcional)</label>
+              <input type="url" id="v-maps" placeholder="https://maps.app.goo.gl/…" />
+            </div>
+          </div>
+        </div>
+
+        <!-- Contactos -->
+        <div class="hr-section">
+          <div class="hr-section-head"><h3>Contactos</h3></div>
+          <div id="lista-contactos-ven"></div>
+          <button type="button" class="add-row-link" onclick="anadirContactoVen()">+ Añadir contacto</button>
+        </div>
+
+        <!-- Riders -->
+        <div class="hr-section">
+          <div class="hr-section-head"><h3>Riders (PDF)</h3></div>
+          <div id="lista-riders-ven"></div>
+          <button type="button" class="add-row-link" onclick="document.getElementById('rider-ven-input').click()">+ Añadir rider (PDF)</button>
+          <input type="file" id="rider-ven-input" accept="application/pdf" onchange="procesarRiderVen(event)" style="display:none;" />
+          <p style="font-size:12px; color:var(--color-text-muted); margin-top:8px;">Máximo recomendado ~600 KB por archivo (se guarda directamente en la base de datos).</p>
+        </div>
+
+        <!-- Condiciones -->
+        <div class="hr-section">
+          <div class="hr-section-head"><h3>Condiciones</h3></div>
+          <div class="field">
+            <textarea id="v-condiciones" placeholder="Condiciones técnicas, de acceso, horarios, seguridad…"></textarea>
+          </div>
+        </div>
+
+        <!-- Tarifas -->
+        <div class="hr-section">
+          <div class="hr-section-head"><h3>Tarifas</h3></div>
+          <div id="lista-tarifas-ven"></div>
+          <button type="button" class="add-row-link" onclick="anadirTarifaVen()">+ Añadir tarifa</button>
+        </div>
+
+        <!-- Taquilla compartida -->
+        <div class="hr-section">
+          <div class="hr-section-head">
+            <h3>Taquilla compartida</h3>
+            <label class="hr-toggle"><input type="checkbox" id="v-taquilla-activo" onchange="toggleTaquillaVen()" /> Aplica</label>
+          </div>
+          <div id="bloque-taquilla-ven" style="display:none;">
+            <p style="font-size:12px; color:var(--color-text-muted); margin:0 0 12px;">Tramos de recaudación y el % que corresponde al venue en cada uno.</p>
+            <div id="lista-tramos-ven"></div>
+            <button type="button" class="add-row-link" onclick="anadirTramoVen()">+ Añadir tramo</button>
+          </div>
+        </div>
+
+        <!-- Notas -->
+        <div class="hr-section">
+          <div class="field">
+            <label for="v-notas">Notas (opcional)</label>
+            <input type="text" id="v-notas" />
+          </div>
+        </div>
+
+      </form>
+    </div>
+  </main>
+
+</div>
+
+<div class="toast" id="toast"><span class="dot"></span><span id="toast-msg"></span></div>
+
+<script src="https://www.gstatic.com/firebasejs/10.13.0/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.13.0/firebase-auth-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.13.0/firebase-firestore-compat.js"></script>
+<script src="js/firebase-config.js"></script>
+<script src="js/auth.js"></script>
+<script src="js/nav.js"></script>
+<script src="js/venue-detalle.js"></script>
+</body>
+</html>

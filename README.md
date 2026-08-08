@@ -114,6 +114,24 @@ sencillo es que, al guardar su propio registro, también añadan un
 documento a esta misma colección `documentos` — así aparecerán en el
 calendario sin tocar nada más.
 
+## Venues
+
+Ficha de cada sala/recinto con la que se trabaja, en **`venues/{id}`**:
+nombre, dirección + enlace de mapa, **Contactos** (lista libre),
+**Riders** (varios PDF, cada uno con su etiqueta — sonido, luces...),
+**Condiciones** (texto libre), **Tarifas** (lista de conceptos con
+importe y si incluyen impuestos o no), y **Taquilla compartida**
+(bloque opcional con tramos: desde/hasta € y qué % le corresponde al
+venue en cada tramo).
+
+Sigue el mismo patrón que Roster/Propuestas: listado con alta rápida
+(`venues.html`) que redirige a una ficha completa
+(`venue-detalle.html?id=...`) para todo lo demás.
+
+> De cara al futuro: sería natural que, al elegir "Como promotora" en
+> Bookings, el campo Espacio tirara de este listado de Venues en vez
+> de ser texto libre — dilo cuando quieras y lo conecto.
+
 ## Bookings
 
 Enlaza todo lo demás: **Roster** (artista, con caché/comisión/IVA

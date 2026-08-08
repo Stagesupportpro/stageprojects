@@ -61,6 +61,11 @@ service cloud.firestore {
       allow read, write: if estoyActivo();
     }
 
+    // ---- Venues (salas, festivales, recintos) ----
+    match /venues/{id} {
+      allow read, write: if estoyActivo();
+    }
+
     // ---- Bookings (con ID correlativo BO<año>-0001) ----
     match /bookings/{id} {
       allow read, create: if estoyActivo();
