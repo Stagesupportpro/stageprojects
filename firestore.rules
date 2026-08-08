@@ -1,0 +1,42 @@
+rules_version = '2';
+
+// =========================================================
+// STAGE SUPPORT — Reglas de Firestore
+// Pega este contenido en Firebase Console → Firestore → Reglas
+// =========================================================
+
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    function emailValido() {
+      return request.auth != null
+        && request.auth.token.email.matches('.*@stagesupport[.]com$');
+    }
+
+    function miPerfil() {
+      return get(/databases/$(database)/documents/usuarios/$(request.auth.uid)).data;
+    }
+
+    function esAdmin() {
+      return emailValido() && miPerfil().rol == 'Admin' && miPerfil().activo != false;
+    }
+
+    function estoyActivo() {
+      return emailValido() && miPerfil().activo != false;
+    }
+
+    // ---- Colección de usuarios / empleados ----
+    match /usuarios/{uid} {
+      // Cualquier empleado activo puede leer el listado (para el dashboard,
+      // menús, avatares, etc.)
+      allow read: if estoyActivo();
+
+      // Solo Admin puede crear, editar o eliminar perfiles de usuario.
+      allow create, update, delete: if esAdmin();
+    }
+
+    // A medida que se añadan colecciones (bookings, producciones, clientes...)
+    // define aquí sus reglas, apoyándote en estoyActivo() / esAdmin()
+    // y, si hace falta, en el propio campo "rol" del usuario.
+  }
+}
