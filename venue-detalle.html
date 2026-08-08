@@ -27,6 +27,7 @@
             <div class="pass-role" id="pass-role">—</div>
           </div>
         </div>
+        <div class="pass-version" id="pass-version"></div>
         <button class="pass-logout" onclick="cerrarSesion()">Cerrar sesión</button>
       </div>
     </div>
@@ -87,24 +88,12 @@
           </div>
         </div>
 
-        <!-- Tarifas -->
+        <!-- Modalidades -->
         <div class="hr-section">
-          <div class="hr-section-head"><h3>Tarifas</h3></div>
+          <div class="hr-section-head"><h3>Modalidades</h3></div>
+          <p style="font-size:12px; color:var(--color-text-muted); margin:-4px 0 12px;">Cada modalidad tiene su propio importe de alquiler y, si aplica, su reparto de taquilla.</p>
           <div id="lista-tarifas-ven"></div>
-          <button type="button" class="add-row-link" onclick="anadirTarifaVen()">+ Añadir tarifa</button>
-        </div>
-
-        <!-- Taquilla compartida -->
-        <div class="hr-section">
-          <div class="hr-section-head">
-            <h3>Taquilla compartida</h3>
-            <label class="hr-toggle"><input type="checkbox" id="v-taquilla-activo" onchange="toggleTaquillaVen()" /> Aplica</label>
-          </div>
-          <div id="bloque-taquilla-ven" style="display:none;">
-            <p style="font-size:12px; color:var(--color-text-muted); margin:0 0 12px;">Tramos de recaudación y el % que corresponde al venue en cada uno.</p>
-            <div id="lista-tramos-ven"></div>
-            <button type="button" class="add-row-link" onclick="anadirTramoVen()">+ Añadir tramo</button>
-          </div>
+          <button type="button" class="add-row-link" onclick="anadirTarifaVen()">+ Añadir modalidad</button>
         </div>
 
         <!-- Notas -->

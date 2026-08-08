@@ -106,6 +106,41 @@ extra no se incluye porque no corresponde a la producción.
 > al de pago Blaze — tiene una capa gratuita amplia). Cuando queráis
 > dar ese paso, ya tengo mapeados los endpoints exactos a usar.
 
+## Notas y Agenda vacías — arreglado
+
+Las consultas combinaban un filtro (`where`) con un orden (`orderBy`)
+en campos distintos, lo que exige un índice compuesto que no existía
+en Firestore — por eso no se veía nada, sin ningún aviso claro. Se
+quitó el `orderBy` de las consultas y ahora se ordena directamente en
+el navegador. No hace falta crear ningún índice ni tocar las reglas.
+
+## Venues — modalidades por porcentaje
+
+Cada modalidad de un venue (`venues/{id}.tarifas[]`) ahora es:
+`concepto`, `importe` (alquiler), `taquillaCompartida` (booleano) y,
+si aplica, `pctPromotor` / `pctVenue` — dos porcentajes explícitos en
+vez de asumir que se reparten al 100%. Sustituye al antiguo sistema
+de tramos por rango de recaudación. El cambio se propaga a Bookings
+(al elegir modalidad) y a Producción → Cifras (la tabla de simulación
+usa ambos porcentajes directamente).
+
+## Menú responsive
+
+- Las tablas (`users-table`) ahora tienen scroll horizontal propio en
+  pantallas estrechas, en vez de desbordar o romper el diseño.
+- El menú lateral en móvil/tablet (por debajo de 900px) ahora **flota
+  sobre el contenido** en vez de empujarlo hacia abajo, y se cierra
+  solo al tocar fuera de él.
+- Modales, selectores de tipo (Booking), la cuadrícula de permisos
+  (Roles) y las fichas de solo lectura se ajustan a una sola columna
+  en pantallas muy estrechas (< 420-480px).
+
+## Número de versión
+
+Debajo del usuario logueado, en el menú lateral, aparece la versión
+de la plataforma (`VERSION_PLATAFORMA` en `js/nav.js`) — súbela a
+mano cada vez que publiquéis una ronda de cambios importante.
+
 ## Bookings — Venue obligatorio en los dos tipos
 
 El selector de Venue (búsqueda + modalidad) ya no es exclusivo del
