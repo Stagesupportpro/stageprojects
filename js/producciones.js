@@ -99,7 +99,7 @@ function pintarTablaProducciones(producciones) {
       const fecha = p.fecha ? new Date(p.fecha + "T00:00:00").toLocaleDateString("es-ES") : "—";
       return `
         <tr>
-          <td><span class="id-badge">${escaparHtmlProd(p.idVisible || "—")}</span></td>
+          <td><span class="id-badge">${escaparHtmlProd(p.idVisible || "—")}</span> <span class="permiso-tag">V${p.version || 1}</span></td>
           <td style="font-weight:600;">${escaparHtmlProd(p.nombre)}</td>
           <td>
             <div class="pm-chip">
@@ -112,6 +112,7 @@ function pintarTablaProducciones(producciones) {
             <div class="row-actions" style="justify-content:flex-end;">
               <a class="btn-ghost" style="text-decoration:none; padding:6px 12px; font-size:12px;" href="produccion-detalle.html?id=${p.id}">Abrir</a>
               <button class="icon-btn" title="Edición rápida" onclick='abrirModalEdicionProduccion(${JSON.stringify(p).replace(/'/g, "&#39;")})'>✎</button>
+              <button class="icon-btn" title="Crear nueva versión" onclick='crearNuevaVersionProduccion(${JSON.stringify(p).replace(/'/g, "&#39;")})'>⎘</button>
               <button class="icon-btn danger" title="Eliminar" onclick="confirmarEliminarProduccion('${p.id}', '${escaparHtmlProd(p.nombre).replace(/'/g, "\\'")}')">🗑</button>
             </div>
           </td>
@@ -241,6 +242,32 @@ formProduccion.addEventListener("submit", async (e) => {
     btn.disabled = false;
   }
 });
+
+// ---------- Versiones ----------
+
+async function crearNuevaVersionProduccion(p) {
+  if (!confirm(`¿Crear la versión V${(p.version || 1) + 1} de esta producción? La original (V${p.version || 1}) se conserva como histórico.`)) return;
+
+  try {
+    const { id, creadoEl, ...datos } = p;
+    await db.collection("producciones").add({
+      ...datos,
+      version: (p.version || 1) + 1,
+      grupoVersionId: p.grupoVersionId || p.id,
+      versionAnteriorId: p.id,
+      creadoPor: nombreCompletoDe(usuarioActualProd) || usuarioActualProd.email,
+      creadoPorUid: usuarioActualProd.uid,
+      creadoEl: firebase.firestore.FieldValue.serverTimestamp(),
+    });
+    if (!p.grupoVersionId) {
+      await db.collection("producciones").doc(p.id).update({ grupoVersionId: p.id });
+    }
+    mostrarToast(`Versión V${(p.version || 1) + 1} creada.`);
+  } catch (err) {
+    console.error(err);
+    mostrarToast("No se pudo crear la nueva versión.");
+  }
+}
 
 // ---------- Eliminar ----------
 

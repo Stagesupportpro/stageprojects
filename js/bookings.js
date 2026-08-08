@@ -150,7 +150,6 @@ function alSeleccionarModalidadBooking() {
 function alCambiarTipoBooking() {
   const tipo = document.querySelector('input[name="bk-tipo"]:checked').value;
   document.getElementById("bloque-cache").style.display = tipo === "cache" ? "block" : "none";
-  document.getElementById("bloque-promotor").style.display = tipo === "promotor" ? "block" : "none";
 
   const esPromotor = tipo === "promotor";
   document.getElementById("grupo-bk-comision").style.display = esPromotor ? "none" : "contents";
@@ -261,7 +260,7 @@ function pintarTablaBookings(bookings) {
 
       return `
         <tr>
-          <td><span class="id-badge">${escaparHtmlBk(b.idVisible || "—")}</span></td>
+          <td><span class="id-badge">${escaparHtmlBk(b.idVisible || "—")}</span> <span class="permiso-tag">V${b.version || 1}</span></td>
           <td style="font-weight:600;">${escaparHtmlBk(b.artistaNombre)}</td>
           <td><span class="booking-tipo-badge ${b.tipo}">${b.tipo === "promotor" ? "Promotor" : "A caché"}</span></td>
           <td>${escaparHtmlBk(contraparte || "—")}</td>
@@ -270,6 +269,7 @@ function pintarTablaBookings(bookings) {
           <td>
             <div class="row-actions" style="justify-content:flex-end;">
               <button class="icon-btn" title="Editar" onclick='abrirModalEdicionBooking(${JSON.stringify(b).replace(/'/g, "&#39;")})'>✎</button>
+              <button class="icon-btn" title="Crear nueva versión" onclick='crearNuevaVersionBooking(${JSON.stringify(b).replace(/'/g, "&#39;")})'>⎘</button>
               <button class="icon-btn danger" title="Eliminar" onclick="confirmarEliminarBooking('${b.id}', '${escaparHtmlBk(b.artistaNombre).replace(/'/g, "\\'")}')">🗑</button>
             </div>
           </td>
@@ -324,19 +324,20 @@ function abrirModalEdicionBooking(b) {
   document.querySelector(`input[name="bk-tipo"][value="${b.tipo || "cache"}"]`).checked = true;
   document.getElementById("bk-artista").value = b.artistaRosterId || "";
 
-  if (b.tipo === "promotor") {
-    document.getElementById("bk-espacio-buscar").value = b.espacio || "";
-    document.getElementById("bk-venue-id").value = b.venueId || "";
-    document.getElementById("bk-espacio-direccion").value = b.espacioDireccion || "";
-    if (b.venueId) {
-      alEscribirVenueBooking();
-      if (b.modalidadIndice != null) {
-        setTimeout(() => {
-          document.getElementById("bk-modalidad").value = b.modalidadIndice;
-        }, 0);
-      }
+  // El venue es común a los dos tipos de booking.
+  document.getElementById("bk-espacio-buscar").value = b.espacio || "";
+  document.getElementById("bk-venue-id").value = b.venueId || "";
+  document.getElementById("bk-espacio-direccion").value = b.espacioDireccion || "";
+  if (b.venueId) {
+    alEscribirVenueBooking();
+    if (b.modalidadIndice != null) {
+      setTimeout(() => {
+        document.getElementById("bk-modalidad").value = b.modalidadIndice;
+      }, 0);
     }
-  } else {
+  }
+
+  if (b.tipo !== "promotor") {
     const origen = b.origenCache || "cliente";
     document.querySelector(`input[name="bk-origen"][value="${origen}"]`).checked = true;
     document.getElementById("bk-cliente").value = b.clienteId || "";
@@ -403,26 +404,23 @@ formBooking.addEventListener("submit", async (e) => {
     comisionPct: parseFloat(document.getElementById("bk-comision-pct").value) || 0,
     ivaPct: parseFloat(document.getElementById("bk-iva-pct").value) || 0,
     notas: document.getElementById("bk-notas").value.trim(),
+    // El venue ahora es común a los dos tipos de booking.
+    espacio: document.getElementById("bk-espacio-buscar").value.trim(),
+    venueId: document.getElementById("bk-venue-id").value || null,
+    modalidadIndice: document.getElementById("bk-modalidad").value !== "" ? document.getElementById("bk-modalidad").value : null,
+    repartoSalaPct: bookingRepartoSalaPct,
+    espacioDireccion: document.getElementById("bk-espacio-direccion").value.trim(),
   };
 
   if (tipo === "promotor") {
-    datosBase.espacio = document.getElementById("bk-espacio-buscar").value.trim();
-    datosBase.venueId = document.getElementById("bk-venue-id").value || null;
-    datosBase.modalidadIndice = document.getElementById("bk-modalidad").value !== "" ? document.getElementById("bk-modalidad").value : null;
-    datosBase.repartoSalaPct = bookingRepartoSalaPct;
-    datosBase.espacioDireccion = document.getElementById("bk-espacio-direccion").value.trim();
     datosBase.origenCache = null;
     datosBase.clienteId = null;
     datosBase.clienteNombre = null;
     datosBase.propuestaId = null;
     datosBase.propuestaIdVisible = null;
   } else {
-    datosBase.venueId = null;
-    datosBase.modalidadIndice = null;
     const origen = document.querySelector('input[name="bk-origen"]:checked').value;
     datosBase.origenCache = origen;
-    datosBase.espacio = null;
-    datosBase.espacioDireccion = null;
 
     if (origen === "propuesta") {
       const propuestaId = document.getElementById("bk-propuesta").value;
@@ -480,6 +478,33 @@ formBooking.addEventListener("submit", async (e) => {
     btn.disabled = false;
   }
 });
+
+// ---------- Versiones ----------
+
+async function crearNuevaVersionBooking(b) {
+  if (!confirm(`¿Crear la versión V${(b.version || 1) + 1} de este booking? El original (V${b.version || 1}) se conserva como histórico.`)) return;
+
+  try {
+    const { id, creadoEl, ...datos } = b;
+    await db.collection("bookings").add({
+      ...datos,
+      version: (b.version || 1) + 1,
+      grupoVersionId: b.grupoVersionId || b.id,
+      versionAnteriorId: b.id,
+      creadoPor: nombreCompletoDe(usuarioActualBk) || usuarioActualBk.email,
+      creadoPorUid: usuarioActualBk.uid,
+      creadoEl: firebase.firestore.FieldValue.serverTimestamp(),
+    });
+    // Si el original todavía no tenía grupoVersionId (era la V1), se lo asignamos ahora.
+    if (!b.grupoVersionId) {
+      await db.collection("bookings").doc(b.id).update({ grupoVersionId: b.id });
+    }
+    mostrarToast(`Versión V${(b.version || 1) + 1} creada.`);
+  } catch (err) {
+    console.error(err);
+    mostrarToast("No se pudo crear la nueva versión.");
+  }
+}
 
 // ---------- Eliminar ----------
 

@@ -135,7 +135,7 @@ async function cargarProduccion() {
     }
     const d = snap.data();
 
-    document.getElementById("pd-id-badge").textContent = d.idVisible || "—";
+    document.getElementById("pd-id-badge").textContent = `${d.idVisible || "—"} · V${d.version || 1}`;
     document.getElementById("pd-titulo-cabecera").textContent = d.nombre || "Producción";
     document.getElementById("pd-nombre").value = d.nombre || "";
     document.getElementById("pd-fecha").value = d.fecha || "";
