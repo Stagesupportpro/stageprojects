@@ -30,7 +30,7 @@ const NAV_ESTRUCTURA = [
     grupo: "Administración",
     items: [
       { id: "usuarios", label: "Usuarios", href: "usuarios.html", roles: ["Admin"], listo: true },
-      { id: "configuracion", label: "Configuración", href: "configuracion.html", roles: ["Admin"], listo: false },
+      { id: "configuracion", label: "Configuración", href: "configuracion.html", roles: ["Admin"], listo: true },
     ],
   },
 ];
