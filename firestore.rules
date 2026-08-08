@@ -72,6 +72,32 @@ service cloud.firestore {
       allow read, write: if estoyActivo();
     }
 
+    // ---- Notificaciones entre cuentas ----
+    match /notificaciones/{id} {
+      // Solo el destinatario puede leerlas, marcarlas como leídas o borrarlas.
+      allow read, update, delete: if estoyActivo() && resource.data.paraUid == request.auth.uid;
+      // Cualquier activo puede crear una notificación... para otra persona.
+      allow create: if estoyActivo() && request.resource.data.deUid == request.auth.uid;
+    }
+
+    // ---- Agenda personal (con opción de compartir) ----
+    match /agenda/{id} {
+      allow read: if estoyActivo()
+        && (resource.data.propietarioUid == request.auth.uid
+            || request.auth.uid in resource.data.compartidoCon);
+      allow create: if estoyActivo() && request.resource.data.propietarioUid == request.auth.uid;
+      allow update, delete: if estoyActivo() && resource.data.propietarioUid == request.auth.uid;
+    }
+
+    // ---- Notas personales (con opción de compartir) ----
+    match /notas/{id} {
+      allow read: if estoyActivo()
+        && (resource.data.propietarioUid == request.auth.uid
+            || request.auth.uid in resource.data.compartidoCon);
+      allow create: if estoyActivo() && request.resource.data.propietarioUid == request.auth.uid;
+      allow update, delete: if estoyActivo() && resource.data.propietarioUid == request.auth.uid;
+    }
+
     // ---- Bookings (con ID correlativo BO<año>-0001) ----
     match /bookings/{id} {
       allow read, create: if estoyActivo();

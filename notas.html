@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-<title>Stage Support · Dashboard</title>
+<title>Stage Support · Notas</title>
 <link rel="icon" href="assets/logo_stagesupport.png" />
 <link rel="stylesheet" href="css/styles.css" />
 </head>
@@ -36,25 +36,56 @@
     <div class="topbar">
       <button class="mobile-menu-btn" onclick="document.getElementById('sidebar').classList.toggle('open')">☰</button>
       <div>
-        <div class="eyebrow" id="fecha-hoy"></div>
-        <h1 id="saludo">Hola —</h1>
+        <div class="eyebrow">General</div>
+        <h1>Notas</h1>
       </div>
+      <button class="btn-accent" onclick="abrirModalNota()">+ Nueva nota</button>
     </div>
 
-    <div class="stat-grid" id="stat-grid"></div>
-
-    <div class="card" id="card-notificaciones" style="margin-bottom:24px; display:none;">
-      <div style="display:flex; align-items:center; justify-content:space-between; margin-bottom:14px;">
-        <h3 style="font-size:15px; font-family:var(--font-display);">Notificaciones</h3>
-        <button class="btn-ghost" onclick="marcarTodasLeidas()" style="font-size:12px; padding:6px 12px;">Marcar todas como leídas</button>
-      </div>
-      <div id="lista-notificaciones"></div>
-    </div>
-
-    <div class="role-panels" id="role-panels"></div>
+    <div class="item-card-list" id="lista-notas"></div>
   </main>
 
 </div>
+
+<!-- Modal alta / edición -->
+<div class="modal-overlay" id="modal-overlay">
+  <div class="modal">
+    <h2 id="modal-titulo">Nueva nota</h2>
+    <p class="modal-sub">Solo la ves tú, a menos que la compartas.</p>
+
+    <form id="form-nota">
+      <input type="hidden" id="nt-id-edicion" />
+
+      <div class="field">
+        <label for="nt-titulo">Nombre</label>
+        <input type="text" id="nt-titulo" placeholder="Ej. Ideas para la gira 2026" required />
+      </div>
+
+      <div class="field">
+        <label for="nt-descripcion">Descripción</label>
+        <textarea id="nt-descripcion" placeholder="Escribe aquí…"></textarea>
+      </div>
+
+      <div class="field">
+        <label class="hr-toggle" style="font-size:13px;"><input type="checkbox" id="nt-tambien-agenda" /> También añadir a mi Agenda (con fecha de hoy)</label>
+      </div>
+
+      <div class="field">
+        <label>Compartir con</label>
+        <div class="share-list" id="nt-compartir-list"></div>
+      </div>
+
+      <div class="form-msg" id="modal-msg"></div>
+
+      <div class="modal-actions">
+        <button type="button" class="btn-ghost" onclick="cerrarModal()">Cancelar</button>
+        <button type="submit" class="btn-accent" id="btn-guardar">Guardar</button>
+      </div>
+    </form>
+  </div>
+</div>
+
+<div class="toast" id="toast"><span class="dot"></span><span id="toast-msg"></span></div>
 
 <script src="https://www.gstatic.com/firebasejs/10.13.0/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.13.0/firebase-auth-compat.js"></script>
@@ -63,6 +94,6 @@
 <script src="js/auth.js"></script>
 <script src="js/nav.js"></script>
 <script src="js/notificaciones.js"></script>
-<script src="js/dashboard.js"></script>
+<script src="js/notas.js"></script>
 </body>
 </html>

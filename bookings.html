@@ -114,8 +114,14 @@
       <!-- Bloque: promotor -->
       <div id="bloque-promotor" style="display:none;">
         <div class="field">
-          <label for="bk-espacio">Espacio / Recinto</label>
-          <input type="text" id="bk-espacio" placeholder="Ej. Sala Apolo" />
+          <label for="bk-espacio-buscar">Recinto / Festival (Venue)</label>
+          <input type="text" id="bk-espacio-buscar" list="lista-venues-datalist" placeholder="Escribe para buscar o elige de la lista…" oninput="alEscribirVenueBooking()" autocomplete="off" />
+          <datalist id="lista-venues-datalist"></datalist>
+          <input type="hidden" id="bk-venue-id" />
+        </div>
+        <div class="field" id="campo-bk-modalidad" style="display:none;">
+          <label for="bk-modalidad">Modalidad / tarifa del venue</label>
+          <select id="bk-modalidad" onchange="alSeleccionarModalidadBooking()"></select>
         </div>
         <div class="field">
           <label for="bk-espacio-direccion">Dirección (opcional)</label>
@@ -130,21 +136,23 @@
 
       <!-- Calculadora -->
       <div class="hr-section" style="border:none; padding-bottom:0;">
-        <div class="hr-section-head"><h3 style="font-size:14px;">Caché, comisión e IVA</h3></div>
+        <div class="hr-section-head"><h3 style="font-size:14px;" id="bk-titulo-cifras">Caché, comisión e IVA</h3></div>
         <div class="form-grid">
-          <div class="field"><label for="bk-cache">Caché (BI) €</label><input type="number" id="bk-cache" min="0" step="0.01" oninput="recalcularBooking()" /></div>
-          <div class="field">
-            <label for="bk-comision-preset">Comisión guardada</label>
-            <select id="bk-comision-preset" onchange="aplicarComisionPresetBooking()">
-              <option value="">— Manual —</option>
-            </select>
+          <div class="field"><label for="bk-cache" id="bk-label-cache">Caché (BI) €</label><input type="number" id="bk-cache" min="0" step="0.01" oninput="recalcularBooking()" /></div>
+          <div id="grupo-bk-comision" class="form-grid" style="grid-column: span 2; display:contents;">
+            <div class="field">
+              <label for="bk-comision-preset">Comisión guardada</label>
+              <select id="bk-comision-preset" onchange="aplicarComisionPresetBooking()">
+                <option value="">— Manual —</option>
+              </select>
+            </div>
+            <div class="field"><label for="bk-comision-pct">Comisión (%)</label><input type="number" id="bk-comision-pct" min="0" max="100" step="0.1" oninput="recalcularBooking()" /></div>
           </div>
-          <div class="field"><label for="bk-comision-pct">Comisión (%)</label><input type="number" id="bk-comision-pct" min="0" max="100" step="0.1" oninput="recalcularBooking()" /></div>
           <div class="field"><label for="bk-iva-pct">IVA (%)</label><input type="number" id="bk-iva-pct" min="0" max="100" step="0.1" value="21" oninput="recalcularBooking()" /></div>
         </div>
         <div class="calc-box" style="margin-top:12px;">
-          <div class="calc-item"><div class="calc-label">Caché (BI)</div><div class="calc-value" id="bk-calc-cache">0,00 €</div></div>
-          <div class="calc-item"><div class="calc-label">Comisión</div><div class="calc-value" id="bk-calc-comision">0,00 €</div></div>
+          <div class="calc-item"><div class="calc-label" id="bk-calc-label-cache">Caché (BI)</div><div class="calc-value" id="bk-calc-cache">0,00 €</div></div>
+          <div class="calc-item" id="bk-calc-item-comision"><div class="calc-label">Comisión</div><div class="calc-value" id="bk-calc-comision">0,00 €</div></div>
           <div class="calc-item"><div class="calc-label">Total</div><div class="calc-value" id="bk-calc-total">0,00 €</div></div>
           <div class="calc-item calc-total"><div class="calc-label">Total + IVA</div><div class="calc-value" id="bk-calc-total-iva">0,00 €</div></div>
         </div>

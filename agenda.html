@@ -1,0 +1,105 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Stage Support · Agenda</title>
+<link rel="icon" href="assets/logo_stagesupport.png" />
+<link rel="stylesheet" href="css/styles.css" />
+</head>
+<body>
+
+<div class="app-shell">
+
+  <aside class="sidebar" id="sidebar">
+    <div class="brand-mark">
+      <img src="assets/logo_stagesupport.png" alt="Stage Support" onerror="this.style.display='none'" />
+    </div>
+
+    <nav id="nav-container" style="flex:1; overflow-y:auto;"></nav>
+
+    <div class="sidebar-footer">
+      <div class="access-pass">
+        <div class="pass-top">
+          <div class="pass-avatar" id="pass-avatar">—</div>
+          <div>
+            <div class="pass-name" id="pass-name">—</div>
+            <div class="pass-role" id="pass-role">—</div>
+          </div>
+        </div>
+        <button class="pass-logout" onclick="cerrarSesion()">Cerrar sesión</button>
+      </div>
+    </div>
+  </aside>
+
+  <main class="main">
+    <div class="topbar">
+      <button class="mobile-menu-btn" onclick="document.getElementById('sidebar').classList.toggle('open')">☰</button>
+      <div>
+        <div class="eyebrow">General</div>
+        <h1>Agenda</h1>
+      </div>
+      <button class="btn-accent" onclick="abrirModalAgenda()">+ Nueva cita</button>
+    </div>
+
+    <div class="item-card-list" id="lista-agenda"></div>
+  </main>
+
+</div>
+
+<!-- Modal alta / edición -->
+<div class="modal-overlay" id="modal-overlay">
+  <div class="modal">
+    <h2 id="modal-titulo">Nueva cita</h2>
+    <p class="modal-sub">Solo la ves tú, a menos que la compartas.</p>
+
+    <form id="form-agenda">
+      <input type="hidden" id="ag-id-edicion" />
+
+      <div class="field">
+        <label for="ag-titulo">Nombre</label>
+        <input type="text" id="ag-titulo" placeholder="Ej. Reunión con Sala Apolo" required />
+      </div>
+
+      <div class="form-grid">
+        <div class="field"><label for="ag-fecha">Fecha</label><input type="date" id="ag-fecha" required /></div>
+        <div class="field"><label for="ag-hora">Hora</label><input type="time" id="ag-hora" /></div>
+      </div>
+
+      <div class="field">
+        <label for="ag-ubicacion">Ubicación</label>
+        <input type="text" id="ag-ubicacion" placeholder="Ej. Oficina, Google Meet, Sala Apolo…" />
+      </div>
+
+      <div class="field">
+        <label for="ag-descripcion">Descripción (opcional)</label>
+        <textarea id="ag-descripcion" placeholder="Detalles de la reunión…"></textarea>
+      </div>
+
+      <div class="field">
+        <label>Compartir con</label>
+        <div class="share-list" id="ag-compartir-list"></div>
+      </div>
+
+      <div class="form-msg" id="modal-msg"></div>
+
+      <div class="modal-actions">
+        <button type="button" class="btn-ghost" onclick="cerrarModal()">Cancelar</button>
+        <button type="submit" class="btn-accent" id="btn-guardar">Guardar</button>
+      </div>
+    </form>
+  </div>
+</div>
+
+<div class="toast" id="toast"><span class="dot"></span><span id="toast-msg"></span></div>
+
+<script src="https://www.gstatic.com/firebasejs/10.13.0/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.13.0/firebase-auth-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.13.0/firebase-firestore-compat.js"></script>
+<script src="js/firebase-config.js"></script>
+<script src="js/auth.js"></script>
+<script src="js/nav.js"></script>
+<script src="js/notificaciones.js"></script>
+<script src="js/agenda.js"></script>
+</body>
+</html>

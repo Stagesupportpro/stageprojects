@@ -155,6 +155,74 @@ IVA) se repite aquí.
 Al crear un booking, también se marca en el Calendario (tipo `Booking`)
 el día de creación — igual que Producciones y Hojas de Ruta.
 
+## Bookings — modo "Como promotora"
+
+Cuando el tipo es "Como promotora": no se muestra comisión (Stage
+Support no se cobra a sí misma). El campo Recinto/Festival es un
+buscador (escribe o elige de la lista) contra **Venues**; al
+seleccionar uno, si tiene tarifas guardadas aparece un desplegable de
+**modalidad** con cada tarifa del venue — al elegirla, el coste se
+autocompleta.
+
+## Producción — ficha por pestañas
+
+Cada producción tiene ahora su propia ficha (`produccion-detalle.html`,
+se llega con "Abrir" desde el listado):
+
+- **Información general** — lo de siempre + un **Booking vinculado**
+  opcional (solo bookings "como promotora"): con un clic se importa su
+  coste de venue a Cifras.
+- **Cifras** — lista de costes libres (concepto + importe), Ingresos
+  (por aforo × precio, o un ingreso fijo), y un cálculo de **break
+  even** (costes totales, ingresos, resultado, y entradas necesarias
+  para cubrir costes si el modelo es por aforo). El total del checklist
+  de Hospitalidad se suma automáticamente a los costes.
+  > Es una primera versión — en cuanto compartas vuestra plantilla real
+  > de simulación, la ajustamos a ese formato exacto.
+- **Documentos** — varios PDF (contratos, contrarriders...), cada uno
+  con su etiqueta.
+- **Hospitalidad** — checklist de ítems con precio y casilla de
+  "comprado"; el total se traslada solo a Cifras.
+
+## Dashboard y notificaciones
+
+El Dashboard ahora muestra cifras reales (consultadas a Firestore al
+cargar) según el rol: bookings/clientes/propuestas para Comercial,
+producciones/hojas de ruta/próximo evento para Producción, y
+usuarios activos/bookings/producciones para Admin.
+
+Hay un sistema de notificaciones entre cuentas (`notificaciones/{id}`):
+cualquier empleado puede notificar a otro (se usa, de momento, al
+compartir una cita de Agenda o una Nota). Cada usuario solo puede leer
+sus propias notificaciones — están así protegidas también a nivel de
+Firestore, no solo en pantalla. Aparecen en una tarjeta en el
+Dashboard; al tocarlas, se marcan como leídas y llevan a la página
+correspondiente.
+
+## Agenda y Notas (personales, con opción de compartir)
+
+Dos secciones nuevas en General:
+
+- **Agenda** (`agenda/{id}`) — citas personales: nombre, fecha, hora,
+  ubicación, descripción. Se puede compartir con compañeros
+  (selección de la lista de usuarios); a quien se la compartas recibe
+  una notificación.
+- **Notas** (`notas/{id}`) — nombre, descripción, mismo sistema de
+  compartir. Al crearla hay una casilla "También añadir a mi Agenda"
+  que crea a la vez una cita en Agenda con la fecha de hoy.
+
+Cada persona ve las suyas propias y las que le hayan compartido
+(nunca las de los demás sin compartir).
+
+## Roles en árbol
+
+El modal de permisos de un rol ya no es una lista plana: es un árbol
+que sigue exactamente la estructura del menú real (**Sección → Página
+→ Pestañas**, para las páginas que las tienen — de momento Roster y
+Producción). Se construye directamente desde `NAV_ESTRUCTURA`
+(`js/nav.js`), así que nunca se desincroniza de lo que existe de
+verdad. Al desmarcar una página, sus pestañas se desmarcan solas.
+
 ## Menú lateral (acordeón) y secciones
 
 El menú lateral funciona por acordeón: al pulsar el nombre de una

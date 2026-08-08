@@ -1,0 +1,159 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Stage Support · Producción</title>
+<link rel="icon" href="assets/logo_stagesupport.png" />
+<link rel="stylesheet" href="css/styles.css" />
+</head>
+<body>
+
+<div class="app-shell">
+
+  <aside class="sidebar" id="sidebar">
+    <div class="brand-mark">
+      <img src="assets/logo_stagesupport.png" alt="Stage Support" onerror="this.style.display='none'" />
+    </div>
+
+    <nav id="nav-container" style="flex:1; overflow-y:auto;"></nav>
+
+    <div class="sidebar-footer">
+      <div class="access-pass">
+        <div class="pass-top">
+          <div class="pass-avatar" id="pass-avatar">—</div>
+          <div>
+            <div class="pass-name" id="pass-name">—</div>
+            <div class="pass-role" id="pass-role">—</div>
+          </div>
+        </div>
+        <button class="pass-logout" onclick="cerrarSesion()">Cerrar sesión</button>
+      </div>
+    </div>
+  </aside>
+
+  <main class="main">
+    <div class="topbar">
+      <button class="mobile-menu-btn" onclick="document.getElementById('sidebar').classList.toggle('open')">☰</button>
+      <div>
+        <div class="eyebrow">Producción · <a href="producciones.html" style="color:inherit;">Producciones</a> · <span class="id-badge" id="pd-id-badge">—</span></div>
+        <h1 id="pd-titulo-cabecera">Producción</h1>
+      </div>
+      <button class="btn-accent" onclick="guardarProduccion()" id="btn-guardar-pd">Guardar cambios</button>
+    </div>
+
+    <div class="card">
+      <div class="rst-tabs" id="pd-tabs">
+        <button type="button" data-tab="general" onclick="cambiarTabProd('general')">Información general</button>
+        <button type="button" data-tab="cifras" onclick="cambiarTabProd('cifras')">Cifras</button>
+        <button type="button" data-tab="documentos" onclick="cambiarTabProd('documentos')">Documentos</button>
+        <button type="button" data-tab="hospitalidad" onclick="cambiarTabProd('hospitalidad')">Hospitalidad</button>
+      </div>
+
+      <!-- ============ INFORMACIÓN GENERAL ============ -->
+      <div class="rst-tab-panel active" id="pd-panel-general">
+        <div class="form-grid">
+          <div class="field field-wide">
+            <label for="pd-nombre">Nombre</label>
+            <input type="text" id="pd-nombre" required />
+          </div>
+          <div class="field">
+            <label for="pd-pm">Project Manager</label>
+            <select id="pd-pm"></select>
+          </div>
+          <div class="field">
+            <label for="pd-fecha">Fecha</label>
+            <input type="date" id="pd-fecha" />
+          </div>
+          <div class="field field-wide">
+            <label for="pd-booking">Booking vinculado (opcional)</label>
+            <select id="pd-booking" onchange="alVincularBookingProd()">
+              <option value="">— Sin vincular —</option>
+            </select>
+            <p style="font-size:12px; color:var(--color-text-muted); margin-top:6px;">Si el booking es "como promotora", su coste de venue se puede importar a Cifras con un clic.</p>
+          </div>
+        </div>
+        <div class="field" style="margin-top:8px;">
+          <label for="pd-notas">Notas (opcional)</label>
+          <input type="text" id="pd-notas" />
+        </div>
+      </div>
+
+      <!-- ============ CIFRAS ============ -->
+      <div class="rst-tab-panel" id="pd-panel-cifras">
+
+        <div class="hr-section">
+          <div class="hr-section-head"><h3>Costes</h3></div>
+          <div id="pd-lista-costes"></div>
+          <button type="button" class="add-row-link" onclick="anadirCosteProd()">+ Añadir coste</button>
+          <button type="button" class="btn-ghost" id="btn-importar-venue" style="margin-left:10px; display:none;" onclick="importarCosteVenueProd()">Importar coste del venue del booking</button>
+        </div>
+
+        <div class="hr-section">
+          <div class="hr-section-head"><h3>Ingresos</h3></div>
+          <div class="tipo-toggle">
+            <label><input type="radio" name="pd-ingreso-tipo" value="aforo" checked onchange="alCambiarTipoIngresoProd()" /><span>Por aforo × precio<span class="tipo-sub">Venta de entradas estimada</span></span></label>
+            <label><input type="radio" name="pd-ingreso-tipo" value="fijo" onchange="alCambiarTipoIngresoProd()" /><span>Ingreso fijo<span class="tipo-sub">Caché cobrado, subvención, etc.</span></span></label>
+          </div>
+          <div class="form-grid" id="pd-ingreso-aforo-campos">
+            <div class="field"><label for="pd-aforo">Aforo estimado</label><input type="number" id="pd-aforo" min="0" step="1" oninput="recalcularCifrasProd()" /></div>
+            <div class="field"><label for="pd-precio-entrada">Precio entrada (€)</label><input type="number" id="pd-precio-entrada" min="0" step="0.01" oninput="recalcularCifrasProd()" /></div>
+          </div>
+          <div class="field" id="pd-ingreso-fijo-campo" style="display:none;">
+            <label for="pd-ingreso-fijo">Ingreso fijo (€)</label>
+            <input type="number" id="pd-ingreso-fijo" min="0" step="0.01" oninput="recalcularCifrasProd()" />
+          </div>
+        </div>
+
+        <div class="hr-section" style="border:none;">
+          <div class="hr-section-head"><h3>Break even</h3></div>
+          <p style="font-size:12px; color:var(--color-text-muted); margin:-4px 0 12px;">Primera versión — la afinamos en cuanto compartas vuestra plantilla real.</p>
+          <div class="calc-box">
+            <div class="calc-item"><div class="calc-label">Costes totales</div><div class="calc-value" id="pd-calc-costes">0,00 €</div></div>
+            <div class="calc-item"><div class="calc-label">Ingresos estimados</div><div class="calc-value" id="pd-calc-ingresos">0,00 €</div></div>
+            <div class="calc-item calc-total"><div class="calc-label">Resultado</div><div class="calc-value" id="pd-calc-resultado">0,00 €</div></div>
+            <div class="calc-item" id="pd-calc-item-breakeven" style="display:none;"><div class="calc-label">Entradas para cubrir costes</div><div class="calc-value" id="pd-calc-breakeven">—</div></div>
+          </div>
+        </div>
+      </div>
+
+      <!-- ============ DOCUMENTOS ============ -->
+      <div class="rst-tab-panel" id="pd-panel-documentos">
+        <div class="hr-section" style="border:none;">
+          <div class="hr-section-head"><h3>Contratos, contrarriders, etc. (PDF)</h3></div>
+          <div id="pd-lista-documentos"></div>
+          <button type="button" class="add-row-link" onclick="document.getElementById('pd-doc-input').click()">+ Añadir documento (PDF)</button>
+          <input type="file" id="pd-doc-input" accept="application/pdf" onchange="procesarDocumentoProd(event)" style="display:none;" />
+          <p style="font-size:12px; color:var(--color-text-muted); margin-top:8px;">Máximo recomendado ~600 KB por archivo.</p>
+        </div>
+      </div>
+
+      <!-- ============ HOSPITALIDAD ============ -->
+      <div class="rst-tab-panel" id="pd-panel-hospitalidad">
+        <div class="hr-section" style="border:none;">
+          <div class="hr-section-head"><h3>Checklist de hospitalidad</h3></div>
+          <p style="font-size:12px; color:var(--color-text-muted); margin:-4px 0 12px;">El total se traslada solo a Cifras como coste de Hospitalidad.</p>
+          <div id="pd-lista-hosp"></div>
+          <button type="button" class="add-row-link" onclick="anadirItemHospProd()">+ Añadir ítem</button>
+          <div class="calc-box" style="margin-top:16px;">
+            <div class="calc-item calc-total"><div class="calc-label">Total hospitalidad</div><div class="calc-value" id="pd-calc-hosp-total">0,00 €</div></div>
+          </div>
+        </div>
+      </div>
+
+    </div>
+  </main>
+
+</div>
+
+<div class="toast" id="toast"><span class="dot"></span><span id="toast-msg"></span></div>
+
+<script src="https://www.gstatic.com/firebasejs/10.13.0/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.13.0/firebase-auth-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.13.0/firebase-firestore-compat.js"></script>
+<script src="js/firebase-config.js"></script>
+<script src="js/auth.js"></script>
+<script src="js/nav.js"></script>
+<script src="js/produccion-detalle.js"></script>
+</body>
+</html>
