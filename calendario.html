@@ -1,0 +1,139 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Stage Support · Calendario</title>
+<link rel="icon" href="assets/logo_stagesupport.png" />
+<link rel="stylesheet" href="css/styles.css" />
+</head>
+<body>
+
+<div class="app-shell">
+
+  <aside class="sidebar" id="sidebar">
+    <div class="brand-mark">
+      <img src="assets/logo_stagesupport.png" alt="Stage Support" onerror="this.style.display='none'" />
+    </div>
+
+    <nav id="nav-container" style="flex:1; overflow-y:auto;"></nav>
+
+    <div class="sidebar-footer">
+      <div class="access-pass">
+        <div class="pass-top">
+          <div class="pass-avatar" id="pass-avatar">—</div>
+          <div>
+            <div class="pass-name" id="pass-name">—</div>
+            <div class="pass-role" id="pass-role">—</div>
+          </div>
+        </div>
+        <button class="pass-logout" onclick="cerrarSesion()">Cerrar sesión</button>
+      </div>
+    </div>
+  </aside>
+
+  <main class="main">
+    <div class="topbar">
+      <button class="mobile-menu-btn" onclick="document.getElementById('sidebar').classList.toggle('open')">☰</button>
+      <div>
+        <div class="eyebrow">Planificación</div>
+        <h1>Calendario</h1>
+      </div>
+      <button class="btn-accent" onclick="abrirModalNuevoDoc(fechaISO(new Date()))">+ Nuevo</button>
+    </div>
+
+    <div class="card">
+      <div class="cal-toolbar">
+        <div class="cal-nav">
+          <button onclick="cambiarMes(-1)" aria-label="Mes anterior">←</button>
+          <div class="cal-title" id="cal-title">—</div>
+          <button onclick="cambiarMes(1)" aria-label="Mes siguiente">→</button>
+          <button class="btn-ghost" style="margin-left:8px;" onclick="irHoy()">Hoy</button>
+        </div>
+        <div class="cal-legend" id="cal-legend"></div>
+      </div>
+
+      <div class="cal-weekdays">
+        <span>Lun</span><span>Mar</span><span>Mié</span><span>Jue</span><span>Vie</span><span>Sáb</span><span>Dom</span>
+      </div>
+
+      <div class="cal-grid" id="cal-grid"></div>
+    </div>
+  </main>
+
+</div>
+
+<!-- Modal: documentos del día seleccionado -->
+<div class="modal-overlay" id="modal-dia-overlay">
+  <div class="modal modal-wide">
+    <div class="modal-title-row">
+      <h2 id="modal-dia-titulo">—</h2>
+      <button class="icon-btn" onclick="cerrarModalDia()" aria-label="Cerrar">✕</button>
+    </div>
+    <p class="modal-sub">Documentos creados este día. Filtra por tipo o añade uno nuevo.</p>
+
+    <div class="filter-chips" id="filter-chips"></div>
+
+    <div id="lista-docs-dia"></div>
+
+    <div class="modal-actions">
+      <button class="btn-accent" style="flex:none; width:100%;" id="btn-nuevo-desde-dia" onclick="abrirModalNuevoDocDesdeDia()">+ Añadir documento a este día</button>
+    </div>
+  </div>
+</div>
+
+<!-- Modal: nuevo / editar documento -->
+<div class="modal-overlay" id="modal-doc-overlay">
+  <div class="modal">
+    <h2 id="modal-doc-titulo">Nuevo documento</h2>
+    <p class="modal-sub" id="modal-doc-sub">Quedará marcado en el calendario en la fecha indicada.</p>
+
+    <form id="form-doc">
+      <input type="hidden" id="doc-id-edicion" />
+
+      <div class="field">
+        <label for="doc-tipo">Tipo</label>
+        <select id="doc-tipo" required></select>
+      </div>
+
+      <div class="field">
+        <label for="doc-titulo">Título</label>
+        <input type="text" id="doc-titulo" placeholder="Ej. Contrato — Sala Apolo, 12 sept" required />
+      </div>
+
+      <div class="field">
+        <label for="doc-fecha">Fecha</label>
+        <input type="date" id="doc-fecha" required />
+      </div>
+
+      <div class="field">
+        <label for="doc-enlace">Enlace (opcional)</label>
+        <input type="url" id="doc-enlace" placeholder="https://…" />
+      </div>
+
+      <div class="field">
+        <label for="doc-notas">Notas (opcional)</label>
+        <input type="text" id="doc-notas" placeholder="Detalles rápidos" />
+      </div>
+
+      <div class="form-msg" id="modal-doc-msg"></div>
+
+      <div class="modal-actions">
+        <button type="button" class="btn-ghost" onclick="cerrarModalDoc()">Cancelar</button>
+        <button type="submit" class="btn-accent" id="btn-guardar-doc">Guardar</button>
+      </div>
+    </form>
+  </div>
+</div>
+
+<div class="toast" id="toast"><span class="dot"></span><span id="toast-msg"></span></div>
+
+<script src="https://www.gstatic.com/firebasejs/10.13.0/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.13.0/firebase-auth-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.13.0/firebase-firestore-compat.js"></script>
+<script src="js/firebase-config.js"></script>
+<script src="js/auth.js"></script>
+<script src="js/nav.js"></script>
+<script src="js/calendario.js"></script>
+</body>
+</html>

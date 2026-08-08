@@ -90,6 +90,30 @@ Los módulos de Bookings, Producciones, Clientes, etc. aparecen ya en el
 menú marcados como "pronto": son la siguiente fase, se irán activando
 según se vayan construyendo.
 
+## Calendario y documentos
+
+El Calendario marca automáticamente cada día en que se crea un contrato,
+propuesta, rider, booking, promotor, hoja de ruta o evento. Todos viven en
+una única colección de Firestore, **`documentos`**, con estos campos:
+
+- `tipo` — uno de: `Contrato`, `Propuesta`, `Rider`, `Booking`, `Promotor`,
+  `HojaDeRuta`, `Evento`
+- `titulo` (string)
+- `fecha` (string `YYYY-MM-DD`) — el día en que aparece marcado
+- `enlace` (string, opcional)
+- `notas` (string, opcional)
+- `creadoPor` / `creadoPorUid` — quién lo creó
+- `creadoEl` — timestamp del servidor
+
+Cualquier empleado activo puede crear documentos y ver el calendario;
+solo quien lo creó (o un Admin) puede editarlo o eliminarlo — así lo
+protegen las reglas de `firestore.rules`.
+
+Cuando construyas los módulos de Bookings, Producciones, etc., lo más
+sencillo es que, al guardar su propio registro, también añadan un
+documento a esta misma colección `documentos` — así aparecerán en el
+calendario sin tocar nada más.
+
 ## Notas técnicas importantes
 
 - **Alta de usuarios**: se crea desde el panel de Admin usando una
