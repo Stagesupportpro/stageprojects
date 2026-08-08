@@ -55,6 +55,7 @@
           <th>Contacto</th>
           <th>Teléfono</th>
           <th>Rol</th>
+          <th>Tarifa</th>
           <th style="text-align:right;">Acciones</th>
         </tr>
       </thead>
@@ -99,8 +100,34 @@
       </div>
 
       <div class="field">
+        <label for="p-tarifa">Tarifa (€)</label>
+        <input type="number" id="p-tarifa" placeholder="Ej. 250" min="0" step="0.01" />
+      </div>
+
+      <div class="field">
+        <label for="p-situacion">Situación</label>
+        <select id="p-situacion" onchange="alCambiarSituacion()">
+          <option value="ss">Alta en la Seguridad Social</option>
+          <option value="autonomo">Autónomo</option>
+        </select>
+      </div>
+
+      <div id="campos-autonomo" style="display:none;">
+        <div class="form-grid">
+          <div class="field">
+            <label for="p-retencion">Retención IRPF (%)</label>
+            <input type="number" id="p-retencion" placeholder="Ej. 15" min="0" max="100" step="0.1" />
+          </div>
+          <div class="field">
+            <label for="p-iva">IVA (%)</label>
+            <input type="number" id="p-iva" placeholder="Ej. 21" min="0" max="100" step="0.1" />
+          </div>
+        </div>
+      </div>
+
+      <div class="field">
         <label for="p-notas">Notas (opcional)</label>
-        <input type="text" id="p-notas" placeholder="Disponibilidad, tarifa, especialidad…" />
+        <input type="text" id="p-notas" placeholder="Disponibilidad, especialidad…" />
       </div>
 
       <div class="form-msg" id="modal-msg"></div>

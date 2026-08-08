@@ -1,0 +1,122 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Stage Support · Hojas de Ruta</title>
+<link rel="icon" href="assets/logo_stagesupport.png" />
+<link rel="stylesheet" href="css/styles.css" />
+</head>
+<body>
+
+<div class="app-shell">
+
+  <aside class="sidebar" id="sidebar">
+    <div class="brand-mark">
+      <img src="assets/logo_stagesupport.png" alt="Stage Support" onerror="this.style.display='none'" />
+    </div>
+
+    <nav id="nav-container" style="flex:1; overflow-y:auto;"></nav>
+
+    <div class="sidebar-footer">
+      <div class="access-pass">
+        <div class="pass-top">
+          <div class="pass-avatar" id="pass-avatar">—</div>
+          <div>
+            <div class="pass-name" id="pass-name">—</div>
+            <div class="pass-role" id="pass-role">—</div>
+          </div>
+        </div>
+        <button class="pass-logout" onclick="cerrarSesion()">Cerrar sesión</button>
+      </div>
+    </div>
+  </aside>
+
+  <main class="main">
+    <div class="topbar">
+      <button class="mobile-menu-btn" onclick="document.getElementById('sidebar').classList.toggle('open')">☰</button>
+      <div>
+        <div class="eyebrow">Producción</div>
+        <h1>Hojas de Ruta</h1>
+      </div>
+    </div>
+
+    <div class="table-toolbar">
+      <div style="color:var(--color-text-muted); font-size:14px;" id="contador-hr">Cargando…</div>
+      <button class="btn-accent" onclick="abrirModalHR()">+ Nueva hoja de ruta</button>
+    </div>
+
+    <table class="users-table">
+      <thead>
+        <tr>
+          <th>ID</th>
+          <th>Nombre</th>
+          <th>Producción</th>
+          <th>Fecha</th>
+          <th style="text-align:right;">Acciones</th>
+        </tr>
+      </thead>
+      <tbody id="tabla-hr"></tbody>
+    </table>
+  </main>
+
+</div>
+
+<!-- Modal alta / edición -->
+<div class="modal-overlay" id="modal-overlay">
+  <div class="modal">
+    <h2 id="modal-titulo">Nueva hoja de ruta</h2>
+    <p class="modal-sub" id="modal-sub">Se le asignará automáticamente un ID correlativo (HR&lt;año&gt;-0001).</p>
+
+    <form id="form-hr">
+      <input type="hidden" id="hr-id-edicion" />
+
+      <div class="field" id="campo-id-existente" style="display:none;">
+        <label>ID</label>
+        <div><span class="id-badge" id="hr-id-badge">—</span></div>
+      </div>
+
+      <div class="field">
+        <label for="hr-nombre">Nombre</label>
+        <input type="text" id="hr-nombre" placeholder="Ej. Hoja de ruta — Sala Apolo, 12 sept" required />
+      </div>
+
+      <div class="field">
+        <label for="hr-produccion">Producción vinculada (opcional)</label>
+        <select id="hr-produccion">
+          <option value="">— Sin vincular —</option>
+        </select>
+      </div>
+
+      <div class="field">
+        <label for="hr-fecha">Fecha</label>
+        <input type="date" id="hr-fecha" required />
+      </div>
+
+      <div class="field">
+        <label for="hr-notas">Notas (opcional)</label>
+        <input type="text" id="hr-notas" placeholder="Detalles rápidos" />
+      </div>
+
+      <div class="form-msg" id="modal-msg"></div>
+
+      <div class="modal-actions">
+        <button type="button" class="btn-ghost" onclick="cerrarModal()">Cancelar</button>
+        <button type="submit" class="btn-accent" id="btn-guardar">Crear hoja de ruta</button>
+      </div>
+    </form>
+  </div>
+</div>
+
+<div class="toast" id="toast"><span class="dot"></span><span id="toast-msg"></span></div>
+
+<script src="https://www.gstatic.com/firebasejs/10.13.0/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.13.0/firebase-auth-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.13.0/firebase-firestore-compat.js"></script>
+<script src="js/firebase-config.js"></script>
+<script src="js/auth.js"></script>
+<script src="js/nav.js"></script>
+<script src="js/ids.js"></script>
+<script src="js/hojasderuta.js"></script>
+</body>
+</html>
