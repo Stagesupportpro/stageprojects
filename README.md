@@ -116,10 +116,44 @@ calendario sin tocar nada más.
 
 ## Hojas de Ruta
 
-Funcionan igual que Producciones: ID correlativo automático
-(`HR<año>-0001`, colección **`hojasDeRuta`**), se pueden vincular
-opcionalmente a una producción existente, y al crearse quedan
-marcadas en el Calendario ese mismo día (tipo `HojaDeRuta`).
+El listado (`hojasderuta.html`) funciona igual que Producciones: ID
+correlativo automático (`HR<año>-0001`, colección **`hojasDeRuta`**),
+vínculo opcional a una producción, y marca automática en el Calendario
+al crearse.
+
+> Nota: el ID se genera con guión (`HR26-0002`); si tu plantilla previa
+> usaba `HR260002` sin guión, es un cambio de una línea en `js/ids.js`
+> si lo prefieres así — dilo y lo ajusto.
+
+Desde el listado, el botón **Abrir** lleva al editor completo
+(`hojaderuta-detalle.html?id=...`), con:
+
+- **Datos de la actuación** — artista, fecha, ciudad, local, dirección
+  + enlace de mapa, parking.
+- **Contactos** — lista libre, añadir/quitar filas (tipo, nombre,
+  teléfono, observaciones).
+- **Planning** — uno o varios bloques por día, cada uno con su propia
+  fecha y filas libres (tarea, hora, observaciones).
+- **Alojamiento** y **Dietas** — bloques opcionales (checkbox
+  "Incluir") con los mismos campos tipo ficha que Datos de la
+  actuación, pero para el hotel/catering.
+- **Logo del evento** — opcional, se guarda igual que el logo de la
+  empresa (imagen comprimida en Firestore).
+- **Previsión meteorológica** — botón "Consultar previsión" que llama
+  a la API gratuita de Open-Meteo (sin clave) usando la Ciudad y Fecha
+  ya escritas; solo funciona para fechas dentro de ~16 días. El
+  resultado se guarda en el documento para no tener que consultarlo
+  cada vez.
+- **Imprimir** — genera una versión limpia tipo documento (con las
+  cabeceras en amarillo, igual que la plantilla original) y abre el
+  diálogo de impresión del navegador.
+- **Descargar PDF** — genera el mismo documento como archivo PDF
+  descargable (usa la librería html2pdf.js vía CDN, sin backend).
+
+Todo el contenido (contactos, planning, alojamiento, dietas...) vive
+dentro del propio documento en `hojasDeRuta/{id}`, como objetos y
+listas anidadas — no hace falta tocar las reglas de Firestore para
+esto, las que ya había cubren toda la colección.
 
 ## Producciones y numeración correlativa
 
