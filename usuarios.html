@@ -20,8 +20,13 @@
 
     <div class="sidebar-footer">
       <div class="access-pass">
-        <div class="pass-name" id="pass-name">—</div>
-        <div class="pass-role" id="pass-role">—</div>
+        <div class="pass-top">
+          <div class="pass-avatar" id="pass-avatar">—</div>
+          <div>
+            <div class="pass-name" id="pass-name">—</div>
+            <div class="pass-role" id="pass-role">—</div>
+          </div>
+        </div>
         <button class="pass-logout" onclick="cerrarSesion()">Cerrar sesión</button>
       </div>
     </div>
@@ -67,6 +72,16 @@
 
     <form id="form-usuario">
       <input type="hidden" id="uid-edicion" />
+      <input type="hidden" id="foto-data" />
+
+      <div class="photo-picker">
+        <div class="photo-preview" id="photo-preview">?</div>
+        <div class="photo-actions">
+          <button type="button" class="btn-ghost" onclick="document.getElementById('foto-input').click()">Subir foto</button>
+          <button type="button" class="btn-ghost" id="btn-quitar-foto" style="display:none;" onclick="quitarFoto()">Quitar foto</button>
+          <input type="file" id="foto-input" accept="image/*" onchange="procesarFoto(event)" />
+        </div>
+      </div>
 
       <div class="field">
         <label for="nombre">Nombre</label>
