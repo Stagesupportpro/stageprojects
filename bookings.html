@@ -92,6 +92,22 @@
         <select id="bk-artista" onchange="alSeleccionarArtistaBooking()" required></select>
       </div>
 
+      <!-- Venue: común a los dos tipos de booking -->
+      <div class="field">
+        <label for="bk-espacio-buscar">Recinto / Festival (Venue)</label>
+        <input type="text" id="bk-espacio-buscar" list="lista-venues-datalist" placeholder="Escribe para buscar o elige de la lista…" oninput="alEscribirVenueBooking()" autocomplete="off" required />
+        <datalist id="lista-venues-datalist"></datalist>
+        <input type="hidden" id="bk-venue-id" />
+      </div>
+      <div class="field" id="campo-bk-modalidad" style="display:none;">
+        <label for="bk-modalidad">Modalidad / tarifa del venue</label>
+        <select id="bk-modalidad" onchange="alSeleccionarModalidadBooking()"></select>
+      </div>
+      <div class="field">
+        <label for="bk-espacio-direccion">Dirección (opcional)</label>
+        <input type="text" id="bk-espacio-direccion" />
+      </div>
+
       <!-- Bloque: a caché -->
       <div id="bloque-cache">
         <div class="field">
@@ -108,24 +124,6 @@
         <div class="field" id="campo-bk-propuesta" style="display:none;">
           <label for="bk-propuesta">Propuesta</label>
           <select id="bk-propuesta" onchange="alSeleccionarPropuestaBooking()"><option value="">— Selecciona una propuesta —</option></select>
-        </div>
-      </div>
-
-      <!-- Bloque: promotor -->
-      <div id="bloque-promotor" style="display:none;">
-        <div class="field">
-          <label for="bk-espacio-buscar">Recinto / Festival (Venue)</label>
-          <input type="text" id="bk-espacio-buscar" list="lista-venues-datalist" placeholder="Escribe para buscar o elige de la lista…" oninput="alEscribirVenueBooking()" autocomplete="off" />
-          <datalist id="lista-venues-datalist"></datalist>
-          <input type="hidden" id="bk-venue-id" />
-        </div>
-        <div class="field" id="campo-bk-modalidad" style="display:none;">
-          <label for="bk-modalidad">Modalidad / tarifa del venue</label>
-          <select id="bk-modalidad" onchange="alSeleccionarModalidadBooking()"></select>
-        </div>
-        <div class="field">
-          <label for="bk-espacio-direccion">Dirección (opcional)</label>
-          <input type="text" id="bk-espacio-direccion" />
         </div>
       </div>
 

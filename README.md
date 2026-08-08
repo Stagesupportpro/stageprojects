@@ -80,6 +80,23 @@ Para publicarlo gratis con **GitHub Pages**:
 > `firestore.rules`): la clave solo identifica el proyecto, no da acceso
 > por sí sola.
 
+## Bookings — Venue obligatorio en los dos tipos
+
+El selector de Venue (búsqueda + modalidad) ya no es exclusivo del
+tipo "Como promotora": ahora es un campo común y obligatorio también
+para "Fecha contratada (a caché)". La comisión sigue apareciendo solo
+en el tipo a caché.
+
+## Versiones (V1, V2...)
+
+Bookings y Producciones tienen un botón "Crear nueva versión" (icono
+⎘) en el listado. Duplica el documento completo con
+`version` +1, guardando `grupoVersionId` (apunta al id de la V1) y
+`versionAnteriorId` (apunta a la versión de la que viene). La versión
+original **no se borra ni se bloquea** — queda como histórico visible
+en el listado, con su propio badge "V1", "V2"... Es una base sencilla
+pensada para cuando un cliente pide cambios tras aceptar algo.
+
 ## Roles actuales
 
 - **Comercial** — pensado para bookings, clientes y propuestas.
