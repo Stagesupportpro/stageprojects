@@ -13,6 +13,8 @@ const NAV_ESTRUCTURA = [
     items: [
       { id: "dashboard", label: "Dashboard", href: "dashboard.html", roles: ["Comercial", "Producción", "Admin"], listo: true },
       { id: "calendario", label: "Calendario", href: "calendario.html", roles: ["Comercial", "Producción", "Admin"], listo: true },
+      { id: "agenda", label: "Agenda", href: "agenda.html", roles: ["Comercial", "Producción", "Admin"], listo: true },
+      { id: "notas", label: "Notas", href: "notas.html", roles: ["Comercial", "Producción", "Admin"], listo: true },
     ],
   },
   {

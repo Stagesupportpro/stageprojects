@@ -17,6 +17,7 @@ let rosterCacheBk = [];
 let clientesCacheBk = [];
 let propuestasCacheBk = [];
 let comisionesCacheBk = [];
+let venuesCacheBk = [];
 
 (async function () {
   usuarioActualBk = await protegerPagina(["Comercial", "Admin"]);
@@ -30,7 +31,7 @@ let comisionesCacheBk = [];
     avatarEl.textContent = inicialesDe(nombreCompletoDe(usuarioActualBk) || usuarioActualBk.email);
   }
 
-  await Promise.all([cargarRosterBk(), cargarClientesBk(), cargarPropuestasBk(), cargarComisionesBk()]);
+  await Promise.all([cargarRosterBk(), cargarClientesBk(), cargarPropuestasBk(), cargarComisionesBk(), cargarVenuesBk()]);
   escucharBookings();
 })();
 
@@ -90,12 +91,77 @@ async function cargarComisionesBk() {
   }
 }
 
-// ---------- Interacciones del formulario ----------
+async function cargarVenuesBk() {
+  try {
+    const snap = await db.collection("venues").orderBy("nombre").get();
+    venuesCacheBk = snap.docs.map((d) => ({ id: d.id, ...d.data() }));
+    const datalist = document.getElementById("lista-venues-datalist");
+    datalist.innerHTML = venuesCacheBk.map((v) => `<option value="${escaparHtmlBk(v.nombre)}"></option>`).join("");
+  } catch (err) {
+    console.error(err);
+  }
+}
+
+function alEscribirVenueBooking() {
+  const texto = document.getElementById("bk-espacio-buscar").value.trim();
+  const venue = venuesCacheBk.find((v) => v.nombre === texto);
+  const campoModalidad = document.getElementById("campo-bk-modalidad");
+
+  if (!venue) {
+    document.getElementById("bk-venue-id").value = "";
+    campoModalidad.style.display = "none";
+    return;
+  }
+
+  document.getElementById("bk-venue-id").value = venue.id;
+  document.getElementById("bk-espacio-direccion").value = venue.direccion || "";
+
+  const tarifas = Array.isArray(venue.tarifas) ? venue.tarifas.filter((t) => t.concepto) : [];
+  const sel = document.getElementById("bk-modalidad");
+  if (tarifas.length === 0) {
+    sel.innerHTML = `<option value="">Este venue no tiene tarifas guardadas — introduce el coste a mano</option>`;
+    campoModalidad.style.display = "block";
+    return;
+  }
+  sel.innerHTML =
+    `<option value="">— Elige una modalidad/tarifa —</option>` +
+    tarifas.map((t, i) => `<option value="${i}">${escaparHtmlBk(t.concepto)} — ${formatoEuroBk(t.importe)} (${t.impuestos === "con" ? "con" : "sin"} impuestos)</option>`).join("");
+  campoModalidad.style.display = "block";
+}
+
+function alSeleccionarModalidadBooking() {
+  const venueId = document.getElementById("bk-venue-id").value;
+  const venue = venuesCacheBk.find((v) => v.id === venueId);
+  const idx = document.getElementById("bk-modalidad").value;
+  if (!venue || idx === "") return;
+  const tarifa = venue.tarifas[idx];
+  if (!tarifa) return;
+
+  document.getElementById("bk-cache").value = tarifa.importe || 0;
+  // Si la tarifa del venue ya incluye impuestos, no hace falta sumar IVA aparte encima.
+  document.getElementById("bk-iva-pct").value = tarifa.impuestos === "con" ? 0 : document.getElementById("bk-iva-pct").value || 21;
+  recalcularBooking();
+}
+
+
 
 function alCambiarTipoBooking() {
   const tipo = document.querySelector('input[name="bk-tipo"]:checked').value;
   document.getElementById("bloque-cache").style.display = tipo === "cache" ? "block" : "none";
   document.getElementById("bloque-promotor").style.display = tipo === "promotor" ? "block" : "none";
+
+  const esPromotor = tipo === "promotor";
+  document.getElementById("grupo-bk-comision").style.display = esPromotor ? "none" : "contents";
+  document.getElementById("bk-calc-item-comision").style.display = esPromotor ? "none" : "flex";
+  document.getElementById("bk-titulo-cifras").textContent = esPromotor ? "Coste e IVA" : "Caché, comisión e IVA";
+  document.getElementById("bk-label-cache").textContent = esPromotor ? "Coste (alquiler del venue) €" : "Caché (BI) €";
+  document.getElementById("bk-calc-label-cache").textContent = esPromotor ? "Coste" : "Caché (BI)";
+
+  if (esPromotor) {
+    // Sin comisión: la agencia no se cobra a sí misma.
+    document.getElementById("bk-comision-pct").value = 0;
+  }
+  recalcularBooking();
 }
 
 function alCambiarOrigenCache() {
@@ -255,8 +321,17 @@ function abrirModalEdicionBooking(b) {
   document.getElementById("bk-artista").value = b.artistaRosterId || "";
 
   if (b.tipo === "promotor") {
-    document.getElementById("bk-espacio").value = b.espacio || "";
+    document.getElementById("bk-espacio-buscar").value = b.espacio || "";
+    document.getElementById("bk-venue-id").value = b.venueId || "";
     document.getElementById("bk-espacio-direccion").value = b.espacioDireccion || "";
+    if (b.venueId) {
+      alEscribirVenueBooking();
+      if (b.modalidadIndice != null) {
+        setTimeout(() => {
+          document.getElementById("bk-modalidad").value = b.modalidadIndice;
+        }, 0);
+      }
+    }
   } else {
     const origen = b.origenCache || "cliente";
     document.querySelector(`input[name="bk-origen"][value="${origen}"]`).checked = true;
@@ -327,7 +402,9 @@ formBooking.addEventListener("submit", async (e) => {
   };
 
   if (tipo === "promotor") {
-    datosBase.espacio = document.getElementById("bk-espacio").value.trim();
+    datosBase.espacio = document.getElementById("bk-espacio-buscar").value.trim();
+    datosBase.venueId = document.getElementById("bk-venue-id").value || null;
+    datosBase.modalidadIndice = document.getElementById("bk-modalidad").value !== "" ? document.getElementById("bk-modalidad").value : null;
     datosBase.espacioDireccion = document.getElementById("bk-espacio-direccion").value.trim();
     datosBase.origenCache = null;
     datosBase.clienteId = null;
@@ -335,6 +412,8 @@ formBooking.addEventListener("submit", async (e) => {
     datosBase.propuestaId = null;
     datosBase.propuestaIdVisible = null;
   } else {
+    datosBase.venueId = null;
+    datosBase.modalidadIndice = null;
     const origen = document.querySelector('input[name="bk-origen"]:checked').value;
     datosBase.origenCache = origen;
     datosBase.espacio = null;

@@ -110,7 +110,8 @@ function pintarTablaProducciones(producciones) {
           <td>${fecha}</td>
           <td>
             <div class="row-actions" style="justify-content:flex-end;">
-              <button class="icon-btn" title="Editar" onclick='abrirModalEdicionProduccion(${JSON.stringify(p).replace(/'/g, "&#39;")})'>✎</button>
+              <a class="btn-ghost" style="text-decoration:none; padding:6px 12px; font-size:12px;" href="produccion-detalle.html?id=${p.id}">Abrir</a>
+              <button class="icon-btn" title="Edición rápida" onclick='abrirModalEdicionProduccion(${JSON.stringify(p).replace(/'/g, "&#39;")})'>✎</button>
               <button class="icon-btn danger" title="Eliminar" onclick="confirmarEliminarProduccion('${p.id}', '${escaparHtmlProd(p.nombre).replace(/'/g, "\\'")}')">🗑</button>
             </div>
           </td>

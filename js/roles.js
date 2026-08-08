@@ -4,31 +4,49 @@
 // Colección: /roles/{id} → { nombre, permisos: { dashboard: true, ... } }
 // =========================================================
 
-const PERMISOS_MODULOS = [
-  { id: "dashboard", label: "Dashboard" },
-  { id: "calendario", label: "Calendario" },
-  { id: "bookings", label: "Bookings" },
-  { id: "producciones", label: "Producciones" },
-  { id: "clientes", label: "Clientes" },
-  { id: "usuarios", label: "Usuarios" },
-  { id: "roles", label: "Roles" },
-  { id: "comisiones", label: "Comisiones" },
-  { id: "configuracion", label: "Datos de la empresa" },
-];
+// El árbol de permisos se construye a partir del menú real
+// (NAV_ESTRUCTURA, en nav.js) para que Roles nunca se desincronice
+// de las secciones que existen de verdad. Además, algunas páginas
+// tienen sus propias pestañas internas — se listan aquí para poder
+// filtrar el acceso también a ese nivel.
+const TABS_POR_PAGINA = {
+  roster: [
+    { id: "general", label: "Información general" },
+    { id: "tarifas", label: "Tarifas" },
+    { id: "riders", label: "Riders" },
+    { id: "hospitalidad", label: "Hospitalidad" },
+    { id: "presskit", label: "PressKit" },
+    { id: "juridico", label: "Jurídico" },
+  ],
+  producciones: [
+    { id: "general", label: "Información general" },
+    { id: "cifras", label: "Cifras" },
+    { id: "documentos", label: "Documentos" },
+    { id: "hospitalidad", label: "Hospitalidad" },
+  ],
+};
+
+// Lista plana de todas las páginas (para sembrar el rol Admin con
+// acceso total, y como fallback si NAV_ESTRUCTURA aún no cargó).
+function todasLasPaginas() {
+  const paginas = [];
+  NAV_ESTRUCTURA.forEach((grupo) => grupo.items.forEach((it) => it.listo && paginas.push(it.id)));
+  return paginas;
+}
 
 // Roles con los que arranca la plataforma si la colección está vacía.
 const ROLES_POR_DEFECTO = [
   {
     nombre: "Admin",
-    permisos: Object.fromEntries(PERMISOS_MODULOS.map((m) => [m.id, true])),
+    permisos: Object.fromEntries(todasLasPaginas().map((id) => [id, true])),
   },
   {
     nombre: "Comercial",
-    permisos: { dashboard: true, calendario: true, bookings: true, clientes: true },
+    permisos: { dashboard: true, calendario: true, agenda: true, notas: true, bookings: true, catalogo: true, propuestas: true, clientes: true },
   },
   {
     nombre: "Producción",
-    permisos: { dashboard: true, calendario: true, producciones: true },
+    permisos: { dashboard: true, calendario: true, agenda: true, notas: true, producciones: true, hojasderuta: true },
   },
 ];
 
@@ -92,15 +110,18 @@ function pintarTablaRoles(roles) {
     return;
   }
 
+  const paginas = todasLasPaginas();
+
   tbody.innerHTML = roles
     .map((r) => {
-      const modulosActivos = PERMISOS_MODULOS.filter((m) => r.permisos && r.permisos[m.id]);
-      const todoActivo = modulosActivos.length === PERMISOS_MODULOS.length;
+      // Solo se cuentan las páginas (no sus pestañas internas) para el resumen.
+      const activas = paginas.filter((id) => r.permisos && r.permisos[id]);
+      const todoActivo = activas.length === paginas.length && paginas.length > 0;
       const tagsHtml = todoActivo
         ? `<span class="permiso-tag todo">Acceso total</span>`
-        : modulosActivos.length === 0
+        : activas.length === 0
         ? `<span class="permiso-tag">Sin permisos</span>`
-        : modulosActivos.map((m) => `<span class="permiso-tag">${m.label}</span>`).join("");
+        : activas.map((id) => `<span class="permiso-tag">${escaparHtmlRoles(etiquetaDePagina(id))}</span>`).join("");
 
       return `
         <tr>
@@ -118,6 +139,14 @@ function pintarTablaRoles(roles) {
     .join("");
 }
 
+function etiquetaDePagina(id) {
+  for (const grupo of NAV_ESTRUCTURA) {
+    const item = grupo.items.find((it) => it.id === id);
+    if (item) return item.label;
+  }
+  return id;
+}
+
 function escaparHtmlRoles(str) {
   const d = document.createElement("div");
   d.textContent = str || "";
@@ -129,16 +158,56 @@ function escaparHtmlRoles(str) {
 const formRol = document.getElementById("form-rol");
 const overlayRol = document.getElementById("modal-overlay");
 
+// Árbol: Sección > Página > (Pestañas, si esa página las tiene).
 function pintarChecksPermisos(permisosActivos) {
   const cont = document.getElementById("permisos-grid");
-  cont.innerHTML = PERMISOS_MODULOS.map(
-    (m) => `
-      <label class="permiso-check">
-        <input type="checkbox" data-permiso="${m.id}" ${permisosActivos && permisosActivos[m.id] ? "checked" : ""} />
-        ${m.label}
-      </label>
-    `
-  ).join("");
+  const p = permisosActivos || {};
+
+  cont.innerHTML = NAV_ESTRUCTURA.map((grupo) => {
+    const itemsListos = grupo.items.filter((it) => it.listo);
+    if (itemsListos.length === 0) return "";
+
+    const itemsHtml = itemsListos
+      .map((it) => {
+        const tabs = TABS_POR_PAGINA[it.id];
+        const tabsHtml = tabs
+          ? `<div style="margin-left:26px; margin-bottom:4px;">${tabs
+              .map(
+                (t) => `
+                  <label class="permiso-check" style="padding:6px 4px; font-size:12.5px;">
+                    <input type="checkbox" data-permiso="${it.id}.${t.id}" ${p[`${it.id}.${t.id}`] ? "checked" : ""} />
+                    ${escaparHtmlRoles(t.label)}
+                  </label>
+                `
+              )
+              .join("")}</div>`
+          : "";
+
+        return `
+          <label class="permiso-check">
+            <input type="checkbox" data-permiso="${it.id}" ${p[it.id] ? "checked" : ""} onchange="alTogglePaginaRol(this)" />
+            ${escaparHtmlRoles(it.label)}
+          </label>
+          ${tabsHtml}
+        `;
+      })
+      .join("");
+
+    return `
+      <div style="grid-column: 1 / -1; margin-top:10px;">
+        <div style="font-size:11px; font-weight:700; text-transform:uppercase; letter-spacing:0.05em; color:var(--color-text-muted); margin-bottom:4px;">${escaparHtmlRoles(grupo.grupo)}</div>
+        ${itemsHtml}
+      </div>
+    `;
+  }).join("");
+}
+
+// Si se desmarca una página, sus pestañas dejan de tener sentido —
+// las desmarcamos también para que el permiso quede consistente.
+function alTogglePaginaRol(checkbox) {
+  if (checkbox.checked) return;
+  const paginaId = checkbox.dataset.permiso;
+  document.querySelectorAll(`#permisos-grid input[data-permiso^="${paginaId}."]`).forEach((c) => (c.checked = false));
 }
 
 function abrirModalRol() {
