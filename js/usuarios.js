@@ -10,9 +10,81 @@ let usuarioActual = null;
   pintarNav(usuarioActual.rol, "usuarios");
   document.getElementById("pass-name").textContent = nombreCompletoDe(usuarioActual) || usuarioActual.email;
   document.getElementById("pass-role").textContent = usuarioActual.rol;
+  pintarAvatarPass(usuarioActual);
 
   escucharUsuarios();
 })();
+
+// ---------- Foto de perfil ----------
+// Se guarda directamente en Firestore como imagen comprimida (Data URL),
+// para no depender de Firebase Storage (requiere plan Blaze).
+// Redimensionada a 200x200 y comprimida a JPEG ~0.75 → unos 15-30 KB,
+// muy por debajo del límite de 1 MB por documento de Firestore.
+
+function procesarFoto(event) {
+  const archivo = event.target.files[0];
+  if (!archivo) return;
+
+  if (!archivo.type.startsWith("image/")) {
+    mostrarToast("Elige un archivo de imagen.");
+    return;
+  }
+
+  const lector = new FileReader();
+  lector.onload = (e) => {
+    const img = new Image();
+    img.onload = () => {
+      const TAMANO = 200;
+      const canvas = document.createElement("canvas");
+      canvas.width = TAMANO;
+      canvas.height = TAMANO;
+      const ctx = canvas.getContext("2d");
+
+      // Recorte cuadrado centrado (cover)
+      const lado = Math.min(img.width, img.height);
+      const sx = (img.width - lado) / 2;
+      const sy = (img.height - lado) / 2;
+      ctx.drawImage(img, sx, sy, lado, lado, 0, 0, TAMANO, TAMANO);
+
+      const dataUrl = canvas.toDataURL("image/jpeg", 0.75);
+      document.getElementById("foto-data").value = dataUrl;
+      mostrarPreviewFoto(dataUrl);
+    };
+    img.src = e.target.result;
+  };
+  lector.readAsDataURL(archivo);
+}
+
+function mostrarPreviewFoto(dataUrl) {
+  const preview = document.getElementById("photo-preview");
+  const btnQuitar = document.getElementById("btn-quitar-foto");
+  if (dataUrl) {
+    preview.innerHTML = `<img src="${dataUrl}" alt="" />`;
+    btnQuitar.style.display = "inline-flex";
+  } else {
+    const nombre = document.getElementById("nombre").value || "?";
+    preview.textContent = inicialesDe(nombre);
+    btnQuitar.style.display = "none";
+  }
+}
+
+function quitarFoto() {
+  document.getElementById("foto-data").value = "";
+  document.getElementById("foto-input").value = "";
+  mostrarPreviewFoto(null);
+}
+
+// ---------- Avatar del pase de acceso (sidebar) ----------
+
+function pintarAvatarPass(perfil) {
+  const el = document.getElementById("pass-avatar");
+  if (!el) return;
+  if (perfil.foto) {
+    el.innerHTML = `<img src="${perfil.foto}" alt="" />`;
+  } else {
+    el.textContent = inicialesDe(nombreCompletoDe(perfil) || perfil.email);
+  }
+}
 
 // ---------- Listado en tiempo real ----------
 
@@ -46,11 +118,14 @@ function pintarTabla(usuarios) {
     .map((u) => {
       const activo = u.activo !== false;
       const nombreCompleto = [u.nombre, u.apellidos].filter(Boolean).join(" ") || "—";
+      const avatarHtml = u.foto
+        ? `<img class="avatar-photo" src="${u.foto}" alt="" />`
+        : `<span class="initials">${inicialesDe(nombreCompleto)}</span>`;
       return `
         <tr>
           <td>
             <div class="avatar-chip">
-              <span class="initials">${inicialesDe(nombreCompleto)}</span>
+              ${avatarHtml}
               <div>
                 <div style="font-weight:600;">${escaparHtml(nombreCompleto)}</div>
                 <div style="color:var(--color-text-muted); font-size:12.5px;">${escaparHtml(u.email || "")}</div>
@@ -86,6 +161,8 @@ const overlay = document.getElementById("modal-overlay");
 function abrirModal() {
   form.reset();
   document.getElementById("uid-edicion").value = "";
+  document.getElementById("foto-data").value = "";
+  mostrarPreviewFoto(null);
   document.getElementById("modal-titulo").textContent = "Nuevo usuario";
   document.getElementById("modal-sub").textContent = "Se creará una cuenta con acceso inmediato a la plataforma.";
   document.getElementById("campo-email").style.display = "block";
@@ -105,6 +182,8 @@ function abrirModalEdicion(u) {
   document.getElementById("apellidos").value = u.apellidos || "";
   document.getElementById("telefono").value = u.telefono || "";
   document.getElementById("email").value = u.email || "";
+  document.getElementById("foto-data").value = u.foto || "";
+  mostrarPreviewFoto(u.foto || null);
   document.getElementById("rol").value = u.rol || "Comercial";
   document.getElementById("activo").value = u.activo === false ? "false" : "true";
 
@@ -149,6 +228,7 @@ form.addEventListener("submit", async (e) => {
         nombre: document.getElementById("nombre").value.trim(),
         apellidos: document.getElementById("apellidos").value.trim(),
         telefono: document.getElementById("telefono").value.trim(),
+        foto: document.getElementById("foto-data").value || null,
         rol: document.getElementById("rol").value,
         activo: document.getElementById("activo").value === "true",
       });
@@ -161,6 +241,7 @@ form.addEventListener("submit", async (e) => {
       const nombre = document.getElementById("nombre").value.trim();
       const apellidos = document.getElementById("apellidos").value.trim();
       const telefono = document.getElementById("telefono").value.trim();
+      const foto = document.getElementById("foto-data").value || null;
       const rol = document.getElementById("rol").value;
 
       if (!esDominioValido(email)) {
@@ -176,6 +257,7 @@ form.addEventListener("submit", async (e) => {
         nombre,
         apellidos,
         telefono,
+        foto,
         email,
         rol,
         activo: true,

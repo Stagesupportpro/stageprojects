@@ -9,6 +9,12 @@
 
   document.getElementById("pass-name").textContent = nombreCompletoDe(perfil) || perfil.email;
   document.getElementById("pass-role").textContent = perfil.rol;
+  const avatarEl = document.getElementById("pass-avatar");
+  if (perfil.foto) {
+    avatarEl.innerHTML = `<img src="${perfil.foto}" alt="" />`;
+  } else {
+    avatarEl.textContent = inicialesDe(nombreCompletoDe(perfil) || perfil.email);
+  }
   document.getElementById("saludo").textContent = "Hola, " + (perfil.nombre ? perfil.nombre.split(" ")[0] : perfil.email);
   document.getElementById("fecha-hoy").textContent = new Date().toLocaleDateString("es-ES", {
     weekday: "long", day: "numeric", month: "long",
