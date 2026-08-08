@@ -61,6 +61,13 @@ service cloud.firestore {
       allow read, write: if estoyActivo();
     }
 
+    // ---- Bookings (con ID correlativo BO<año>-0001) ----
+    match /bookings/{id} {
+      allow read, create: if estoyActivo();
+      allow update, delete: if estoyActivo()
+        && (resource.data.creadoPorUid == request.auth.uid || esAdmin());
+    }
+
     // ---- Producciones (con ID correlativo PRO<año>-0001) ----
     match /producciones/{id} {
       allow read, create: if estoyActivo();

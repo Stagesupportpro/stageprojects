@@ -114,6 +114,29 @@ sencillo es que, al guardar su propio registro, también añadan un
 documento a esta misma colección `documentos` — así aparecerán en el
 calendario sin tocar nada más.
 
+## Bookings
+
+Enlaza todo lo demás: **Roster** (artista, con caché/comisión/IVA
+autocompletados desde su ficha), **Clientes** o **Propuestas**
+(según el tipo), y **Comisiones estándar** (como preset opcional).
+Vive en **`bookings/{id}`** con ID correlativo `BO<año>-0001`.
+
+Dos tipos, elegidos con un selector al principio del formulario:
+
+- **Fecha contratada (a caché)** — actuamos como agencia de booking.
+  Se elige el **Cliente** directamente, o bien una **Propuesta** ya
+  creada (en cuyo caso el cliente se autocompleta desde esa propuesta).
+- **Como promotora** — organizamos nosotros el espectáculo; en vez de
+  cliente se rellena el **Espacio/Recinto** (y su dirección).
+
+En ambos casos se elige el **Artista** del Roster, lo que autocompleta
+caché/comisión/IVA con lo guardado en su ficha (editable por booking).
+La misma calculadora de Roster (Caché (BI) + Comisión = Total, Total +
+IVA) se repite aquí.
+
+Al crear un booking, también se marca en el Calendario (tipo `Booking`)
+el día de creación — igual que Producciones y Hojas de Ruta.
+
 ## Roster, Propuestas y Clientes
 
 **Clientes** (`clientes.html`) — listado simple con categoría
