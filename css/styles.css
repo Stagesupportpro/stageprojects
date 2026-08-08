@@ -927,3 +927,75 @@ table.users-table {
   border-top: 1px solid var(--color-border);
   margin-top: 8px;
 }
+
+/* ---------- Permisos (Roles) ---------- */
+
+.permisos-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 4px 12px;
+}
+@media (max-width: 480px) {
+  .permisos-grid { grid-template-columns: 1fr; }
+}
+.permiso-check {
+  display: flex;
+  align-items: center;
+  gap: 9px;
+  padding: 9px 4px;
+  font-size: 13.5px;
+  border-bottom: 1px solid var(--color-border);
+  cursor: pointer;
+}
+.permiso-check input { width: 16px; height: 16px; accent-color: var(--color-sidebar); cursor: pointer; }
+
+.permiso-tags {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 5px;
+  max-width: 280px;
+}
+.permiso-tag {
+  font-size: 11px;
+  font-weight: 600;
+  background: var(--color-bg-soft);
+  color: var(--color-text-muted);
+  padding: 3px 8px;
+  border-radius: 20px;
+}
+.permiso-tag.todo {
+  background: #14151A;
+  color: var(--color-accent);
+}
+
+/* ---------- ID correlativo (Producciones, etc.) ---------- */
+
+.id-badge {
+  display: inline-block;
+  font-family: var(--font-display);
+  font-weight: 700;
+  font-size: 12px;
+  letter-spacing: 0.03em;
+  background: #14151A;
+  color: var(--color-accent);
+  padding: 4px 10px;
+  border-radius: 6px;
+  white-space: nowrap;
+}
+
+.pm-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 13px;
+}
+.pm-chip .pm-tag {
+  font-size: 10px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  color: var(--color-text-muted);
+  background: var(--color-bg-soft);
+  padding: 2px 6px;
+  border-radius: 10px;
+}
