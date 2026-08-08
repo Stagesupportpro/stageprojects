@@ -59,7 +59,7 @@ function pintarListaCompartirAg() {
 // ---------- Listado (propias + compartidas) ----------
 
 function escucharAgenda() {
-  db.collection("agenda").where("propietarioUid", "==", usuarioActualAg.uid).orderBy("fecha", "asc").onSnapshot(
+  db.collection("agenda").where("propietarioUid", "==", usuarioActualAg.uid).onSnapshot(
     (snap) => {
       propiasAg = snap.docs.map((d) => ({ id: d.id, ...d.data(), esMia: true }));
       pintarListaAgenda();
@@ -67,7 +67,7 @@ function escucharAgenda() {
     (err) => console.error(err)
   );
 
-  db.collection("agenda").where("compartidoCon", "array-contains", usuarioActualAg.uid).orderBy("fecha", "asc").onSnapshot(
+  db.collection("agenda").where("compartidoCon", "array-contains", usuarioActualAg.uid).onSnapshot(
     (snap) => {
       compartidasAg = snap.docs.map((d) => ({ id: d.id, ...d.data(), esMia: false }));
       pintarListaAgenda();

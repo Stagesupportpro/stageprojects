@@ -1,15 +1,15 @@
 // =========================================================
 // STAGE SUPPORT — venue-detalle.js
 // Colección: /venues/{id} → { nombre, direccion, mapsUrl, contactos[],
-//   ridersPdf[], condiciones, tarifas[], tramosTaquilla{activo,filas[]}, notas }
+//   ridersPdf[], condiciones, tarifas[] (modalidades), notas }
+// Cada modalidad: { concepto, importe, taquillaCompartida, pctVenue, pctPromotor }
 // =========================================================
 
 let usuarioActualVenD = null;
 let docIdVenue = null;
 let contactosVen = [];
 let ridersVen = []; // [{ etiqueta, nombre, tamano, data }]
-let tarifasVen = []; // [{ concepto, importe, impuestos: 'con'|'sin' }]
-let tramosVen = []; // [{ desde, hasta, porcentaje }]
+let tarifasVen = []; // [{ concepto, importe, taquillaCompartida: bool, pctVenue, pctPromotor }]
 
 const LIMITE_PDF_BYTES_VEN = 600 * 1024;
 
@@ -60,12 +60,6 @@ async function cargarVenue() {
 
     tarifasVen = Array.isArray(d.tarifas) ? d.tarifas : [];
     renderTarifasVen();
-
-    const taquilla = d.tramosTaquilla || { activo: false, filas: [] };
-    document.getElementById("v-taquilla-activo").checked = !!taquilla.activo;
-    tramosVen = Array.isArray(taquilla.filas) ? taquilla.filas : [];
-    toggleTaquillaVen();
-    renderTramosVen();
   } catch (err) {
     console.error(err);
     mostrarToast("No se pudo cargar la ficha.");
@@ -157,72 +151,48 @@ function eliminarRiderVen(i) {
 function renderTarifasVen() {
   const cont = document.getElementById("lista-tarifas-ven");
   if (tarifasVen.length === 0) {
-    cont.innerHTML = `<p style="color:var(--color-text-muted); font-size:13px;">Todavía no hay tarifas añadidas.</p>`;
+    cont.innerHTML = `<p style="color:var(--color-text-muted); font-size:13px;">Todavía no hay modalidades añadidas.</p>`;
     return;
   }
   cont.innerHTML = tarifasVen
-    .map(
-      (t, i) => `
-        <div class="repeat-row tarifa-row" style="grid-template-columns: 1.3fr 0.8fr 0.8fr 0.7fr auto;">
-          <input placeholder="Concepto (Ej. Alquiler de sala)" value="${escaparAttrVen(t.concepto)}" oninput="tarifasVen[${i}].concepto=this.value" />
-          <input type="number" min="0" step="0.01" placeholder="Importe €" value="${t.importe != null ? t.importe : ""}" oninput="tarifasVen[${i}].importe=this.value===''?null:parseFloat(this.value)" />
-          <select onchange="tarifasVen[${i}].impuestos=this.value">
-            <option value="sin" ${t.impuestos !== "con" ? "selected" : ""}>Sin impuestos</option>
-            <option value="con" ${t.impuestos === "con" ? "selected" : ""}>Con impuestos</option>
-          </select>
-          <input type="number" min="0" max="100" step="0.1" placeholder="% venue taquilla" value="${t.repartoSalaPct != null ? t.repartoSalaPct : ""}" oninput="tarifasVen[${i}].repartoSalaPct=this.value===''?null:parseFloat(this.value)" title="Deja en blanco si es solo alquiler fijo, sin reparto de taquilla" />
-          <button type="button" class="remove-row-btn" onclick="eliminarTarifaVen(${i})">✕</button>
+    .map((t, i) => {
+      const activo = !!t.taquillaCompartida;
+      return `
+        <div class="modalidad-card">
+          <div class="repeat-row modalidad-top">
+            <input placeholder="Nombre de la modalidad (Ej. Modalidad 1)" value="${escaparAttrVen(t.concepto)}" oninput="tarifasVen[${i}].concepto=this.value" />
+            <input type="number" min="0" step="0.01" placeholder="Importe alquiler €" value="${t.importe != null ? t.importe : ""}" oninput="tarifasVen[${i}].importe=this.value===''?null:parseFloat(this.value)" />
+            <div></div>
+            <button type="button" class="remove-row-btn" onclick="eliminarTarifaVen(${i})">✕</button>
+          </div>
+          <label class="taquilla-toggle">
+            <input type="checkbox" ${activo ? "checked" : ""} onchange="tarifasVen[${i}].taquillaCompartida=this.checked; renderTarifasVen()" />
+            Aplica taquilla compartida
+          </label>
+          ${
+            activo
+              ? `
+                <div class="form-grid taquilla-pcts">
+                  <div class="field"><label>% Promotor</label><input type="number" min="0" max="100" step="0.1" value="${t.pctPromotor != null ? t.pctPromotor : ""}" oninput="tarifasVen[${i}].pctPromotor=this.value===''?null:parseFloat(this.value)" /></div>
+                  <div class="field"><label>% Venue</label><input type="number" min="0" max="100" step="0.1" value="${t.pctVenue != null ? t.pctVenue : ""}" oninput="tarifasVen[${i}].pctVenue=this.value===''?null:parseFloat(this.value)" /></div>
+                </div>
+              `
+              : ""
+          }
         </div>
-      `
-    )
+      `;
+    })
     .join("");
 }
 
 function anadirTarifaVen() {
-  tarifasVen.push({ concepto: "", importe: null, impuestos: "sin", repartoSalaPct: null });
+  tarifasVen.push({ concepto: "", importe: null, taquillaCompartida: false, pctVenue: null, pctPromotor: null });
   renderTarifasVen();
 }
 
 function eliminarTarifaVen(i) {
   tarifasVen.splice(i, 1);
   renderTarifasVen();
-}
-
-// ---------- Taquilla compartida ----------
-
-function toggleTaquillaVen() {
-  const activo = document.getElementById("v-taquilla-activo").checked;
-  document.getElementById("bloque-taquilla-ven").style.display = activo ? "block" : "none";
-}
-
-function renderTramosVen() {
-  const cont = document.getElementById("lista-tramos-ven");
-  if (tramosVen.length === 0) {
-    cont.innerHTML = `<p style="color:var(--color-text-muted); font-size:13px;">Todavía no hay tramos añadidos.</p>`;
-    return;
-  }
-  cont.innerHTML = tramosVen
-    .map(
-      (t, i) => `
-        <div class="repeat-row tramo-row">
-          <input type="number" min="0" step="0.01" placeholder="Desde €" value="${t.desde != null ? t.desde : ""}" oninput="tramosVen[${i}].desde=this.value===''?null:parseFloat(this.value)" />
-          <input type="number" min="0" step="0.01" placeholder="Hasta €" value="${t.hasta != null ? t.hasta : ""}" oninput="tramosVen[${i}].hasta=this.value===''?null:parseFloat(this.value)" />
-          <input type="number" min="0" max="100" step="0.1" placeholder="% venue" value="${t.porcentaje != null ? t.porcentaje : ""}" oninput="tramosVen[${i}].porcentaje=this.value===''?null:parseFloat(this.value)" />
-          <button type="button" class="remove-row-btn" onclick="eliminarTramoVen(${i})">✕</button>
-        </div>
-      `
-    )
-    .join("");
-}
-
-function anadirTramoVen() {
-  tramosVen.push({ desde: null, hasta: null, porcentaje: null });
-  renderTramosVen();
-}
-
-function eliminarTramoVen(i) {
-  tramosVen.splice(i, 1);
-  renderTramosVen();
 }
 
 // ---------- Guardar ----------
@@ -240,10 +210,6 @@ async function guardarVenue() {
     contactos: contactosVen,
     ridersPdf: ridersVen,
     tarifas: tarifasVen,
-    tramosTaquilla: {
-      activo: document.getElementById("v-taquilla-activo").checked,
-      filas: tramosVen,
-    },
   };
 
   try {

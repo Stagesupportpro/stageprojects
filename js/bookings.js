@@ -18,7 +18,8 @@ let clientesCacheBk = [];
 let propuestasCacheBk = [];
 let comisionesCacheBk = [];
 let venuesCacheBk = [];
-let bookingRepartoSalaPct = null;
+let bookingRepartoPromotorPct = null;
+let bookingRepartoVenuePct = null;
 
 (async function () {
   usuarioActualBk = await protegerPagina(["Comercial", "Admin"]);
@@ -125,8 +126,10 @@ function alEscribirVenueBooking() {
     return;
   }
   sel.innerHTML =
-    `<option value="">— Elige una modalidad/tarifa —</option>` +
-    tarifas.map((t, i) => `<option value="${i}">${escaparHtmlBk(t.concepto)} — ${formatoEuroBk(t.importe)} (${t.impuestos === "con" ? "con" : "sin"} impuestos)</option>`).join("");
+    `<option value="">— Elige una modalidad —</option>` +
+    tarifas
+      .map((t, i) => `<option value="${i}">${escaparHtmlBk(t.concepto)} — ${formatoEuroBk(t.importe)}${t.taquillaCompartida ? ` (taquilla compartida ${t.pctPromotor != null ? t.pctPromotor : "?"}% / ${t.pctVenue != null ? t.pctVenue : "?"}%)` : ""}</option>`)
+      .join("");
   campoModalidad.style.display = "block";
 }
 
@@ -139,9 +142,8 @@ function alSeleccionarModalidadBooking() {
   if (!tarifa) return;
 
   document.getElementById("bk-cache").value = tarifa.importe || 0;
-  // Si la tarifa del venue ya incluye impuestos, no hace falta sumar IVA aparte encima.
-  document.getElementById("bk-iva-pct").value = tarifa.impuestos === "con" ? 0 : document.getElementById("bk-iva-pct").value || 21;
-  bookingRepartoSalaPct = tarifa.repartoSalaPct != null ? tarifa.repartoSalaPct : null;
+  bookingRepartoPromotorPct = tarifa.taquillaCompartida && tarifa.pctPromotor != null ? tarifa.pctPromotor : null;
+  bookingRepartoVenuePct = tarifa.taquillaCompartida && tarifa.pctVenue != null ? tarifa.pctVenue : null;
   recalcularBooking();
 }
 
@@ -299,7 +301,8 @@ const overlayBooking = document.getElementById("modal-overlay");
 
 function abrirModalBooking() {
   formBooking.reset();
-  bookingRepartoSalaPct = null;
+  bookingRepartoPromotorPct = null;
+  bookingRepartoVenuePct = null;
   document.getElementById("bk-id-edicion").value = "";
   document.getElementById("campo-id-existente").style.display = "none";
   document.getElementById("bk-fecha").value = fechaISOBk(new Date());
@@ -316,7 +319,8 @@ function abrirModalBooking() {
 
 function abrirModalEdicionBooking(b) {
   formBooking.reset();
-  bookingRepartoSalaPct = b.repartoSalaPct != null ? b.repartoSalaPct : null;
+  bookingRepartoPromotorPct = b.repartoPromotorPct != null ? b.repartoPromotorPct : null;
+  bookingRepartoVenuePct = b.repartoVenuePct != null ? b.repartoVenuePct : null;
   document.getElementById("bk-id-edicion").value = b.id;
   document.getElementById("campo-id-existente").style.display = "block";
   document.getElementById("bk-id-badge").textContent = b.idVisible || "—";
@@ -408,7 +412,8 @@ formBooking.addEventListener("submit", async (e) => {
     espacio: document.getElementById("bk-espacio-buscar").value.trim(),
     venueId: document.getElementById("bk-venue-id").value || null,
     modalidadIndice: document.getElementById("bk-modalidad").value !== "" ? document.getElementById("bk-modalidad").value : null,
-    repartoSalaPct: bookingRepartoSalaPct,
+    repartoPromotorPct: bookingRepartoPromotorPct,
+    repartoVenuePct: bookingRepartoVenuePct,
     espacioDireccion: document.getElementById("bk-espacio-direccion").value.trim(),
   };
 

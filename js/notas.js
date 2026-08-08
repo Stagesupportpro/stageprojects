@@ -57,7 +57,7 @@ function pintarListaCompartirNt() {
 // ---------- Listado (propias + compartidas) ----------
 
 function escucharNotas() {
-  db.collection("notas").where("propietarioUid", "==", usuarioActualNt.uid).orderBy("creadoEl", "desc").onSnapshot(
+  db.collection("notas").where("propietarioUid", "==", usuarioActualNt.uid).onSnapshot(
     (snap) => {
       propiasNt = snap.docs.map((d) => ({ id: d.id, ...d.data(), esMia: true }));
       pintarListaNotas();
@@ -65,7 +65,7 @@ function escucharNotas() {
     (err) => console.error(err)
   );
 
-  db.collection("notas").where("compartidoCon", "array-contains", usuarioActualNt.uid).orderBy("creadoEl", "desc").onSnapshot(
+  db.collection("notas").where("compartidoCon", "array-contains", usuarioActualNt.uid).onSnapshot(
     (snap) => {
       compartidasNt = snap.docs.map((d) => ({ id: d.id, ...d.data(), esMia: false }));
       pintarListaNotas();
@@ -76,7 +76,11 @@ function escucharNotas() {
 
 function pintarListaNotas() {
   const cont = document.getElementById("lista-notas");
-  const todas = [...propiasNt, ...compartidasNt];
+  const todas = [...propiasNt, ...compartidasNt].sort((a, b) => {
+    const fa = a.creadoEl && a.creadoEl.toMillis ? a.creadoEl.toMillis() : 0;
+    const fb = b.creadoEl && b.creadoEl.toMillis ? b.creadoEl.toMillis() : 0;
+    return fb - fa;
+  });
 
   if (todas.length === 0) {
     cont.innerHTML = `<div class="empty-state"><strong>Sin notas todavía</strong>Crea la primera con "+ Nueva nota".</div>`;

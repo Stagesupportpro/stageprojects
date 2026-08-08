@@ -53,6 +53,11 @@ const NAV_ESTRUCTURA = [
   },
 ];
 
+// Versión de la plataforma — sube el número de parche cada vez que se
+// publique una ronda de cambios importante. Se pinta bajo el usuario
+// logueado en el menú lateral (ver pintarNav / mostrarVersionPlataforma).
+const VERSION_PLATAFORMA = "1.0.14";
+
 /**
  * Pinta el menú lateral filtrando por rol y marca la página activa.
  * Tipo acordeón: solo una sección abierta a la vez, empezando por la
@@ -111,7 +116,28 @@ function pintarNav(rol, paginaActiva) {
     wrap.appendChild(itemsCont);
     cont.appendChild(wrap);
   });
+
+  mostrarVersionPlataforma();
 }
+
+/**
+ * Pinta el número de versión de la plataforma bajo el usuario logueado,
+ * si la página actual tiene el elemento #pass-version en el sidebar.
+ */
+function mostrarVersionPlataforma() {
+  const el = document.getElementById("pass-version");
+  if (el) el.textContent = "V" + VERSION_PLATAFORMA;
+}
+
+// En móvil, el menú lateral flota sobre el contenido — se cierra solo
+// al tocar fuera de él (o al elegir una sección), para que no haga
+// falta ir a buscar el botón ☰ otra vez.
+document.addEventListener("click", (e) => {
+  const sidebar = document.getElementById("sidebar");
+  if (!sidebar || !sidebar.classList.contains("open")) return;
+  if (sidebar.contains(e.target) || e.target.closest(".mobile-menu-btn")) return;
+  sidebar.classList.remove("open");
+});
 
 /**
  * Abre la sección pulsada y cierra el resto (acordeón: una sola

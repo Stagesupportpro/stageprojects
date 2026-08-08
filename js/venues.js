@@ -48,7 +48,7 @@ function pintarTablaVenues(venues) {
   tbody.innerHTML = venues
     .map((v) => {
       const contactoPrincipal = Array.isArray(v.contactos) && v.contactos.length ? v.contactos[0].nombre : "—";
-      const taquilla = v.tramosTaquilla && v.tramosTaquilla.activo ? "Sí" : "No";
+      const taquilla = Array.isArray(v.tarifas) && v.tarifas.some((t) => t.taquillaCompartida) ? "Sí" : "No";
       return `
         <tr>
           <td style="font-weight:600;">${escaparHtmlVen(v.nombre)}</td>
@@ -100,7 +100,6 @@ formVenue.addEventListener("submit", async (e) => {
       contactos: [],
       condiciones: "",
       tarifas: [],
-      tramosTaquilla: { activo: false, filas: [] },
       ridersPdf: [],
       notas: "",
       creadoPor: nombreCompletoDe(usuarioActualVen) || usuarioActualVen.email,

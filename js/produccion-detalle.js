@@ -118,8 +118,11 @@ function importarCosteVenueProd() {
   renderCostesProd();
 
   document.getElementById("pd-sala-nombre").value = bookingVinculado.espacio || "";
-  if (bookingVinculado.repartoSalaPct != null) {
-    document.getElementById("pd-reparto-sala").value = bookingVinculado.repartoSalaPct;
+  if (bookingVinculado.repartoPromotorPct != null) {
+    document.getElementById("pd-reparto-promotor").value = bookingVinculado.repartoPromotorPct;
+  }
+  if (bookingVinculado.repartoVenuePct != null) {
+    document.getElementById("pd-reparto-venue").value = bookingVinculado.repartoVenuePct;
   }
 
   cambiarTabProd("cifras");
@@ -167,7 +170,8 @@ async function cargarProduccion() {
     document.getElementById("pd-venta-prevista").value = d.ventaPrevista != null ? d.ventaPrevista : "";
     document.getElementById("pd-venta-nota").value = d.ventaNota || "";
     document.getElementById("pd-precio-entrada").value = d.precioEntrada != null ? d.precioEntrada : "";
-    document.getElementById("pd-reparto-sala").value = d.repartoSalaPct != null ? d.repartoSalaPct : "";
+    document.getElementById("pd-reparto-promotor").value = d.repartoPromotorPct != null ? d.repartoPromotorPct : "";
+    document.getElementById("pd-reparto-venue").value = d.repartoVenuePct != null ? d.repartoVenuePct : "";
 
     documentosProd = Array.isArray(d.documentos) ? d.documentos : [];
     renderDocumentosProd();
@@ -248,9 +252,11 @@ function recalcularCifrasProd() {
 
   const aforoTotal = parseFloat(document.getElementById("pd-venta-prevista").value) || parseFloat(document.getElementById("pd-aforo").value) || 0;
   const precio = parseFloat(document.getElementById("pd-precio-entrada").value) || 0;
-  const repartoSalaInput = document.getElementById("pd-reparto-sala").value;
-  const repartoSalaPct = repartoSalaInput !== "" ? parseFloat(repartoSalaInput) : null;
-  const hayReparto = repartoSalaPct != null && !isNaN(repartoSalaPct);
+  const repartoPromotorInput = document.getElementById("pd-reparto-promotor").value;
+  const repartoVenueInput = document.getElementById("pd-reparto-venue").value;
+  const repartoPromotorPct = repartoPromotorInput !== "" ? parseFloat(repartoPromotorInput) : null;
+  const repartoVenuePct = repartoVenueInput !== "" ? parseFloat(repartoVenueInput) : null;
+  const hayReparto = (repartoPromotorPct != null && !isNaN(repartoPromotorPct)) || (repartoVenuePct != null && !isNaN(repartoVenuePct));
 
   document.getElementById("pd-th-sala").style.display = hayReparto ? "table-cell" : "none";
   document.getElementById("pd-th-artista").style.display = hayReparto ? "table-cell" : "none";
@@ -263,9 +269,9 @@ function recalcularCifrasProd() {
 
     let colsReparto = "";
     if (hayReparto) {
-      const salaCut = venta * (repartoSalaPct / 100);
-      const artistaCut = beneficio * (1 - repartoSalaPct / 100);
-      colsReparto = `<td>${formatoEuroPD(salaCut)}</td><td>${formatoEuroPD(artistaCut)}</td>`;
+      const venueCut = venta * ((repartoVenuePct || 0) / 100);
+      const promotorCut = beneficio * ((repartoPromotorPct || 0) / 100);
+      colsReparto = `<td>${formatoEuroPD(venueCut)}</td><td>${formatoEuroPD(promotorCut)}</td>`;
     }
 
     return `
@@ -436,7 +442,8 @@ async function guardarProduccion() {
     ventaPrevista: parseFloat(document.getElementById("pd-venta-prevista").value) || null,
     ventaNota: document.getElementById("pd-venta-nota").value.trim(),
     precioEntrada: parseFloat(document.getElementById("pd-precio-entrada").value) || null,
-    repartoSalaPct: document.getElementById("pd-reparto-sala").value !== "" ? parseFloat(document.getElementById("pd-reparto-sala").value) : null,
+    repartoPromotorPct: document.getElementById("pd-reparto-promotor").value !== "" ? parseFloat(document.getElementById("pd-reparto-promotor").value) : null,
+    repartoVenuePct: document.getElementById("pd-reparto-venue").value !== "" ? parseFloat(document.getElementById("pd-reparto-venue").value) : null,
     documentos: documentosProd,
     hospitalidad: hospitalidadProd,
     taquillaEntradasVendidas: parseFloat(document.getElementById("pd-tq-vendidas").value) || null,
