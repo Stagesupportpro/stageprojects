@@ -266,15 +266,41 @@ button { font-family: inherit; }
   font-size: 15px;
 }
 
-.nav-group { margin-bottom: 22px; }
-.nav-group .nav-label {
+.nav-group { margin-bottom: 4px; }
+
+.nav-group-header {
+  width: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  background: none;
+  border: none;
+  cursor: pointer;
+  text-align: left;
+  padding: 10px 10px;
   font-size: 11px;
   text-transform: uppercase;
   letter-spacing: 0.08em;
-  color: #57585F;
-  padding: 0 10px 8px;
-  font-weight: 600;
+  color: #8A8B93;
+  font-weight: 700;
+  border-radius: 8px;
+  transition: background .12s ease, color .12s ease;
 }
+.nav-group-header:hover { background: var(--color-sidebar-hover); color: #fff; }
+.nav-group.open .nav-group-header { color: #fff; }
+
+.nav-chevron {
+  font-size: 13px;
+  transition: transform .15s ease;
+  flex-shrink: 0;
+}
+.nav-group.open .nav-chevron { transform: rotate(90deg); }
+
+.nav-group-items {
+  display: none;
+  padding: 2px 0 8px;
+}
+.nav-group.open .nav-group-items { display: block; }
 
 .nav-item {
   display: flex;
@@ -1253,6 +1279,137 @@ table.doc-table td.label { font-weight: 700; background: #fafafa; width: 22%; }
 
 @media (max-width: 760px) {
   .tarifa-row, .tramo-row, .rider-row { grid-template-columns: 1fr; }
+}
+
+/* ---------- Pestañas (ficha de Roster) ---------- */
+
+.rst-tabs {
+  display: flex;
+  gap: 4px;
+  border-bottom: 1.5px solid var(--color-border);
+  margin-bottom: 22px;
+  overflow-x: auto;
+}
+.rst-tabs button {
+  background: none;
+  border: none;
+  padding: 12px 16px;
+  font-size: 13.5px;
+  font-weight: 600;
+  color: var(--color-text-muted);
+  cursor: pointer;
+  border-bottom: 2.5px solid transparent;
+  white-space: nowrap;
+}
+.rst-tabs button:hover { color: var(--color-text); }
+.rst-tabs button.active { color: var(--color-text); border-bottom-color: var(--color-accent); }
+.rst-tabs button.juridico { margin-left: auto; }
+
+.rst-tab-panel { display: none; }
+.rst-tab-panel.active { display: block; }
+
+.press-item {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 10px 0;
+  border-bottom: 1px solid var(--color-border);
+}
+.press-item:last-child { border-bottom: none; }
+.press-item .press-thumb {
+  width: 44px; height: 44px;
+  border-radius: 8px;
+  object-fit: cover;
+  background: var(--color-bg-soft);
+  flex-shrink: 0;
+}
+.press-item .press-name { flex: 1; font-size: 13.5px; }
+
+.ver-field-row {
+  display: grid;
+  grid-template-columns: 160px 1fr;
+  gap: 4px 16px;
+  padding: 10px 0;
+  border-bottom: 1px solid var(--color-border);
+  font-size: 14px;
+}
+.ver-field-row .ver-label { color: var(--color-text-muted); font-weight: 600; font-size: 12.5px; text-transform: uppercase; letter-spacing: 0.03em; }
+
+/* ---------- Catálogo ---------- */
+
+.catalogo-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+  gap: 18px;
+}
+.catalogo-card {
+  background: #fff;
+  border: 1px solid var(--color-border);
+  border-radius: 14px;
+  overflow: hidden;
+  cursor: pointer;
+  transition: box-shadow .15s ease, transform .1s ease;
+}
+.catalogo-card:hover { box-shadow: 0 6px 20px rgba(0,0,0,0.08); transform: translateY(-2px); }
+.catalogo-card .cat-imagen {
+  width: 100%;
+  aspect-ratio: 1 / 1;
+  object-fit: cover;
+  background: var(--color-bg-soft);
+  display: block;
+}
+.catalogo-card .cat-imagen-placeholder {
+  width: 100%;
+  aspect-ratio: 1 / 1;
+  background: var(--color-bg-soft);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--color-text-muted);
+  font-family: var(--font-display);
+  font-weight: 700;
+}
+.catalogo-card .cat-info { padding: 14px; }
+.catalogo-card .cat-nombre { font-weight: 700; font-size: 14.5px; margin-bottom: 4px; }
+.catalogo-card .cat-oficina { font-size: 12px; color: var(--color-text-muted); }
+
+.cat-modal-overlay {
+  position: fixed; inset: 0;
+  background: rgba(13,13,13,0.6);
+  display: none;
+  align-items: center;
+  justify-content: center;
+  padding: 20px;
+  z-index: 50;
+}
+.cat-modal-overlay.show { display: flex; }
+.cat-modal {
+  background: #fff;
+  border-radius: 16px;
+  max-width: 640px;
+  width: 100%;
+  max-height: 88vh;
+  overflow-y: auto;
+}
+.cat-modal .cat-modal-imagen { width: 100%; max-height: 320px; object-fit: cover; display: block; }
+.cat-modal .cat-modal-body { padding: 24px; }
+.cat-modal .cat-modal-body h2 { font-size: 20px; margin-bottom: 4px; }
+.cat-modal .cat-modal-body .cat-modal-oficina { color: var(--color-text-muted); font-size: 13px; margin-bottom: 16px; }
+.cat-modal .cat-modal-body p { font-size: 14px; line-height: 1.6; white-space: pre-line; }
+.cat-modal .cat-modal-redes { display: flex; gap: 8px; flex-wrap: wrap; margin-top: 16px; }
+.cat-modal .cat-modal-redes a {
+  font-size: 12.5px; font-weight: 600;
+  border: 1.5px solid var(--color-border);
+  border-radius: 20px;
+  padding: 6px 12px;
+  text-decoration: none;
+  color: var(--color-text);
+}
+.cat-modal-close {
+  position: sticky; top: 12px; float: right; margin-right: 12px;
+  width: 32px; height: 32px; border-radius: 50%;
+  border: none; background: rgba(255,255,255,0.9);
+  cursor: pointer; font-size: 14px;
 }
 
 /* ---------- Calculadora (Roster) ---------- */
