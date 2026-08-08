@@ -9,7 +9,7 @@ const NAV_ESTRUCTURA = [
     grupo: "General",
     items: [
       { id: "dashboard", label: "Dashboard", href: "dashboard.html", roles: ["Comercial", "Producción", "Admin"], listo: true },
-      { id: "calendario", label: "Calendario", href: "calendario.html", roles: ["Comercial", "Producción", "Admin"], listo: false },
+      { id: "calendario", label: "Calendario", href: "calendario.html", roles: ["Comercial", "Producción", "Admin"], listo: true },
     ],
   },
   {
