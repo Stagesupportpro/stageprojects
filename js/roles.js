@@ -1,0 +1,251 @@
+// =========================================================
+// STAGE SUPPORT — roles.js
+// Roles personalizados y sus permisos por sección.
+// Colección: /roles/{id} → { nombre, permisos: { dashboard: true, ... } }
+// =========================================================
+
+const PERMISOS_MODULOS = [
+  { id: "dashboard", label: "Dashboard" },
+  { id: "calendario", label: "Calendario" },
+  { id: "bookings", label: "Bookings" },
+  { id: "producciones", label: "Producciones" },
+  { id: "clientes", label: "Clientes" },
+  { id: "usuarios", label: "Usuarios" },
+  { id: "roles", label: "Roles" },
+  { id: "comisiones", label: "Comisiones" },
+  { id: "configuracion", label: "Datos de la empresa" },
+];
+
+// Roles con los que arranca la plataforma si la colección está vacía.
+const ROLES_POR_DEFECTO = [
+  {
+    nombre: "Admin",
+    permisos: Object.fromEntries(PERMISOS_MODULOS.map((m) => [m.id, true])),
+  },
+  {
+    nombre: "Comercial",
+    permisos: { dashboard: true, calendario: true, bookings: true, clientes: true },
+  },
+  {
+    nombre: "Producción",
+    permisos: { dashboard: true, calendario: true, producciones: true },
+  },
+];
+
+(async function () {
+  const perfil = await protegerPagina(["Admin"]);
+  pintarNav(perfil.rol, "roles");
+  document.getElementById("pass-name").textContent = nombreCompletoDe(perfil) || perfil.email;
+  document.getElementById("pass-role").textContent = perfil.rol;
+  const avatarEl = document.getElementById("pass-avatar");
+  if (perfil.foto) {
+    avatarEl.innerHTML = `<img src="${perfil.foto}" alt="" />`;
+  } else {
+    avatarEl.textContent = inicialesDe(nombreCompletoDe(perfil) || perfil.email);
+  }
+
+  pintarChecksPermisos();
+  await asegurarRolesPorDefecto();
+  escucharRoles();
+})();
+
+// Si la colección "roles" está vacía (primera vez), sembramos los 3 roles
+// que ya se usan en el login: Admin, Comercial y Producción.
+async function asegurarRolesPorDefecto() {
+  try {
+    const snap = await db.collection("roles").limit(1).get();
+    if (!snap.empty) return;
+
+    const batch = db.batch();
+    ROLES_POR_DEFECTO.forEach((r) => {
+      const ref = db.collection("roles").doc();
+      batch.set(ref, { ...r, protegido: true, creadoEl: firebase.firestore.FieldValue.serverTimestamp() });
+    });
+    await batch.commit();
+  } catch (err) {
+    console.error("No se pudieron sembrar los roles por defecto:", err);
+  }
+}
+
+function escucharRoles() {
+  db.collection("roles").orderBy("nombre").onSnapshot(
+    (snap) => {
+      const filas = [];
+      snap.forEach((doc) => filas.push({ id: doc.id, ...doc.data() }));
+      pintarTablaRoles(filas);
+    },
+    (err) => {
+      console.error(err);
+      mostrarToast("No se pudo cargar el listado de roles.");
+    }
+  );
+}
+
+function pintarTablaRoles(roles) {
+  const tbody = document.getElementById("tabla-roles");
+  document.getElementById("contador-roles").textContent = roles.length + (roles.length === 1 ? " rol" : " roles");
+
+  if (roles.length === 0) {
+    tbody.innerHTML = `<tr><td colspan="3" style="text-align:center; padding:36px; color:var(--color-text-muted);">
+      Todavía no hay roles creados.
+    </td></tr>`;
+    return;
+  }
+
+  tbody.innerHTML = roles
+    .map((r) => {
+      const modulosActivos = PERMISOS_MODULOS.filter((m) => r.permisos && r.permisos[m.id]);
+      const todoActivo = modulosActivos.length === PERMISOS_MODULOS.length;
+      const tagsHtml = todoActivo
+        ? `<span class="permiso-tag todo">Acceso total</span>`
+        : modulosActivos.length === 0
+        ? `<span class="permiso-tag">Sin permisos</span>`
+        : modulosActivos.map((m) => `<span class="permiso-tag">${m.label}</span>`).join("");
+
+      return `
+        <tr>
+          <td style="font-weight:600;">${escaparHtmlRoles(r.nombre)}</td>
+          <td><div class="permiso-tags">${tagsHtml}</div></td>
+          <td>
+            <div class="row-actions" style="justify-content:flex-end;">
+              <button class="icon-btn" title="Editar" onclick='abrirModalEdicionRol(${JSON.stringify(r).replace(/'/g, "&#39;")})'>✎</button>
+              <button class="icon-btn danger" title="Eliminar" onclick="confirmarEliminarRol('${r.id}', '${escaparHtmlRoles(r.nombre).replace(/'/g, "\\'")}')">🗑</button>
+            </div>
+          </td>
+        </tr>
+      `;
+    })
+    .join("");
+}
+
+function escaparHtmlRoles(str) {
+  const d = document.createElement("div");
+  d.textContent = str || "";
+  return d.innerHTML;
+}
+
+// ---------- Modal ----------
+
+const formRol = document.getElementById("form-rol");
+const overlayRol = document.getElementById("modal-overlay");
+
+function pintarChecksPermisos(permisosActivos) {
+  const cont = document.getElementById("permisos-grid");
+  cont.innerHTML = PERMISOS_MODULOS.map(
+    (m) => `
+      <label class="permiso-check">
+        <input type="checkbox" data-permiso="${m.id}" ${permisosActivos && permisosActivos[m.id] ? "checked" : ""} />
+        ${m.label}
+      </label>
+    `
+  ).join("");
+}
+
+function abrirModalRol() {
+  formRol.reset();
+  document.getElementById("rol-id-edicion").value = "";
+  document.getElementById("modal-titulo").textContent = "Nuevo rol";
+  document.getElementById("modal-sub").textContent = "Define el nombre del rol y a qué secciones puede acceder.";
+  document.getElementById("btn-guardar").textContent = "Crear rol";
+  pintarChecksPermisos();
+  ocultarMsgModalRol();
+  overlayRol.classList.add("show");
+}
+
+function abrirModalEdicionRol(r) {
+  formRol.reset();
+  document.getElementById("rol-id-edicion").value = r.id;
+  document.getElementById("rol-nombre").value = r.nombre || "";
+  document.getElementById("modal-titulo").textContent = "Editar rol";
+  document.getElementById("modal-sub").textContent = "Actualiza el nombre o los permisos de este rol.";
+  document.getElementById("btn-guardar").textContent = "Guardar cambios";
+  pintarChecksPermisos(r.permisos || {});
+  ocultarMsgModalRol();
+  overlayRol.classList.add("show");
+}
+
+function cerrarModal() {
+  overlayRol.classList.remove("show");
+}
+
+function ocultarMsgModalRol() {
+  const m = document.getElementById("modal-msg");
+  m.className = "form-msg";
+  m.textContent = "";
+}
+
+function mostrarMsgModalRol(texto) {
+  const m = document.getElementById("modal-msg");
+  m.textContent = texto;
+  m.className = "form-msg show error";
+}
+
+formRol.addEventListener("submit", async (e) => {
+  e.preventDefault();
+  const id = document.getElementById("rol-id-edicion").value;
+  const btn = document.getElementById("btn-guardar");
+  btn.disabled = true;
+
+  const nombre = document.getElementById("rol-nombre").value.trim();
+  const permisos = {};
+  document.querySelectorAll("#permisos-grid input[type=checkbox]").forEach((chk) => {
+    permisos[chk.dataset.permiso] = chk.checked;
+  });
+
+  try {
+    if (id) {
+      await db.collection("roles").doc(id).update({ nombre, permisos });
+      mostrarToast("Rol actualizado.");
+    } else {
+      await db.collection("roles").add({
+        nombre,
+        permisos,
+        protegido: false,
+        creadoEl: firebase.firestore.FieldValue.serverTimestamp(),
+      });
+      mostrarToast("Rol creado.");
+    }
+    cerrarModal();
+  } catch (err) {
+    console.error(err);
+    mostrarMsgModalRol("No se pudo guardar. Inténtalo de nuevo.");
+  } finally {
+    btn.disabled = false;
+  }
+});
+
+// ---------- Eliminar ----------
+
+async function confirmarEliminarRol(id, nombre) {
+  try {
+    const enUso = await db.collection("usuarios").where("rol", "==", nombre).limit(1).get();
+    if (!enUso.empty) {
+      mostrarToast(`No se puede eliminar: hay usuarios con el rol "${nombre}". Reasígnalos primero.`);
+      return;
+    }
+  } catch (err) {
+    console.error(err);
+  }
+
+  if (!confirm(`¿Eliminar el rol "${nombre}"?`)) return;
+
+  db.collection("roles")
+    .doc(id)
+    .delete()
+    .then(() => mostrarToast("Rol eliminado."))
+    .catch((err) => {
+      console.error(err);
+      mostrarToast("No se pudo eliminar el rol.");
+    });
+}
+
+// ---------- Toast ----------
+
+let toastTimerRoles;
+function mostrarToast(texto) {
+  const t = document.getElementById("toast");
+  document.getElementById("toast-msg").textContent = texto;
+  t.classList.add("show");
+  clearTimeout(toastTimerRoles);
+  toastTimerRoles = setTimeout(() => t.classList.remove("show"), 3200);
+}
