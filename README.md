@@ -155,6 +155,55 @@ IVA) se repite aquí.
 Al crear un booking, también se marca en el Calendario (tipo `Booking`)
 el día de creación — igual que Producciones y Hojas de Ruta.
 
+## Menú lateral (acordeón) y secciones
+
+El menú lateral funciona por acordeón: al pulsar el nombre de una
+sección se abre y se cierran las demás. La sección que contiene la
+página en la que estás se abre sola al cargar. Se define entero en
+`js/nav.js` (`NAV_ESTRUCTURA`) — para añadir una página nueva, es el
+único sitio que hay que tocar.
+
+Secciones actuales: **General**, **Comercial** (Catálogo, Preparar
+Propuesta), **Booking & Management** (antes "Booking & Comercial":
+Bookings, Roster, Venues, Clientes), **Producción** y
+**Administración**.
+
+## Catálogo
+
+En **Comercial → Catálogo**: una galería del Roster pensada para
+enseñar a clientes desde un dispositivo — mismo origen de datos que
+Roster (`roster/{id}`), pero **deliberadamente sin caché, comisión,
+IVA ni tarifas**; solo nombre, cartel, descripción comercial y redes
+sociales. Al tocar una ficha se abre un modal de detalle. Es de solo
+lectura — para editar el contenido se sigue usando Roster.
+
+## Roster — ficha por pestañas
+
+La ficha de cada espectáculo (`roster-detalle.html`) ahora tiene
+pestañas: **Información general**, **Tarifas**, **Riders**,
+**Hospitalidad**, **PressKit** y **Jurídico** (esta última solo
+visible para Admin). Desde el listado, cada fila tiene **Ver**
+(`roster-ver.html`, solo lectura, con las mismas pestañas y botones de
+descarga) y **Editar** (la ficha completa).
+
+- **Tarifas**: la "tarifa estándar" (Caché/Comisión/IVA) sigue siendo
+  la que se autocompleta en Bookings y Hojas de Ruta. Además, ahora
+  hay una lista de **otras tarifas** (para formatos distintos:
+  showcase, DJ set...), cada una con su coste y PVP (coste + comisión)
+  calculado al vuelo.
+- **Riders**: ahora admite varios PDF, cada uno con su etiqueta.
+- **Hospitalidad**: condiciones en texto libre + PDF de rider de
+  hospitalidad.
+- **PressKit**: logos, dossiers e imágenes varias (mezcla de imágenes
+  y PDF en una sola lista).
+- **Jurídico**: el contrato de colaboración **no vive en el mismo
+  documento** que el resto de la ficha — se guarda en una colección
+  aparte, `rosterJuridico/{id}`, con reglas de Firestore que solo
+  permiten leerla o escribirla a Admin. Esto es una restricción real
+  a nivel de base de datos, no solo una pestaña oculta en la
+  pantalla — así, aunque alguien inspeccionara las peticiones de red,
+  seguiría sin poder acceder a esos contratos si no es Admin.
+
 ## Roster, Propuestas y Clientes
 
 **Clientes** (`clientes.html`) — listado simple con categoría

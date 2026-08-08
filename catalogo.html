@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-<title>Stage Support · Propuestas</title>
+<title>Stage Support · Catálogo</title>
 <link rel="icon" href="assets/logo_stagesupport.png" />
 <link rel="stylesheet" href="css/styles.css" />
 </head>
@@ -36,56 +36,30 @@
     <div class="topbar">
       <button class="mobile-menu-btn" onclick="document.getElementById('sidebar').classList.toggle('open')">☰</button>
       <div>
-        <div class="eyebrow">Booking &amp; Management</div>
-        <h1>Propuestas</h1>
+        <div class="eyebrow">Comercial</div>
+        <h1>Catálogo</h1>
       </div>
     </div>
+    <p style="color:var(--color-text-muted); font-size:14px; margin:-18px 0 24px;">
+      Pensado para mostrar a clientes: sin caché, comisiones ni datos internos. Toca una ficha para ver el detalle.
+    </p>
 
-    <div class="table-toolbar">
-      <div style="color:var(--color-text-muted); font-size:14px;" id="contador-propuestas">Cargando…</div>
-      <button class="btn-accent" onclick="abrirModalPropuesta()">+ Nueva propuesta</button>
-    </div>
-
-    <table class="users-table">
-      <thead>
-        <tr>
-          <th>ID</th>
-          <th>Nombre</th>
-          <th>Cliente</th>
-          <th>Estado</th>
-          <th style="text-align:right;">Acciones</th>
-        </tr>
-      </thead>
-      <tbody id="tabla-propuestas"></tbody>
-    </table>
+    <div class="catalogo-grid" id="catalogo-grid"></div>
   </main>
 
 </div>
 
-<!-- Modal alta rápida -->
-<div class="modal-overlay" id="modal-overlay">
-  <div class="modal">
-    <h2>Nueva propuesta</h2>
-    <p class="modal-sub">Se le asignará automáticamente un ID correlativo (PROV&lt;año&gt;-0001).</p>
-
-    <form id="form-propuesta">
-      <div class="field">
-        <label for="prop-nombre">Nombre</label>
-        <input type="text" id="prop-nombre" placeholder="Ej. Propuesta Fiestas Mayores 2026" required />
-      </div>
-
-      <div class="field">
-        <label for="prop-cliente">Cliente (opcional)</label>
-        <select id="prop-cliente"><option value="">— Sin vincular —</option></select>
-      </div>
-
-      <div class="form-msg" id="modal-msg"></div>
-
-      <div class="modal-actions">
-        <button type="button" class="btn-ghost" onclick="cerrarModal()">Cancelar</button>
-        <button type="submit" class="btn-accent" id="btn-guardar">Crear propuesta</button>
-      </div>
-    </form>
+<!-- Modal de detalle -->
+<div class="cat-modal-overlay" id="cat-modal-overlay" onclick="if(event.target===this) cerrarModalCatalogo()">
+  <div class="cat-modal">
+    <button class="cat-modal-close" onclick="cerrarModalCatalogo()">✕</button>
+    <img class="cat-modal-imagen" id="cat-modal-imagen" style="display:none;" />
+    <div class="cat-modal-body">
+      <h2 id="cat-modal-nombre">—</h2>
+      <div class="cat-modal-oficina" id="cat-modal-oficina"></div>
+      <p id="cat-modal-descripcion"></p>
+      <div class="cat-modal-redes" id="cat-modal-redes"></div>
+    </div>
   </div>
 </div>
 
@@ -97,7 +71,6 @@
 <script src="js/firebase-config.js"></script>
 <script src="js/auth.js"></script>
 <script src="js/nav.js"></script>
-<script src="js/ids.js"></script>
-<script src="js/propuestas.js"></script>
+<script src="js/catalogo.js"></script>
 </body>
 </html>

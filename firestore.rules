@@ -51,6 +51,12 @@ service cloud.firestore {
       allow read, write: if estoyActivo();
     }
 
+    // ---- Jurídico del Roster (contratos) — SOLO Admin, ni siquiera lectura
+    //      para el resto de empleados. Vive aparte de /roster/ a propósito.
+    match /rosterJuridico/{id} {
+      allow read, write: if esAdmin();
+    }
+
     // ---- Propuestas a clientes (con ID correlativo PROV<año>-0001) ----
     match /propuestas/{id} {
       allow read, write: if estoyActivo();

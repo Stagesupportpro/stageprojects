@@ -36,108 +36,173 @@
     <div class="topbar">
       <button class="mobile-menu-btn" onclick="document.getElementById('sidebar').classList.toggle('open')">☰</button>
       <div>
-        <div class="eyebrow">Booking &amp; Comercial · <a href="roster.html" style="color:inherit;">Roster</a></div>
+        <div class="eyebrow">Booking &amp; Management · <a href="roster.html" style="color:inherit;">Roster</a></div>
         <h1 id="rst-titulo-cabecera">Espectáculo</h1>
       </div>
       <button class="btn-accent" onclick="guardarRoster()" id="btn-guardar-rst">Guardar cambios</button>
     </div>
 
     <div class="card">
+      <div class="rst-tabs" id="rst-tabs">
+        <button type="button" data-tab="general" onclick="cambiarTabRoster('general')">Información general</button>
+        <button type="button" data-tab="tarifas" onclick="cambiarTabRoster('tarifas')">Tarifas</button>
+        <button type="button" data-tab="riders" onclick="cambiarTabRoster('riders')">Riders</button>
+        <button type="button" data-tab="hospitalidad" onclick="cambiarTabRoster('hospitalidad')">Hospitalidad</button>
+        <button type="button" data-tab="presskit" onclick="cambiarTabRoster('presskit')">PressKit</button>
+        <button type="button" data-tab="juridico" class="juridico" id="btn-tab-juridico" style="display:none;" onclick="cambiarTabRoster('juridico')">Jurídico</button>
+      </div>
+
       <form id="form-roster" onsubmit="return false;">
 
-        <div class="hr-section">
-          <div class="form-grid">
-            <div class="field field-wide">
-              <label for="rst-nombre">Nombre del espectáculo / artista</label>
-              <input type="text" id="rst-nombre" required />
-            </div>
-            <div class="field field-wide">
-              <label for="rst-oficina">Oficina de representación (opcional)</label>
-              <input type="text" id="rst-oficina" />
-            </div>
-          </div>
-        </div>
+        <!-- ============ INFORMACIÓN GENERAL ============ -->
+        <div class="rst-tab-panel active" id="panel-general">
 
-        <!-- Cartel -->
-        <div class="hr-section">
-          <div class="hr-section-head"><h3>Cartel / imagen</h3></div>
-          <div class="poster-picker" style="display:flex; align-items:center; gap:16px;">
-            <div class="poster-preview" id="poster-preview">Sin imagen</div>
-            <div class="logo-actions">
-              <button type="button" class="btn-ghost" onclick="document.getElementById('poster-input').click()">Subir imagen</button>
-              <button type="button" class="btn-ghost" id="btn-quitar-poster" style="display:none;" onclick="quitarPoster()">Quitar</button>
-              <input type="file" id="poster-input" accept="image/*" onchange="procesarPoster(event)" style="display:none;" />
+          <div class="hr-section">
+            <div class="form-grid">
+              <div class="field field-wide">
+                <label for="rst-nombre">Nombre del espectáculo / artista</label>
+                <input type="text" id="rst-nombre" required />
+              </div>
+              <div class="field field-wide">
+                <label for="rst-oficina">Oficina de representación (opcional)</label>
+                <input type="text" id="rst-oficina" />
+              </div>
             </div>
           </div>
-        </div>
 
-        <!-- Logo -->
-        <div class="hr-section">
-          <div class="hr-section-head"><h3>Logo (PNG)</h3></div>
-          <p style="font-size:12px; color:var(--color-text-muted); margin:-4px 0 12px;">Se usará automáticamente como logo del evento al elegir este artista en una Hoja de Ruta.</p>
-          <div class="logo-picker">
-            <div class="logo-preview" id="logo-rst-preview">Sin logo</div>
-            <div class="logo-actions">
-              <button type="button" class="btn-ghost" onclick="document.getElementById('logo-rst-input').click()">Subir logo (PNG)</button>
-              <button type="button" class="btn-ghost" id="btn-quitar-logo-rst" style="display:none;" onclick="quitarLogoRst()">Quitar</button>
-              <input type="file" id="logo-rst-input" accept="image/png,image/webp" onchange="procesarLogoRst(event)" style="display:none;" />
+          <div class="hr-section">
+            <div class="hr-section-head"><h3>Cartel / imagen</h3></div>
+            <div class="poster-picker" style="display:flex; align-items:center; gap:16px;">
+              <div class="poster-preview" id="poster-preview">Sin imagen</div>
+              <div class="logo-actions">
+                <button type="button" class="btn-ghost" onclick="document.getElementById('poster-input').click()">Subir imagen</button>
+                <button type="button" class="btn-ghost" id="btn-quitar-poster" style="display:none;" onclick="quitarPoster()">Quitar</button>
+                <input type="file" id="poster-input" accept="image/*" onchange="procesarPoster(event)" style="display:none;" />
+              </div>
             </div>
           </div>
-        </div>
 
-        <!-- Contactos -->
-        <div class="hr-section">
-          <div class="hr-section-head"><h3>Contactos</h3></div>
-          <div id="lista-contactos-rst"></div>
-          <button type="button" class="add-row-link" onclick="anadirContactoRst()">+ Añadir contacto</button>
-        </div>
+          <div class="hr-section">
+            <div class="hr-section-head"><h3>Logo (PNG)</h3></div>
+            <p style="font-size:12px; color:var(--color-text-muted); margin:-4px 0 12px;">Se usará automáticamente como logo del evento al elegir este artista en una Hoja de Ruta.</p>
+            <div class="logo-picker">
+              <div class="logo-preview" id="logo-rst-preview">Sin logo</div>
+              <div class="logo-actions">
+                <button type="button" class="btn-ghost" onclick="document.getElementById('logo-rst-input').click()">Subir logo (PNG)</button>
+                <button type="button" class="btn-ghost" id="btn-quitar-logo-rst" style="display:none;" onclick="quitarLogoRst()">Quitar</button>
+                <input type="file" id="logo-rst-input" accept="image/png,image/webp" onchange="procesarLogoRst(event)" style="display:none;" />
+              </div>
+            </div>
+          </div>
 
-        <!-- Calculadora -->
-        <div class="hr-section">
-          <div class="hr-section-head"><h3>Caché, comisión e IVA</h3></div>
-          <div class="form-grid">
-            <div class="field"><label for="rst-cache">Caché (BI) €</label><input type="number" id="rst-cache" min="0" step="0.01" oninput="recalcular()" /></div>
+          <div class="hr-section">
+            <div class="hr-section-head"><h3>Descripción comercial</h3></div>
+            <p style="font-size:12px; color:var(--color-text-muted); margin:-4px 0 12px;">Se usará en el Catálogo y en las propuestas a clientes.</p>
             <div class="field">
-              <label for="rst-comision-preset">Comisión guardada</label>
-              <select id="rst-comision-preset" onchange="aplicarComisionPreset()">
-                <option value="">— Manual —</option>
-              </select>
+              <textarea id="rst-descripcion" placeholder="Texto de venta: estilo, formato de show, público, highlights…"></textarea>
             </div>
-            <div class="field"><label for="rst-comision-pct">Comisión (%)</label><input type="number" id="rst-comision-pct" min="0" max="100" step="0.1" oninput="recalcular()" /></div>
-            <div class="field"><label for="rst-iva-pct">IVA (%)</label><input type="number" id="rst-iva-pct" min="0" max="100" step="0.1" value="21" oninput="recalcular()" /></div>
           </div>
 
-          <div class="calc-box" style="margin-top:16px;">
-            <div class="calc-item"><div class="calc-label">Caché (BI)</div><div class="calc-value" id="calc-cache">0,00 €</div></div>
-            <div class="calc-item"><div class="calc-label">Comisión</div><div class="calc-value" id="calc-comision">0,00 €</div></div>
-            <div class="calc-item"><div class="calc-label">Total</div><div class="calc-value" id="calc-total">0,00 €</div></div>
-            <div class="calc-item calc-total"><div class="calc-label">Total + IVA</div><div class="calc-value" id="calc-total-iva">0,00 €</div></div>
+          <div class="hr-section">
+            <div class="hr-section-head"><h3>Contactos</h3></div>
+            <div id="lista-contactos-rst"></div>
+            <button type="button" class="add-row-link" onclick="anadirContactoRst()">+ Añadir contacto</button>
+          </div>
+
+          <div class="hr-section">
+            <div class="hr-section-head"><h3>Redes sociales</h3></div>
+            <div id="lista-redes"></div>
+            <button type="button" class="add-row-link" onclick="anadirRed()">+ Añadir red social</button>
+          </div>
+
+          <div class="hr-section" style="border:none;">
+            <div class="field">
+              <label for="rst-notas">Notas (opcional)</label>
+              <input type="text" id="rst-notas" />
+            </div>
           </div>
         </div>
 
-        <!-- Redes sociales -->
-        <div class="hr-section">
-          <div class="hr-section-head"><h3>Redes sociales</h3></div>
-          <div id="lista-redes"></div>
-          <button type="button" class="add-row-link" onclick="anadirRed()">+ Añadir red social</button>
+        <!-- ============ TARIFAS ============ -->
+        <div class="rst-tab-panel" id="panel-tarifas">
+
+          <div class="hr-section">
+            <div class="hr-section-head"><h3>Tarifa estándar (Caché, comisión e IVA)</h3></div>
+            <p style="font-size:12px; color:var(--color-text-muted); margin:-4px 0 12px;">Esta es la que se autocompleta en Bookings y Hojas de Ruta al elegir este artista.</p>
+            <div class="form-grid">
+              <div class="field"><label for="rst-cache">Caché / coste (BI) €</label><input type="number" id="rst-cache" min="0" step="0.01" oninput="recalcular()" /></div>
+              <div class="field">
+                <label for="rst-comision-preset">Comisión guardada</label>
+                <select id="rst-comision-preset" onchange="aplicarComisionPreset()">
+                  <option value="">— Manual —</option>
+                </select>
+              </div>
+              <div class="field"><label for="rst-comision-pct">Comisión (%)</label><input type="number" id="rst-comision-pct" min="0" max="100" step="0.1" oninput="recalcular()" /></div>
+              <div class="field"><label for="rst-iva-pct">IVA (%)</label><input type="number" id="rst-iva-pct" min="0" max="100" step="0.1" value="21" oninput="recalcular()" /></div>
+            </div>
+
+            <div class="calc-box" style="margin-top:16px;">
+              <div class="calc-item"><div class="calc-label">Coste</div><div class="calc-value" id="calc-cache">0,00 €</div></div>
+              <div class="calc-item"><div class="calc-label">Comisión</div><div class="calc-value" id="calc-comision">0,00 €</div></div>
+              <div class="calc-item"><div class="calc-label">PVP</div><div class="calc-value" id="calc-total">0,00 €</div></div>
+              <div class="calc-item calc-total"><div class="calc-label">PVP + IVA</div><div class="calc-value" id="calc-total-iva">0,00 €</div></div>
+            </div>
+          </div>
+
+          <div class="hr-section" style="border:none;">
+            <div class="hr-section-head"><h3>Otras tarifas / formatos</h3></div>
+            <p style="font-size:12px; color:var(--color-text-muted); margin:-4px 0 12px;">Para otros formatos de show (showcase, DJ set, acústico…), cada uno con su propio coste y PVP.</p>
+            <div id="lista-tarifas-rst"></div>
+            <button type="button" class="add-row-link" onclick="anadirTarifaRst()">+ Añadir tarifa</button>
+          </div>
         </div>
 
-        <!-- Rider técnico -->
-        <div class="hr-section">
-          <div class="hr-section-head"><h3>Rider técnico (PDF)</h3></div>
-          <div class="pdf-picker">
-            <button type="button" class="btn-ghost" onclick="document.getElementById('rider-input').click()">Subir PDF</button>
+        <!-- ============ RIDERS ============ -->
+        <div class="rst-tab-panel" id="panel-riders">
+          <div class="hr-section" style="border:none;">
+            <div class="hr-section-head"><h3>Riders técnicos (PDF)</h3></div>
+            <div id="lista-riders-rst"></div>
+            <button type="button" class="add-row-link" onclick="document.getElementById('rider-input').click()">+ Añadir rider (PDF)</button>
             <input type="file" id="rider-input" accept="application/pdf" onchange="procesarRiderPdf(event)" style="display:none;" />
-            <div id="rider-chip"></div>
+            <p style="font-size:12px; color:var(--color-text-muted); margin-top:8px;">Máximo recomendado ~600 KB por archivo (se guarda directamente en la base de datos).</p>
           </div>
-          <p style="font-size:12px; color:var(--color-text-muted); margin-top:8px;">Máximo recomendado ~600 KB (se guarda directamente en la base de datos).</p>
         </div>
 
-        <!-- Notas -->
-        <div class="hr-section">
-          <div class="field">
-            <label for="rst-notas">Notas (opcional)</label>
-            <input type="text" id="rst-notas" />
+        <!-- ============ HOSPITALIDAD ============ -->
+        <div class="rst-tab-panel" id="panel-hospitalidad">
+          <div class="hr-section">
+            <div class="hr-section-head"><h3>Condiciones de hospitalidad</h3></div>
+            <div class="field">
+              <textarea id="rst-hosp-condiciones" placeholder="Catering, camerinos, alojamiento, transporte…"></textarea>
+            </div>
+          </div>
+          <div class="hr-section" style="border:none;">
+            <div class="hr-section-head"><h3>Rider de hospitalidad (PDF)</h3></div>
+            <div id="lista-hosp-rst"></div>
+            <button type="button" class="add-row-link" onclick="document.getElementById('hosp-input').click()">+ Añadir PDF</button>
+            <input type="file" id="hosp-input" accept="application/pdf" onchange="procesarHospPdf(event)" style="display:none;" />
+          </div>
+        </div>
+
+        <!-- ============ PRESSKIT ============ -->
+        <div class="rst-tab-panel" id="panel-presskit">
+          <div class="hr-section" style="border:none;">
+            <div class="hr-section-head"><h3>PressKit</h3></div>
+            <p style="font-size:12px; color:var(--color-text-muted); margin:-4px 0 12px;">Logos, dossiers, imágenes varias para publicidad.</p>
+            <div id="lista-presskit-rst"></div>
+            <button type="button" class="add-row-link" onclick="document.getElementById('presskit-input').click()">+ Añadir archivo (imagen o PDF)</button>
+            <input type="file" id="presskit-input" accept="image/*,application/pdf" onchange="procesarPressKit(event)" style="display:none;" />
+          </div>
+        </div>
+
+        <!-- ============ JURÍDICO (solo Admin) ============ -->
+        <div class="rst-tab-panel" id="panel-juridico">
+          <div class="hr-section" style="border:none;">
+            <div class="hr-section-head"><h3>Contrato de colaboración (PDF)</h3></div>
+            <p style="font-size:12px; color:var(--color-text-muted); margin:-4px 0 12px;">Solo visible para Admin — se guarda en un espacio aparte con permisos restringidos.</p>
+            <div id="lista-contrato-rst"></div>
+            <button type="button" class="add-row-link" onclick="document.getElementById('contrato-input').click()">+ Añadir contrato (PDF)</button>
+            <input type="file" id="contrato-input" accept="application/pdf" onchange="procesarContratoPdf(event)" style="display:none;" />
           </div>
         </div>
 
