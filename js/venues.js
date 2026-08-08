@@ -39,7 +39,7 @@ function pintarTablaVenues(venues) {
     venues.length + (venues.length === 1 ? " venue" : " venues");
 
   if (venues.length === 0) {
-    tbody.innerHTML = `<tr><td colspan="5" style="text-align:center; padding:36px; color:var(--color-text-muted);">
+    tbody.innerHTML = `<tr><td colspan="6" style="text-align:center; padding:36px; color:var(--color-text-muted);">
       Todavía no hay venues creados.
     </td></tr>`;
     return;
@@ -49,10 +49,12 @@ function pintarTablaVenues(venues) {
     .map((v) => {
       const contactoPrincipal = Array.isArray(v.contactos) && v.contactos.length ? v.contactos[0].nombre : "—";
       const taquilla = Array.isArray(v.tarifas) && v.tarifas.some((t) => t.taquillaCompartida) ? "Sí" : "No";
+      const aforoTotal = aforoTotalVenue(v);
       return `
         <tr>
           <td style="font-weight:600;">${escaparHtmlVen(v.nombre)}</td>
           <td>${escaparHtmlVen(v.direccion || "—")}</td>
+          <td>${aforoTotal != null ? aforoTotal : "—"}</td>
           <td>${escaparHtmlVen(contactoPrincipal)}</td>
           <td>${taquilla}</td>
           <td>
@@ -71,6 +73,21 @@ function escaparHtmlVen(str) {
   const d = document.createElement("div");
   d.textContent = str || "";
   return d.innerHTML;
+}
+
+/**
+ * Calcula el aforo total de un venue, ya sea de tipo "total" o
+ * la suma de sus segmentos si es "segmentado". Se usa también desde
+ * Producciones al importar los datos del venue vinculado.
+ */
+function aforoTotalVenue(v) {
+  if (!v || !v.aforo) return null;
+  if (v.aforo.tipo === "segmentado") {
+    const segmentos = Array.isArray(v.aforo.segmentos) ? v.aforo.segmentos : [];
+    if (segmentos.length === 0) return null;
+    return segmentos.reduce((sum, s) => sum + (s.capacidad || 0), 0);
+  }
+  return v.aforo.total != null ? v.aforo.total : null;
 }
 
 // ---------- Modal alta rápida ----------

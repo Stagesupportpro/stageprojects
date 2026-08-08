@@ -109,7 +109,7 @@ function alVincularBookingProd() {
   }
 }
 
-function importarCosteVenueProd() {
+async function importarCosteVenueProd() {
   if (!bookingVinculado) return;
   const cache = bookingVinculado.cache || 0;
   const ivaPct = bookingVinculado.ivaPct || 0;
@@ -125,9 +125,33 @@ function importarCosteVenueProd() {
     document.getElementById("pd-reparto-venue").value = bookingVinculado.repartoVenuePct;
   }
 
+  // El aforo se trae de la ficha del venue (total, o la suma de sus segmentos).
+  if (bookingVinculado.venueId) {
+    try {
+      const snap = await db.collection("venues").doc(bookingVinculado.venueId).get();
+      if (snap.exists) {
+        const venue = snap.data();
+        const aforoTotal = calcularAforoTotalVenueProd(venue);
+        if (aforoTotal != null) document.getElementById("pd-aforo").value = aforoTotal;
+      }
+    } catch (err) {
+      console.error(err);
+    }
+  }
+
   cambiarTabProd("cifras");
   recalcularCifrasProd();
   mostrarToast("Coste de alquiler y datos de la sala importados.");
+}
+
+function calcularAforoTotalVenueProd(venue) {
+  if (!venue || !venue.aforo) return null;
+  if (venue.aforo.tipo === "segmentado") {
+    const segmentos = Array.isArray(venue.aforo.segmentos) ? venue.aforo.segmentos : [];
+    if (segmentos.length === 0) return null;
+    return segmentos.reduce((sum, s) => sum + (s.capacidad || 0), 0);
+  }
+  return venue.aforo.total != null ? venue.aforo.total : null;
 }
 
 // ---------- Cargar ----------

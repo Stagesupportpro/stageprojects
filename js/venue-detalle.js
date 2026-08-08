@@ -10,6 +10,7 @@ let docIdVenue = null;
 let contactosVen = [];
 let ridersVen = []; // [{ etiqueta, nombre, tamano, data }]
 let tarifasVen = []; // [{ concepto, importe, taquillaCompartida: bool, pctVenue, pctPromotor }]
+let segmentosAforoVen = []; // [{ nombre, capacidad }]
 
 const LIMITE_PDF_BYTES_VEN = 600 * 1024;
 
@@ -60,6 +61,13 @@ async function cargarVenue() {
 
     tarifasVen = Array.isArray(d.tarifas) ? d.tarifas : [];
     renderTarifasVen();
+
+    const aforo = d.aforo || { tipo: "total", total: null, segmentos: [] };
+    document.querySelector(`input[name="v-aforo-tipo"][value="${aforo.tipo || "total"}"]`).checked = true;
+    document.getElementById("v-aforo-total").value = aforo.total != null ? aforo.total : "";
+    segmentosAforoVen = Array.isArray(aforo.segmentos) ? aforo.segmentos : [];
+    alCambiarTipoAforoVen();
+    renderSegmentosAforoVen();
   } catch (err) {
     console.error(err);
     mostrarToast("No se pudo cargar la ficha.");
@@ -195,11 +203,56 @@ function eliminarTarifaVen(i) {
   renderTarifasVen();
 }
 
+// ---------- Aforo ----------
+
+function alCambiarTipoAforoVen() {
+  const tipo = document.querySelector('input[name="v-aforo-tipo"]:checked').value;
+  document.getElementById("campo-aforo-total").style.display = tipo === "total" ? "block" : "none";
+  document.getElementById("bloque-aforo-segmentado").style.display = tipo === "segmentado" ? "block" : "none";
+}
+
+function renderSegmentosAforoVen() {
+  const cont = document.getElementById("lista-aforo-segmentos");
+  if (segmentosAforoVen.length === 0) {
+    cont.innerHTML = `<p style="color:var(--color-text-muted); font-size:13px;">Todavía no hay segmentos añadidos.</p>`;
+  } else {
+    cont.innerHTML = segmentosAforoVen
+      .map(
+        (s, i) => `
+          <div class="repeat-row segmento-row">
+            <input placeholder="Nombre del segmento (Ej. Platea, Grada, VIP…)" value="${escaparAttrVen(s.nombre)}" oninput="segmentosAforoVen[${i}].nombre=this.value" />
+            <input type="number" min="0" step="1" placeholder="Capacidad" value="${s.capacidad != null ? s.capacidad : ""}" oninput="segmentosAforoVen[${i}].capacidad=this.value===''?null:parseInt(this.value,10); actualizarTotalSegmentosVen()" />
+            <button type="button" class="remove-row-btn" onclick="eliminarSegmentoAforoVen(${i})">✕</button>
+          </div>
+        `
+      )
+      .join("");
+  }
+  actualizarTotalSegmentosVen();
+}
+
+function actualizarTotalSegmentosVen() {
+  const total = segmentosAforoVen.reduce((sum, s) => sum + (s.capacidad || 0), 0);
+  document.getElementById("v-aforo-total-segmentado").textContent = total;
+}
+
+function anadirSegmentoAforoVen() {
+  segmentosAforoVen.push({ nombre: "", capacidad: null });
+  renderSegmentosAforoVen();
+}
+
+function eliminarSegmentoAforoVen(i) {
+  segmentosAforoVen.splice(i, 1);
+  renderSegmentosAforoVen();
+}
+
 // ---------- Guardar ----------
 
 async function guardarVenue() {
   const btn = document.getElementById("btn-guardar-ven");
   btn.disabled = true;
+
+  const tipoAforo = document.querySelector('input[name="v-aforo-tipo"]:checked').value;
 
   const datos = {
     nombre: document.getElementById("v-nombre").value.trim(),
@@ -210,6 +263,11 @@ async function guardarVenue() {
     contactos: contactosVen,
     ridersPdf: ridersVen,
     tarifas: tarifasVen,
+    aforo: {
+      tipo: tipoAforo,
+      total: tipoAforo === "total" ? parseInt(document.getElementById("v-aforo-total").value, 10) || null : null,
+      segmentos: tipoAforo === "segmentado" ? segmentosAforoVen : [],
+    },
   };
 
   try {
