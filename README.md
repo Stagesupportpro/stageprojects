@@ -114,6 +114,13 @@ sencillo es que, al guardar su propio registro, también añadan un
 documento a esta misma colección `documentos` — así aparecerán en el
 calendario sin tocar nada más.
 
+## Hojas de Ruta
+
+Funcionan igual que Producciones: ID correlativo automático
+(`HR<año>-0001`, colección **`hojasDeRuta`**), se pueden vincular
+opcionalmente a una producción existente, y al crearse quedan
+marcadas en el Calendario ese mismo día (tipo `HojaDeRuta`).
+
 ## Producciones y numeración correlativa
 
 Cada producción se guarda en **`producciones/{id}`** con un ID visible
@@ -147,8 +154,10 @@ En **Producción → Personal**, cualquier empleado activo puede mantener
 una lista de contactos externos —técnicos, project managers, tour
 managers, etc.— que no tienen cuenta de acceso a la plataforma. Viven
 en **`personal/{id}`** con `nombre`, `apellidos`, `telefono`, `email`,
-`rol` (reutiliza los roles creados en Administración → Roles) y
-`notas`. Esta lista alimenta el selector de Project Manager en
+`rol` (reutiliza los roles creados en Administración → Roles),
+`tarifa` (€), `situacion` (`ss` = alta en la Seguridad Social, o
+`autonomo` — en cuyo caso se guardan también `retencion` e `iva`, ambos
+en %) y `notas`. Esta lista alimenta el selector de Project Manager en
 Producciones.
 
 ## Roles y permisos
