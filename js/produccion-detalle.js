@@ -103,6 +103,10 @@ function alVincularBookingProd() {
   const id = document.getElementById("pd-booking").value;
   bookingVinculado = bookingsCacheProd.find((b) => b.id === id) || null;
   document.getElementById("btn-importar-venue").style.display = bookingVinculado ? "inline-flex" : "none";
+  document.getElementById("pd-btn-tab-taquilla").style.display = bookingVinculado ? "block" : "none";
+  if (!bookingVinculado && document.getElementById("pd-panel-taquilla").classList.contains("active")) {
+    cambiarTabProd("general");
+  }
 }
 
 function importarCosteVenueProd() {
@@ -171,7 +175,12 @@ async function cargarProduccion() {
     hospitalidadProd = Array.isArray(d.hospitalidad) ? d.hospitalidad : [];
     renderHospProd();
 
+    document.getElementById("pd-tq-vendidas").value = d.taquillaEntradasVendidas != null ? d.taquillaEntradasVendidas : "";
+    document.getElementById("pd-tq-comision").value = d.taquillaComisionTiqueteraPct != null ? d.taquillaComisionTiqueteraPct : "";
+    document.getElementById("pd-tq-notas").value = d.taquillaNotas || "";
+
     recalcularCifrasProd();
+    recalcularTaquillaProd();
   } catch (err) {
     console.error(err);
     mostrarToast("No se pudo cargar la producción.");
@@ -281,6 +290,8 @@ function recalcularCifrasProd() {
   } else {
     breakEvenEl.textContent = "—";
   }
+
+  recalcularTaquillaProd();
 }
 
 // ---------- Documentos ----------
@@ -368,6 +379,39 @@ function eliminarItemHospProd(i) {
   renderHospProd();
 }
 
+// ---------- Taquilla ----------
+
+function recalcularTaquillaProd() {
+  const precio = parseFloat(document.getElementById("pd-precio-entrada").value) || 0;
+  const vendidas = parseFloat(document.getElementById("pd-tq-vendidas").value) || 0;
+  const comisionPct = parseFloat(document.getElementById("pd-tq-comision").value) || 0;
+
+  const bruto = vendidas * precio;
+  const comisionImporte = bruto * (comisionPct / 100);
+  const neto = bruto - comisionImporte;
+
+  document.getElementById("pd-tq-precio").textContent = formatoEuroPD(precio);
+  document.getElementById("pd-tq-bruto").textContent = formatoEuroPD(bruto);
+  document.getElementById("pd-tq-comision-importe").textContent = formatoEuroPD(comisionImporte);
+  document.getElementById("pd-tq-neto").textContent = formatoEuroPD(neto);
+
+  const totalHosp = hospitalidadProd.reduce((sum, h) => sum + (h.precio || 0), 0);
+  const totalCostesManual = costesProd.reduce((sum, c) => sum + (c.importe || 0), 0);
+  const gastos = totalCostesManual + totalHosp;
+
+  const vsBreakEven = document.getElementById("pd-tq-vs-breakeven");
+  if (precio > 0) {
+    const breakEven = Math.round(gastos / precio);
+    const restantes = breakEven - vendidas;
+    vsBreakEven.textContent =
+      restantes > 0 ? `Faltan ${restantes} entradas para cubrir costes` : `✅ Break even superado (+${Math.abs(restantes)} entradas de margen)`;
+    vsBreakEven.style.color = restantes > 0 ? "#B3221F" : "#2FA84F";
+  } else {
+    vsBreakEven.textContent = "Define el precio de entrada en Cifras primero.";
+    vsBreakEven.style.color = "";
+  }
+}
+
 // ---------- Guardar ----------
 
 async function guardarProduccion() {
@@ -395,6 +439,9 @@ async function guardarProduccion() {
     repartoSalaPct: document.getElementById("pd-reparto-sala").value !== "" ? parseFloat(document.getElementById("pd-reparto-sala").value) : null,
     documentos: documentosProd,
     hospitalidad: hospitalidadProd,
+    taquillaEntradasVendidas: parseFloat(document.getElementById("pd-tq-vendidas").value) || null,
+    taquillaComisionTiqueteraPct: document.getElementById("pd-tq-comision").value !== "" ? parseFloat(document.getElementById("pd-tq-comision").value) : null,
+    taquillaNotas: document.getElementById("pd-tq-notas").value.trim(),
   };
 
   try {
