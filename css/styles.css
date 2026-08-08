@@ -1321,6 +1321,7 @@ table.doc-table td.label { font-weight: 700; background: #fafafa; width: 22%; }
 
 .tarifa-row { grid-template-columns: 1.4fr 1fr 1fr auto; }
 .tramo-row { grid-template-columns: 1fr 1fr 1fr auto; }
+.segmento-row { grid-template-columns: 2fr 1fr auto; }
 .rider-row { grid-template-columns: 1fr 2fr auto; }
 
 .modalidad-card {
@@ -1343,7 +1344,7 @@ table.doc-table td.label { font-weight: 700; background: #fafafa; width: 22%; }
 .modalidad-card .taquilla-pcts { grid-template-columns: 1fr 1fr; margin-top: 8px; }
 
 @media (max-width: 760px) {
-  .tarifa-row, .tramo-row, .rider-row, .modalidad-card .modalidad-top, .modalidad-card .taquilla-pcts { grid-template-columns: 1fr; }
+  .tarifa-row, .tramo-row, .rider-row, .segmento-row, .modalidad-card .modalidad-top, .modalidad-card .taquilla-pcts { grid-template-columns: 1fr; }
 }
 
 /* ---------- Pestañas (ficha de Roster) ---------- */
