@@ -7,7 +7,7 @@
 
   pintarNav(perfil.rol, "dashboard");
 
-  document.getElementById("pass-name").textContent = perfil.nombre || perfil.email;
+  document.getElementById("pass-name").textContent = nombreCompletoDe(perfil) || perfil.email;
   document.getElementById("pass-role").textContent = perfil.rol;
   document.getElementById("saludo").textContent = "Hola, " + (perfil.nombre ? perfil.nombre.split(" ")[0] : perfil.email);
   document.getElementById("fecha-hoy").textContent = new Date().toLocaleDateString("es-ES", {

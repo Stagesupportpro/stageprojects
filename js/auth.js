@@ -69,3 +69,11 @@ function inicialesDe(nombre) {
     .map((p) => p[0].toUpperCase())
     .join("");
 }
+
+/**
+ * Nombre completo a partir del perfil (nombre + apellidos si existen).
+ */
+function nombreCompletoDe(perfil) {
+  if (!perfil) return "";
+  return [perfil.nombre, perfil.apellidos].filter(Boolean).join(" ");
+}

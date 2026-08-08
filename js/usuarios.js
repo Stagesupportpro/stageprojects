@@ -8,7 +8,7 @@ let usuarioActual = null;
 (async function () {
   usuarioActual = await protegerPagina(["Admin"]);
   pintarNav(usuarioActual.rol, "usuarios");
-  document.getElementById("pass-name").textContent = usuarioActual.nombre || usuarioActual.email;
+  document.getElementById("pass-name").textContent = nombreCompletoDe(usuarioActual) || usuarioActual.email;
   document.getElementById("pass-role").textContent = usuarioActual.rol;
 
   escucharUsuarios();
@@ -45,23 +45,25 @@ function pintarTabla(usuarios) {
   tbody.innerHTML = usuarios
     .map((u) => {
       const activo = u.activo !== false;
+      const nombreCompleto = [u.nombre, u.apellidos].filter(Boolean).join(" ") || "—";
       return `
         <tr>
           <td>
             <div class="avatar-chip">
-              <span class="initials">${inicialesDe(u.nombre || u.email)}</span>
+              <span class="initials">${inicialesDe(nombreCompleto)}</span>
               <div>
-                <div style="font-weight:600;">${escaparHtml(u.nombre || "—")}</div>
+                <div style="font-weight:600;">${escaparHtml(nombreCompleto)}</div>
                 <div style="color:var(--color-text-muted); font-size:12.5px;">${escaparHtml(u.email || "")}</div>
               </div>
             </div>
           </td>
+          <td>${escaparHtml(u.telefono || "—")}</td>
           <td><span class="role-badge ${u.rol}">${u.rol}</span></td>
           <td><span class="status-dot ${activo ? "" : "inactive"}">${activo ? "Activo" : "Suspendido"}</span></td>
           <td>
             <div class="row-actions" style="justify-content:flex-end;">
               <button class="icon-btn" title="Editar" onclick='abrirModalEdicion(${JSON.stringify(u).replace(/'/g, "&#39;")})'>✎</button>
-              <button class="icon-btn danger" title="Eliminar" onclick="confirmarEliminar('${u.id}', '${escaparHtml(u.nombre || u.email).replace(/'/g, "\\'")}')">🗑</button>
+              <button class="icon-btn danger" title="Eliminar" onclick="confirmarEliminar('${u.id}', '${escaparHtml(nombreCompleto).replace(/'/g, "\\'")}')">🗑</button>
             </div>
           </td>
         </tr>
@@ -100,6 +102,8 @@ function abrirModalEdicion(u) {
   form.reset();
   document.getElementById("uid-edicion").value = u.id;
   document.getElementById("nombre").value = u.nombre || "";
+  document.getElementById("apellidos").value = u.apellidos || "";
+  document.getElementById("telefono").value = u.telefono || "";
   document.getElementById("email").value = u.email || "";
   document.getElementById("rol").value = u.rol || "Comercial";
   document.getElementById("activo").value = u.activo === false ? "false" : "true";
@@ -143,6 +147,8 @@ form.addEventListener("submit", async (e) => {
       // ---- Editar usuario existente (rol / estado) ----
       await db.collection("usuarios").doc(uid).update({
         nombre: document.getElementById("nombre").value.trim(),
+        apellidos: document.getElementById("apellidos").value.trim(),
+        telefono: document.getElementById("telefono").value.trim(),
         rol: document.getElementById("rol").value,
         activo: document.getElementById("activo").value === "true",
       });
@@ -153,6 +159,8 @@ form.addEventListener("submit", async (e) => {
       const email = document.getElementById("email").value.trim();
       const password = document.getElementById("password").value;
       const nombre = document.getElementById("nombre").value.trim();
+      const apellidos = document.getElementById("apellidos").value.trim();
+      const telefono = document.getElementById("telefono").value.trim();
       const rol = document.getElementById("rol").value;
 
       if (!esDominioValido(email)) {
@@ -166,6 +174,8 @@ form.addEventListener("submit", async (e) => {
 
       await db.collection("usuarios").doc(cred.user.uid).set({
         nombre,
+        apellidos,
+        telefono,
         email,
         rol,
         activo: true,
