@@ -1,0 +1,102 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Stage Support · Roles</title>
+<link rel="icon" href="assets/logo_stagesupport.png" />
+<link rel="stylesheet" href="css/styles.css" />
+</head>
+<body>
+
+<div class="app-shell">
+
+  <aside class="sidebar" id="sidebar">
+    <div class="brand-mark">
+      <img src="assets/logo_stagesupport.png" alt="Stage Support" onerror="this.style.display='none'" />
+    </div>
+
+    <nav id="nav-container" style="flex:1; overflow-y:auto;"></nav>
+
+    <div class="sidebar-footer">
+      <div class="access-pass">
+        <div class="pass-top">
+          <div class="pass-avatar" id="pass-avatar">—</div>
+          <div>
+            <div class="pass-name" id="pass-name">—</div>
+            <div class="pass-role" id="pass-role">—</div>
+          </div>
+        </div>
+        <button class="pass-logout" onclick="cerrarSesion()">Cerrar sesión</button>
+      </div>
+    </div>
+  </aside>
+
+  <main class="main">
+    <div class="topbar">
+      <button class="mobile-menu-btn" onclick="document.getElementById('sidebar').classList.toggle('open')">☰</button>
+      <div>
+        <div class="eyebrow">Administración</div>
+        <h1>Roles</h1>
+      </div>
+    </div>
+
+    <div class="table-toolbar">
+      <div style="color:var(--color-text-muted); font-size:14px;" id="contador-roles">Cargando…</div>
+      <button class="btn-accent" onclick="abrirModalRol()">+ Nuevo rol</button>
+    </div>
+
+    <table class="users-table">
+      <thead>
+        <tr>
+          <th>Rol</th>
+          <th>Permisos</th>
+          <th style="text-align:right;">Acciones</th>
+        </tr>
+      </thead>
+      <tbody id="tabla-roles"></tbody>
+    </table>
+  </main>
+
+</div>
+
+<!-- Modal alta / edición de rol -->
+<div class="modal-overlay" id="modal-overlay">
+  <div class="modal modal-wide">
+    <h2 id="modal-titulo">Nuevo rol</h2>
+    <p class="modal-sub" id="modal-sub">Define el nombre del rol y a qué secciones puede acceder.</p>
+
+    <form id="form-rol">
+      <input type="hidden" id="rol-id-edicion" />
+
+      <div class="field">
+        <label for="rol-nombre">Nombre del rol</label>
+        <input type="text" id="rol-nombre" placeholder="Ej. Técnico de sonido" required />
+      </div>
+
+      <div class="field">
+        <label>Secciones a las que tiene acceso</label>
+        <div class="permisos-grid" id="permisos-grid"></div>
+      </div>
+
+      <div class="form-msg" id="modal-msg"></div>
+
+      <div class="modal-actions">
+        <button type="button" class="btn-ghost" onclick="cerrarModal()">Cancelar</button>
+        <button type="submit" class="btn-accent" id="btn-guardar">Guardar</button>
+      </div>
+    </form>
+  </div>
+</div>
+
+<div class="toast" id="toast"><span class="dot"></span><span id="toast-msg"></span></div>
+
+<script src="https://www.gstatic.com/firebasejs/10.13.0/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.13.0/firebase-auth-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.13.0/firebase-firestore-compat.js"></script>
+<script src="js/firebase-config.js"></script>
+<script src="js/auth.js"></script>
+<script src="js/nav.js"></script>
+<script src="js/roles.js"></script>
+</body>
+</html>
