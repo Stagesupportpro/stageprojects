@@ -75,7 +75,8 @@ function pintarTablaHR(hojas) {
           <td>${fecha}</td>
           <td>
             <div class="row-actions" style="justify-content:flex-end;">
-              <button class="icon-btn" title="Editar" onclick='abrirModalEdicionHR(${JSON.stringify(h).replace(/'/g, "&#39;")})'>✎</button>
+              <a class="btn-ghost" style="text-decoration:none; padding:6px 12px; font-size:12px;" href="hojaderuta-detalle.html?id=${h.id}">Abrir</a>
+              <button class="icon-btn" title="Edición rápida" onclick='abrirModalEdicionHR(${JSON.stringify(h).replace(/'/g, "&#39;")})'>✎</button>
               <button class="icon-btn danger" title="Eliminar" onclick="confirmarEliminarHR('${h.id}', '${escaparHtmlHR(h.nombre).replace(/'/g, "\\'")}')">🗑</button>
             </div>
           </td>
@@ -174,7 +175,7 @@ formHR.addEventListener("submit", async (e) => {
     } else {
       const idVisible = await generarSiguienteId(PREFIJOS_ID.hojaDeRuta);
 
-      await db.collection("hojasDeRuta").add({
+      const refNueva = await db.collection("hojasDeRuta").add({
         ...datosBase,
         idVisible,
         creadoPor: nombreCompletoDe(usuarioActualHR) || usuarioActualHR.email,
@@ -194,8 +195,9 @@ formHR.addEventListener("submit", async (e) => {
         creadoEl: firebase.firestore.FieldValue.serverTimestamp(),
       });
 
-      mostrarToast(`Hoja de ruta ${idVisible} creada y marcada en el calendario.`);
-      cerrarModal();
+      mostrarToast(`Hoja de ruta ${idVisible} creada. Abriendo editor…`);
+      window.location.href = `hojaderuta-detalle.html?id=${refNueva.id}`;
+      return;
     }
   } catch (err) {
     console.error(err);
