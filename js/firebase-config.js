@@ -10,12 +10,12 @@
 // =========================================================
 
 const firebaseConfig = {
-  apiKey: "TU_API_KEY",
+  apiKey: "AIzaSyBT9pEBbuPWqOkOE0i3H1e872ex5gaY9jU",
   authDomain: "stage-support.firebaseapp.com",
   projectId: "stage-support",
-  storageBucket: "stage-support.appspot.com",
-  messagingSenderId: "TU_SENDER_ID",
-  appId: "TU_APP_ID"
+  storageBucket: "stage-support.firebasestorage.app",
+  messagingSenderId: "1021113670024",
+  appId: "1:1021113670024:web:70c866821bf8133c57c23d"
 };
 
 // Dominio corporativo permitido para iniciar sesión
