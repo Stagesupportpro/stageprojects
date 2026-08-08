@@ -45,6 +45,7 @@
       <thead>
         <tr>
           <th>Usuario</th>
+          <th>Teléfono</th>
           <th>Rol</th>
           <th>Estado</th>
           <th style="text-align:right;">Acciones</th>
@@ -68,8 +69,18 @@
       <input type="hidden" id="uid-edicion" />
 
       <div class="field">
-        <label for="nombre">Nombre completo</label>
-        <input type="text" id="nombre" placeholder="Ej. Laura Gómez" required />
+        <label for="nombre">Nombre</label>
+        <input type="text" id="nombre" placeholder="Ej. Laura" required />
+      </div>
+
+      <div class="field">
+        <label for="apellidos">Apellidos</label>
+        <input type="text" id="apellidos" placeholder="Ej. Gómez Ruiz" />
+      </div>
+
+      <div class="field">
+        <label for="telefono">Teléfono</label>
+        <input type="tel" id="telefono" placeholder="Ej. 600 123 456" />
       </div>
 
       <div class="field" id="campo-email">
