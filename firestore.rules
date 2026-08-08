@@ -35,6 +35,17 @@ service cloud.firestore {
       allow create, update, delete: if esAdmin();
     }
 
+    // ---- Documentos del calendario (contratos, propuestas, riders,
+    //      bookings, promotor, hojas de ruta, eventos) ----
+    match /documentos/{docId} {
+      // Cualquier empleado activo puede ver el calendario y crear documentos.
+      allow read, create: if estoyActivo();
+
+      // Solo quien lo creó, o un Admin, puede editarlo o eliminarlo.
+      allow update, delete: if estoyActivo()
+        && (resource.data.creadoPorUid == request.auth.uid || esAdmin());
+    }
+
     // A medida que se añadan colecciones (bookings, producciones, clientes...)
     // define aquí sus reglas, apoyándote en estoyActivo() / esAdmin()
     // y, si hace falta, en el propio campo "rol" del usuario.
