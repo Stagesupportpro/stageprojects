@@ -97,7 +97,7 @@ function anadirItemDesdeRoster(rosterId) {
     rosterId: r.id,
     nombre: r.nombre,
     imagen: r.imagenCartel || null,
-    descripcion: "",
+    descripcion: r.descripcionComercial || "",
     fecha: "",
     ciclo: "",
     bi: r.cache != null ? r.cache : null,
@@ -115,6 +115,34 @@ function anadirItemManual() {
 function eliminarItemPropuesta(i) {
   itemsPropuesta.splice(i, 1);
   renderItemsPropuesta();
+}
+
+function procesarFotoItemPropuesta(i, event) {
+  const archivo = event.target.files[0];
+  if (!archivo || !archivo.type.startsWith("image/")) return;
+
+  const lector = new FileReader();
+  lector.onload = (e) => {
+    const img = new Image();
+    img.onload = () => {
+      const MAX = 500;
+      let w = img.width;
+      let h = img.height;
+      if (w > MAX || h > MAX) {
+        const ratio = Math.min(MAX / w, MAX / h);
+        w = Math.round(w * ratio);
+        h = Math.round(h * ratio);
+      }
+      const canvas = document.createElement("canvas");
+      canvas.width = w;
+      canvas.height = h;
+      canvas.getContext("2d").drawImage(img, 0, 0, w, h);
+      itemsPropuesta[i].imagen = canvas.toDataURL("image/jpeg", 0.82);
+      renderItemsPropuesta();
+    };
+    img.src = e.target.result;
+  };
+  lector.readAsDataURL(archivo);
 }
 
 function pvpItemPropuesta(it) {
@@ -151,6 +179,10 @@ function renderItemsPropuesta() {
       const imgHtml = it.imagen
         ? `<img src="${it.imagen}" alt="" style="width:64px; height:64px; border-radius:8px; object-fit:cover; flex-shrink:0;" />`
         : `<div style="width:64px; height:64px; border-radius:8px; background:var(--color-bg-soft); flex-shrink:0;"></div>`;
+      const cambiarFotoHtml = `
+        <button type="button" class="btn-ghost" style="font-size:11px; padding:5px 8px; margin-top:4px;" onclick="document.getElementById('item-foto-input-${i}').click()">Cambiar foto</button>
+        <input type="file" id="item-foto-input-${i}" accept="image/*" style="display:none;" onchange="procesarFotoItemPropuesta(${i}, event)" />
+      `;
 
       const precioHtml = mostrarPrecios
         ? `
@@ -170,7 +202,10 @@ function renderItemsPropuesta() {
       return `
         <div class="day-block">
           <div style="display:flex; gap:14px;">
+          <div style="display:flex; flex-direction:column; align-items:center; gap:4px;">
             ${imgHtml}
+            ${cambiarFotoHtml}
+          </div>
             <div style="flex:1; display:flex; flex-direction:column; gap:8px;">
               <div class="form-grid">
                 <div class="field"><label style="font-size:11px;">Fecha</label><input type="date" value="${it.fecha || ""}" oninput="itemsPropuesta[${i}].fecha=this.value" /></div>

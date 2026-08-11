@@ -49,6 +49,7 @@ const NAV_ESTRUCTURA = [
       { id: "roles", label: "Roles", href: "roles.html", roles: ["Admin"], listo: true },
       { id: "comisiones", label: "Comisiones", href: "comisiones.html", roles: ["Admin"], listo: true },
       { id: "configuracion", label: "Datos de la empresa", href: "configuracion.html", roles: ["Admin"], listo: true },
+      { id: "backup", label: "Información y Backup", href: "backup.html", roles: ["Admin"], listo: true },
     ],
   },
 ];

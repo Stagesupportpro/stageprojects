@@ -185,7 +185,6 @@ async function importarCosteVenueProd() {
     }
   }
 
-  cambiarTabProd("cifras");
   recalcularCifrasProd();
   mostrarToast("Coste de alquiler y datos de la sala importados.");
 }
