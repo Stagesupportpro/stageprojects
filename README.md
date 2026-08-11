@@ -106,6 +106,26 @@ extra no se incluye porque no corresponde a la producción.
 > al de pago Blaze — tiene una capa gratuita amplia). Cuando queráis
 > dar ese paso, ya tengo mapeados los endpoints exactos a usar.
 
+## Preparar Propuesta — precios opcionales, fecha y ciclo por opción
+
+Cada propuesta tiene ahora un interruptor **"Mostrar precios al
+cliente"** (Sí/No). Cada opción añadida (desde Roster o manual) tiene
+también:
+
+- **Fecha** y **Ciclo / Festival / Actuación** — para organizar
+  propuestas con varias actuaciones (un festival con varias fechas,
+  por ejemplo).
+- **Caché (BI)**, **Comisión %** (autocompletada desde el Roster si
+  la opción viene de ahí) e **IVA %** (21% por defecto).
+
+Si "Mostrar precios" está en Sí, la vista pública (la que ve el
+cliente) muestra **PVP** (BI + comisión ya incluida — la comisión en
+sí nunca se ve por separado), el importe de **IVA** y el **Total**.
+Si está en No, esa propuesta se enseña solo como programa, sin ningún
+precio. El equipo interno siempre ve y edita BI/comisión/IVA,
+independientemente del interruptor — este solo afecta a lo que ve el
+cliente.
+
 ## Producción — Artista / Espectáculo
 
 Nueva sección al principio de Cifras: nombre del artista, **Caché
