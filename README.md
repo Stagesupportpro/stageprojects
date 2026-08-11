@@ -264,13 +264,17 @@ en el tipo a caché.
 
 ## Versiones (V1, V2...)
 
-Bookings y Producciones tienen un botón "Crear nueva versión" (icono
-⎘) en el listado. Duplica el documento completo con
+Bookings, Producciones y **Propuestas** tienen un botón "Crear nueva
+versión" (icono ⎘) en el listado. Duplica el documento completo con
 `version` +1, guardando `grupoVersionId` (apunta al id de la V1) y
 `versionAnteriorId` (apunta a la versión de la que viene). La versión
 original **no se borra ni se bloquea** — queda como histórico visible
 en el listado, con su propio badge "V1", "V2"... Es una base sencilla
-pensada para cuando un cliente pide cambios tras aceptar algo.
+pensada para cuando un cliente pide cambios tras aceptar algo. En
+Propuestas, además, la nueva versión siempre empieza en estado
+"Borrador" (aunque la anterior estuviera Aceptada/Rechazada), y el
+listado tiene también un botón **"Ver"** que abre directamente la
+vista de cliente (`propuesta-ver.html`) en una pestaña nueva.
 
 ## Roles actuales
 
