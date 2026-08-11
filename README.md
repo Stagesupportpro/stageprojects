@@ -106,6 +106,25 @@ extra no se incluye porque no corresponde a la producción.
 > al de pago Blaze — tiene una capa gratuita amplia). Cuando queráis
 > dar ese paso, ya tengo mapeados los endpoints exactos a usar.
 
+## Producción — Artista / Espectáculo
+
+Nueva sección al principio de Cifras: nombre del artista, **Caché
+(BI)** e **IVA** (21% por defecto, editable). Se importa solo al
+vincular un booking (junto con el coste del venue), pero también se
+puede rellenar a mano. El total con IVA se suma a los gastos
+generales igual que Costes, Personal y Hospitalidad. La categoría
+"Caché" se quitó de la lista de Costes sembrada por defecto para no
+duplicarla — ahora vive aquí, con su propio IVA independiente. El
+nombre del artista también aparece como columna en el listado de
+Producciones.
+
+## Bookings — Venue de una lista, no de texto libre
+
+El campo de Recinto/Festival dejó de ser un buscador de texto libre
+(aunque tuviera sugerencias): ahora es un desplegable real que solo
+permite elegir un venue ya dado de alta — imposible escribir uno que
+no exista.
+
 ## Bookings en Producción, y roles en Usuarios — arreglado
 
 Mismo patrón de índice compuesto que Notas/Agenda, esta vez en la

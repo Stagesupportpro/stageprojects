@@ -95,9 +95,10 @@
 
       <!-- Venue: común a los dos tipos de booking -->
       <div class="field">
-        <label for="bk-espacio-buscar">Recinto / Festival (Venue)</label>
-        <input type="text" id="bk-espacio-buscar" list="lista-venues-datalist" placeholder="Escribe para buscar o elige de la lista…" oninput="alEscribirVenueBooking()" autocomplete="off" required />
-        <datalist id="lista-venues-datalist"></datalist>
+        <label for="bk-venue-select">Recinto / Festival (Venue)</label>
+        <select id="bk-venue-select" onchange="alSeleccionarVenueBooking()" required>
+          <option value="">— Selecciona un venue —</option>
+        </select>
         <input type="hidden" id="bk-venue-id" />
       </div>
       <div class="field" id="campo-bk-modalidad" style="display:none;">
