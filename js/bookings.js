@@ -110,6 +110,7 @@ function alSeleccionarVenueBooking() {
   const venueId = document.getElementById("bk-venue-select").value;
   const venue = venuesCacheBk.find((v) => v.id === venueId);
   const campoModalidad = document.getElementById("campo-bk-modalidad");
+  const esPromotor = document.querySelector('input[name="bk-tipo"]:checked').value === "promotor";
 
   if (!venue) {
     document.getElementById("bk-venue-id").value = "";
@@ -119,6 +120,14 @@ function alSeleccionarVenueBooking() {
 
   document.getElementById("bk-venue-id").value = venue.id;
   document.getElementById("bk-espacio-direccion").value = venue.direccion || "";
+
+  // La modalidad (y su coste/reparto) solo aplica cuando actuamos como
+  // promotora — en "a caché" el coste es el caché del artista, no el
+  // alquiler del venue, así que no tiene sentido mostrarla ahí.
+  if (!esPromotor) {
+    campoModalidad.style.display = "none";
+    return;
+  }
 
   const tarifas = Array.isArray(venue.tarifas) ? venue.tarifas.filter((t) => t.concepto) : [];
   const sel = document.getElementById("bk-modalidad");
@@ -139,6 +148,9 @@ function alSeleccionarVenueBooking() {
 }
 
 function alSeleccionarModalidadBooking() {
+  const esPromotor = document.querySelector('input[name="bk-tipo"]:checked').value === "promotor";
+  if (!esPromotor) return; // Salvaguarda: en "a caché" la modalidad nunca debe tocar el coste.
+
   const venueId = document.getElementById("bk-venue-id").value;
   const venue = venuesCacheBk.find((v) => v.id === venueId);
   const idx = document.getElementById("bk-modalidad").value;
@@ -171,6 +183,13 @@ function alCambiarTipoBooking() {
     // Sin comisión: la agencia no se cobra a sí misma.
     document.getElementById("bk-comision-pct").value = 0;
   }
+
+  // Si ya había un venue elegido, reevalúa si la modalidad debe verse
+  // (solo aplica en "como promotora").
+  if (document.getElementById("bk-venue-select").value) {
+    alSeleccionarVenueBooking();
+  }
+
   recalcularBooking();
 }
 

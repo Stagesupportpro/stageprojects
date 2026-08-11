@@ -70,6 +70,11 @@ async function cargarRV() {
     const poster = document.getElementById("rv-poster");
     poster.innerHTML = d.imagenCartel ? `<img src="${d.imagenCartel}" alt="" />` : "Sin imagen";
 
+    document.getElementById("rv-categoria").textContent = d.categoria || "—";
+    const etiquetas = Array.isArray(d.etiquetas) ? d.etiquetas : [];
+    document.getElementById("rv-etiquetas").innerHTML = etiquetas.length
+      ? etiquetas.map((e) => `<span class="permiso-tag" style="margin-right:4px;">${escaparHtmlRV(e)}</span>`).join("")
+      : "—";
     document.getElementById("rv-oficina").textContent = d.oficinaRepresentacion || "—";
     document.getElementById("rv-descripcion").textContent = d.descripcionComercial || "—";
     document.getElementById("rv-notas").textContent = d.notas || "—";
