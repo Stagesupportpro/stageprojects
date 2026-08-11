@@ -72,6 +72,39 @@
           </div>
 
           <div class="hr-section">
+            <div class="hr-section-head"><h3>Categoría y etiquetas</h3></div>
+            <div class="form-grid">
+              <div class="field field-wide">
+                <label for="rst-categoria">Categoría</label>
+                <select id="rst-categoria">
+                  <option value="">— Selecciona —</option>
+                  <option value="Artistas">Artistas</option>
+                  <option value="Espectáculos">Espectáculos</option>
+                  <option value="Tributos">Tributos</option>
+                  <option value="Teatro">Teatro</option>
+                </select>
+              </div>
+            </div>
+            <label style="font-size:13px; font-weight:600; display:block; margin:10px 0 8px;">Etiquetas</label>
+            <div class="tag-chip-list" id="lista-etiquetas-rst"></div>
+            <div class="tag-add-row">
+              <input type="text" id="rst-etiqueta-input" list="etiquetas-sugeridas" placeholder="Ej. Electrónica / DJ" onkeydown="if(event.key==='Enter'){event.preventDefault(); anadirEtiquetaRst();}" />
+              <button type="button" class="btn-ghost" onclick="anadirEtiquetaRst()">+ Añadir</button>
+            </div>
+            <datalist id="etiquetas-sugeridas">
+              <option value="Música de Raíz"></option>
+              <option value="Emergentes"></option>
+              <option value="Electrónica / DJ"></option>
+              <option value="Rock"></option>
+              <option value="Pop"></option>
+              <option value="Flamenco"></option>
+              <option value="Jazz"></option>
+              <option value="Infantil"></option>
+              <option value="Stand-up / Humor"></option>
+            </datalist>
+          </div>
+
+          <div class="hr-section">
             <div class="hr-section-head"><h3>Cartel / imagen</h3></div>
             <div class="poster-picker" style="display:flex; align-items:center; gap:16px;">
               <div class="poster-preview" id="poster-preview">Sin imagen</div>

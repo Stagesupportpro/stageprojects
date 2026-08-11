@@ -106,6 +106,39 @@ extra no se incluye porque no corresponde a la producción.
 > al de pago Blaze — tiene una capa gratuita amplia). Cuando queráis
 > dar ese paso, ya tengo mapeados los endpoints exactos a usar.
 
+## Bookings en Producción, y roles en Usuarios — arreglado
+
+Mismo patrón de índice compuesto que Notas/Agenda, esta vez en la
+consulta de bookings de Producción — arreglado igual (sin `orderBy`,
+ordenado en el navegador). Además, ahora **al elegir un booking se
+importan solos** coste, sala, reparto y aforo — ya no hace falta
+pulsar un botón aparte (se puede volver a forzar con "Actualizar
+desde el booking", y ya no duplica la línea de coste si se reimporta).
+
+El desplegable de rol en Usuarios estaba fijo con las 3 opciones
+originales — ahora tira en vivo de Administración → Roles.
+
+## Etiquetas en Roster y Catálogo
+
+Cada ficha del Roster tiene ahora **Categoría** (Artistas, Espectáculos,
+Tributos, Teatro) y **Etiquetas** libres (con sugerencias: Música de
+Raíz, Emergentes, Electrónica/DJ, Rock...). El Catálogo tiene una
+barra de filtros que combina categorías y etiquetas de todo lo que
+haya en el Roster.
+
+## Tipo de venue
+
+Cada venue tiene ahora un **Tipo** (Auditorio, Teatro, Sala de
+conciertos, Aire libre, Otros), visible también en el listado.
+
+## Personal asignado en Producción (Cifras)
+
+Nueva sección en Cifras: se puede asignar personal (de Usuarios o de
+la bolsa de Personal externo) con su **BI (€/jornada)** y el número
+de jornadas — **1** (BI), **1,5** (BI + 50% BI) o **2** (BI + BI). El
+total se suma automáticamente a los gastos generales (Costes,
+Simulación, break even y Taquilla ya lo tienen en cuenta).
+
 ## Notas y Agenda vacías — arreglado
 
 Las consultas combinaban un filtro (`where`) con un orden (`orderBy`)
