@@ -88,9 +88,13 @@
         </div>
       </div>
 
-      <div class="field">
-        <label for="bk-artista">Artista (Roster)</label>
-        <select id="bk-artista" onchange="alSeleccionarArtistaBooking()" required></select>
+      <div class="hr-section" style="border:none; padding-bottom:0;">
+        <div class="hr-section-head"><h3 style="font-size:14px;">Artistas</h3></div>
+        <div id="lista-artistas-bk"></div>
+        <button type="button" class="add-row-link" onclick="anadirArtistaBooking()">+ Añadir artista</button>
+        <div class="calc-box" style="margin-top:12px;">
+          <div class="calc-item calc-total"><div class="calc-label" id="bk-calc-label-artistas">Total artistas</div><div class="calc-value" id="bk-calc-artistas-total">0,00 €</div></div>
+        </div>
       </div>
 
       <!-- Venue: común a los dos tipos de booking -->
@@ -108,6 +112,22 @@
       <div class="field">
         <label for="bk-espacio-direccion">Dirección (opcional)</label>
         <input type="text" id="bk-espacio-direccion" />
+      </div>
+
+      <!-- Bloque: coste del venue — solo aplica "como promotora" -->
+      <div id="bloque-coste-venue" style="display:none;">
+        <div class="hr-section" style="border:none; padding-bottom:0;">
+          <div class="hr-section-head"><h3 style="font-size:14px;">Coste del venue (alquiler)</h3></div>
+          <div class="form-grid">
+            <div class="field"><label for="bk-venue-cache">Coste €</label><input type="number" id="bk-venue-cache" min="0" step="0.01" oninput="recalcularBooking()" /></div>
+            <div class="field"><label for="bk-venue-iva-pct">IVA (%)</label><input type="number" id="bk-venue-iva-pct" min="0" max="100" step="0.1" value="21" oninput="recalcularBooking()" /></div>
+          </div>
+          <div class="calc-box" style="margin-top:12px;">
+            <div class="calc-item"><div class="calc-label">Coste</div><div class="calc-value" id="bk-calc-venue-cache">0,00 €</div></div>
+            <div class="calc-item"><div class="calc-label">IVA</div><div class="calc-value" id="bk-calc-venue-iva">0,00 €</div></div>
+            <div class="calc-item calc-total"><div class="calc-label">Total + IVA</div><div class="calc-value" id="bk-calc-venue-total">0,00 €</div></div>
+          </div>
+        </div>
       </div>
 
       <!-- Bloque: a caché -->
@@ -134,28 +154,8 @@
         <div class="field"><label for="bk-ciudad">Ciudad</label><input type="text" id="bk-ciudad" /></div>
       </div>
 
-      <!-- Calculadora -->
-      <div class="hr-section" style="border:none; padding-bottom:0;">
-        <div class="hr-section-head"><h3 style="font-size:14px;" id="bk-titulo-cifras">Caché, comisión e IVA</h3></div>
-        <div class="form-grid">
-          <div class="field"><label for="bk-cache" id="bk-label-cache">Caché (BI) €</label><input type="number" id="bk-cache" min="0" step="0.01" oninput="recalcularBooking()" /></div>
-          <div id="grupo-bk-comision" class="form-grid" style="grid-column: span 2; display:contents;">
-            <div class="field">
-              <label for="bk-comision-preset">Comisión guardada</label>
-              <select id="bk-comision-preset" onchange="aplicarComisionPresetBooking()">
-                <option value="">— Manual —</option>
-              </select>
-            </div>
-            <div class="field"><label for="bk-comision-pct">Comisión (%)</label><input type="number" id="bk-comision-pct" min="0" max="100" step="0.1" oninput="recalcularBooking()" /></div>
-          </div>
-          <div class="field"><label for="bk-iva-pct">IVA (%)</label><input type="number" id="bk-iva-pct" min="0" max="100" step="0.1" value="21" oninput="recalcularBooking()" /></div>
-        </div>
-        <div class="calc-box" style="margin-top:12px;">
-          <div class="calc-item"><div class="calc-label" id="bk-calc-label-cache">Caché (BI)</div><div class="calc-value" id="bk-calc-cache">0,00 €</div></div>
-          <div class="calc-item" id="bk-calc-item-comision"><div class="calc-label">Comisión</div><div class="calc-value" id="bk-calc-comision">0,00 €</div></div>
-          <div class="calc-item"><div class="calc-label">Total</div><div class="calc-value" id="bk-calc-total">0,00 €</div></div>
-          <div class="calc-item calc-total"><div class="calc-label">Total + IVA</div><div class="calc-value" id="bk-calc-total-iva">0,00 €</div></div>
-        </div>
+      <div class="calc-box" style="margin-top:16px;" id="bk-resumen-general">
+        <div class="calc-item calc-total"><div class="calc-label" id="bk-resumen-label">Total del booking</div><div class="calc-value" id="bk-resumen-valor">0,00 €</div></div>
       </div>
 
       <div class="field" style="margin-top:16px;">

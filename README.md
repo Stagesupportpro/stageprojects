@@ -255,6 +255,21 @@ Debajo del usuario logueado, en el menú lateral, aparece la versión
 de la plataforma (`VERSION_PLATAFORMA` en `js/nav.js`) — súbela a
 mano cada vez que publiquéis una ronda de cambios importante.
 
+## Bookings y Producción — varios artistas por booking
+
+Un booking ya no está limitado a un solo artista: la sección
+"Artistas" es una lista repetible (como Costes), cada uno con su
+Roster, Caché (BI), Comisión % (oculta "como promotora", igual que
+antes) e IVA %, con su Total calculado. El coste del venue (alquiler,
+en bookings "como promotora") vive ahora en su propio bloque
+independiente, separado del caché de los artistas — antes compartían
+el mismo campo y se pisaban entre sí.
+
+En Producción, al importar desde un booking, se crea una fila de
+**Caché — &lt;nombre&gt;** en Costes por cada artista del booking
+(además de la de "Alquiler venue"), y el campo "Artista / Grupo"
+muestra todos los nombres separados por comas.
+
 ## Bookings — Venue obligatorio en los dos tipos
 
 El selector de Venue (búsqueda + modalidad) ya no es exclusivo del
