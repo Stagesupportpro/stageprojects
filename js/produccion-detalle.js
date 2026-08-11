@@ -138,6 +138,11 @@ async function importarCosteVenueProd() {
   costesProd.push({ concepto: `Alquiler venue — ${bookingVinculado.espacio || ""}`, importe: total });
   renderCostesProd();
 
+  // Artista / Espectáculo: nombre, caché (BI) e IVA — el IVA sigue siendo editable a mano.
+  document.getElementById("pd-artista-nombre").value = bookingVinculado.artistaNombre || "";
+  document.getElementById("pd-artista-bi").value = bookingVinculado.cache != null ? bookingVinculado.cache : "";
+  document.getElementById("pd-artista-iva").value = bookingVinculado.ivaPct != null ? bookingVinculado.ivaPct : 21;
+
   document.getElementById("pd-sala-nombre").value = bookingVinculado.espacio || "";
   if (bookingVinculado.repartoPromotorPct != null) {
     document.getElementById("pd-reparto-promotor").value = bookingVinculado.repartoPromotorPct;
@@ -201,13 +206,17 @@ async function cargarProduccion() {
     costesProd = Array.isArray(d.costes) ? d.costes : [];
     if (costesProd.length === 0) {
       // Se siembran las categorías típicas la primera vez, todas editables/eliminables.
-      costesProd = ["Caché", "Comisión / Agente", "Técnica", "Alojamiento", "Logística", "Dietas", "Promoción", "Otros"].map((concepto) => ({
+      costesProd = ["Comisión / Agente", "Técnica", "Alojamiento", "Logística", "Dietas", "Promoción", "Otros"].map((concepto) => ({
         concepto,
         importe: null,
         nota: "",
       }));
     }
     renderCostesProd();
+
+    document.getElementById("pd-artista-nombre").value = d.artistaNombre || "";
+    document.getElementById("pd-artista-bi").value = d.artistaBI != null ? d.artistaBI : "";
+    document.getElementById("pd-artista-iva").value = d.artistaIvaPct != null ? d.artistaIvaPct : 21;
 
     personalProd = Array.isArray(d.personal) ? d.personal : [];
     renderPersonalProd();
@@ -354,10 +363,18 @@ function formatoEuroPD(n) {
 }
 
 function recalcularCifrasProd() {
+  const artistaBI = parseFloat(document.getElementById("pd-artista-bi").value) || 0;
+  const artistaIvaPct = parseFloat(document.getElementById("pd-artista-iva").value) || 0;
+  const artistaIvaImporte = artistaBI * (artistaIvaPct / 100);
+  const artistaTotal = artistaBI + artistaIvaImporte;
+  document.getElementById("pd-calc-artista-bi").textContent = formatoEuroPD(artistaBI);
+  document.getElementById("pd-calc-artista-iva").textContent = formatoEuroPD(artistaIvaImporte);
+  document.getElementById("pd-calc-artista-total").textContent = formatoEuroPD(artistaTotal);
+
   const totalHosp = hospitalidadProd.reduce((sum, h) => sum + (h.precio || 0), 0);
   const totalCostesManual = costesProd.reduce((sum, c) => sum + (c.importe || 0), 0);
   const totalPersonal = personalProd.reduce((sum, p) => sum + costePersonaProd(p), 0);
-  const gastos = totalCostesManual + totalHosp + totalPersonal;
+  const gastos = totalCostesManual + totalHosp + totalPersonal + artistaTotal;
 
   const aforoTotal = parseFloat(document.getElementById("pd-venta-prevista").value) || parseFloat(document.getElementById("pd-aforo").value) || 0;
   const precio = parseFloat(document.getElementById("pd-precio-entrada").value) || 0;
@@ -513,7 +530,10 @@ function recalcularTaquillaProd() {
   const totalHosp = hospitalidadProd.reduce((sum, h) => sum + (h.precio || 0), 0);
   const totalCostesManual = costesProd.reduce((sum, c) => sum + (c.importe || 0), 0);
   const totalPersonal = personalProd.reduce((sum, p) => sum + costePersonaProd(p), 0);
-  const gastos = totalCostesManual + totalHosp + totalPersonal;
+  const artistaBI = parseFloat(document.getElementById("pd-artista-bi").value) || 0;
+  const artistaIvaPct = parseFloat(document.getElementById("pd-artista-iva").value) || 0;
+  const artistaTotal = artistaBI * (1 + artistaIvaPct / 100);
+  const gastos = totalCostesManual + totalHosp + totalPersonal + artistaTotal;
 
   const vsBreakEven = document.getElementById("pd-tq-vs-breakeven");
   if (precio > 0) {
@@ -545,6 +565,9 @@ async function guardarProduccion() {
     pmId: pmId || null,
     pmNombre: pmEncontrado ? pmEncontrado.nombre : "",
     bookingId: document.getElementById("pd-booking").value || null,
+    artistaNombre: document.getElementById("pd-artista-nombre").value.trim(),
+    artistaBI: parseFloat(document.getElementById("pd-artista-bi").value) || null,
+    artistaIvaPct: document.getElementById("pd-artista-iva").value !== "" ? parseFloat(document.getElementById("pd-artista-iva").value) : 21,
     costes: costesProd,
     personal: personalProd,
     salaNombre: document.getElementById("pd-sala-nombre").value.trim(),

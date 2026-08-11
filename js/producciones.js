@@ -88,7 +88,7 @@ function pintarTablaProducciones(producciones) {
     producciones.length + (producciones.length === 1 ? " producción" : " producciones");
 
   if (producciones.length === 0) {
-    tbody.innerHTML = `<tr><td colspan="5" style="text-align:center; padding:36px; color:var(--color-text-muted);">
+    tbody.innerHTML = `<tr><td colspan="6" style="text-align:center; padding:36px; color:var(--color-text-muted);">
       Todavía no hay producciones creadas.
     </td></tr>`;
     return;
@@ -101,6 +101,7 @@ function pintarTablaProducciones(producciones) {
         <tr>
           <td><span class="id-badge">${escaparHtmlProd(p.idVisible || "—")}</span> <span class="permiso-tag">V${p.version || 1}</span></td>
           <td style="font-weight:600;">${escaparHtmlProd(p.nombre)}</td>
+          <td>${escaparHtmlProd(p.artistaNombre || "—")}</td>
           <td>
             <div class="pm-chip">
               <span class="pm-tag">${p.pmTipo === "personal" ? "Externo" : "Equipo"}</span>

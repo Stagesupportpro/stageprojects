@@ -97,16 +97,18 @@ async function cargarVenuesBk() {
   try {
     const snap = await db.collection("venues").orderBy("nombre").get();
     venuesCacheBk = snap.docs.map((d) => ({ id: d.id, ...d.data() }));
-    const datalist = document.getElementById("lista-venues-datalist");
-    datalist.innerHTML = venuesCacheBk.map((v) => `<option value="${escaparHtmlBk(v.nombre)}"></option>`).join("");
+    const sel = document.getElementById("bk-venue-select");
+    sel.innerHTML =
+      `<option value="">— Selecciona un venue —</option>` +
+      venuesCacheBk.map((v) => `<option value="${v.id}">${escaparHtmlBk(v.nombre)}${v.tipoVenue ? ` (${escaparHtmlBk(v.tipoVenue)})` : ""}</option>`).join("");
   } catch (err) {
     console.error(err);
   }
 }
 
-function alEscribirVenueBooking() {
-  const texto = document.getElementById("bk-espacio-buscar").value.trim();
-  const venue = venuesCacheBk.find((v) => v.nombre === texto);
+function alSeleccionarVenueBooking() {
+  const venueId = document.getElementById("bk-venue-select").value;
+  const venue = venuesCacheBk.find((v) => v.id === venueId);
   const campoModalidad = document.getElementById("campo-bk-modalidad");
 
   if (!venue) {
@@ -128,7 +130,10 @@ function alEscribirVenueBooking() {
   sel.innerHTML =
     `<option value="">— Elige una modalidad —</option>` +
     tarifas
-      .map((t, i) => `<option value="${i}">${escaparHtmlBk(t.concepto)} — ${formatoEuroBk(t.importe)}${t.taquillaCompartida ? ` (taquilla compartida ${t.pctPromotor != null ? t.pctPromotor : "?"}% / ${t.pctVenue != null ? t.pctVenue : "?"}%)` : ""}</option>`)
+      .map(
+        (t, i) =>
+          `<option value="${i}">${escaparHtmlBk(t.concepto)} — ${formatoEuroBk(t.importe)} (${t.impuestos === "con" ? "con" : "sin"} IVA)${t.taquillaCompartida ? ` · taquilla ${t.pctPromotor != null ? t.pctPromotor : "?"}% / ${t.pctVenue != null ? t.pctVenue : "?"}%` : ""}</option>`
+      )
       .join("");
   campoModalidad.style.display = "block";
 }
@@ -142,6 +147,8 @@ function alSeleccionarModalidadBooking() {
   if (!tarifa) return;
 
   document.getElementById("bk-cache").value = tarifa.importe || 0;
+  // Si la modalidad del venue ya incluye IVA, no hace falta sumarlo aparte encima.
+  document.getElementById("bk-iva-pct").value = tarifa.impuestos === "con" ? 0 : document.getElementById("bk-iva-pct").value || 21;
   bookingRepartoPromotorPct = tarifa.taquillaCompartida && tarifa.pctPromotor != null ? tarifa.pctPromotor : null;
   bookingRepartoVenuePct = tarifa.taquillaCompartida && tarifa.pctVenue != null ? tarifa.pctVenue : null;
   recalcularBooking();
@@ -329,11 +336,11 @@ function abrirModalEdicionBooking(b) {
   document.getElementById("bk-artista").value = b.artistaRosterId || "";
 
   // El venue es común a los dos tipos de booking.
-  document.getElementById("bk-espacio-buscar").value = b.espacio || "";
+  document.getElementById("bk-venue-select").value = b.venueId || "";
   document.getElementById("bk-venue-id").value = b.venueId || "";
   document.getElementById("bk-espacio-direccion").value = b.espacioDireccion || "";
   if (b.venueId) {
-    alEscribirVenueBooking();
+    alSeleccionarVenueBooking();
     if (b.modalidadIndice != null) {
       setTimeout(() => {
         document.getElementById("bk-modalidad").value = b.modalidadIndice;
@@ -408,8 +415,12 @@ formBooking.addEventListener("submit", async (e) => {
     comisionPct: parseFloat(document.getElementById("bk-comision-pct").value) || 0,
     ivaPct: parseFloat(document.getElementById("bk-iva-pct").value) || 0,
     notas: document.getElementById("bk-notas").value.trim(),
-    // El venue ahora es común a los dos tipos de booking.
-    espacio: document.getElementById("bk-espacio-buscar").value.trim(),
+    // El venue ahora es común a los dos tipos de booking, y se elige de la lista.
+    espacio: (() => {
+      const venueId = document.getElementById("bk-venue-id").value;
+      const venue = venuesCacheBk.find((v) => v.id === venueId);
+      return venue ? venue.nombre : "";
+    })(),
     venueId: document.getElementById("bk-venue-id").value || null,
     modalidadIndice: document.getElementById("bk-modalidad").value !== "" ? document.getElementById("bk-modalidad").value : null,
     repartoPromotorPct: bookingRepartoPromotorPct,
