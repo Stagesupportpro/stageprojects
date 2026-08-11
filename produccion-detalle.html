@@ -68,6 +68,11 @@
             <input type="date" id="pd-fecha" />
           </div>
           <div class="field field-wide">
+            <label for="pd-artista-nombre">Artista / Grupo</label>
+            <input type="text" id="pd-artista-nombre" placeholder="Ej. The Night Prowlers" />
+            <p style="font-size:12px; color:var(--color-text-muted); margin-top:6px;">Se importa solo desde el booking vinculado; también editable a mano.</p>
+          </div>
+          <div class="field field-wide">
             <label for="pd-booking">Booking vinculado (opcional)</label>
             <select id="pd-booking" onchange="alVincularBookingProd()">
               <option value="">— Sin vincular —</option>
@@ -86,30 +91,7 @@
 
         <div class="hr-section">
           <div class="hr-section-head"><h3>Costes</h3></div>
-
-          <div class="modalidad-card" style="margin-bottom:14px;">
-            <p style="font-size:12px; color:var(--color-text-muted); margin:0 0 10px;">Caché del artista — se autocompleta al vincular un booking, igual que el alquiler del venue. También editable a mano.</p>
-            <div class="form-grid">
-              <div class="field field-wide">
-                <label for="pd-artista-nombre">Artista / Grupo</label>
-                <input type="text" id="pd-artista-nombre" placeholder="Ej. The Night Prowlers" oninput="recalcularCifrasProd()" />
-              </div>
-              <div class="field">
-                <label for="pd-artista-bi">Caché (BI) €</label>
-                <input type="number" id="pd-artista-bi" min="0" step="0.01" oninput="recalcularCifrasProd()" />
-              </div>
-              <div class="field">
-                <label for="pd-artista-iva">IVA (%)</label>
-                <input type="number" id="pd-artista-iva" min="0" max="100" step="0.1" value="21" oninput="recalcularCifrasProd()" />
-              </div>
-            </div>
-            <div class="calc-box" style="margin-top:10px;">
-              <div class="calc-item"><div class="calc-label">Caché (BI)</div><div class="calc-value" id="pd-calc-artista-bi">0,00 €</div></div>
-              <div class="calc-item"><div class="calc-label">IVA</div><div class="calc-value" id="pd-calc-artista-iva">0,00 €</div></div>
-              <div class="calc-item calc-total"><div class="calc-label">Total con IVA</div><div class="calc-value" id="pd-calc-artista-total">0,00 €</div></div>
-            </div>
-          </div>
-
+          <p style="font-size:12px; color:var(--color-text-muted); margin:-4px 0 12px;">La fila "Caché" se autocompleta al vincular un booking, igual que "Alquiler venue". Importe = base sin IVA; el total con IVA se calcula solo.</p>
           <div id="pd-lista-costes"></div>
           <button type="button" class="add-row-link" onclick="anadirCosteProd()">+ Añadir coste</button>
         </div>
