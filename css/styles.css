@@ -1717,3 +1717,37 @@ table.doc-table td.label { font-weight: 700; background: #fafafa; width: 22%; }
 @media (max-width: 760px) {
   .personal-row { grid-template-columns: 1fr; }
 }
+
+/* ---------- Información y Backup ---------- */
+
+.contador-card {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 14px;
+  padding: 14px 16px;
+  border: 1.5px solid var(--color-border);
+  border-radius: 12px;
+  margin-bottom: 10px;
+  flex-wrap: wrap;
+}
+.contador-card .contador-info { display: flex; align-items: center; gap: 12px; }
+.contador-card .contador-valor {
+  font-family: var(--font-display);
+  font-weight: 700;
+  font-size: 20px;
+  min-width: 70px;
+}
+.contador-card .contador-label { font-size: 13px; color: var(--color-text-muted); }
+
+.backup-box {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  flex-wrap: wrap;
+  padding: 20px;
+  background: var(--color-bg-soft);
+  border-radius: 12px;
+}
+.backup-box .backup-texto { max-width: 480px; font-size: 13.5px; color: var(--color-text-muted); }
