@@ -2,24 +2,28 @@
 // STAGE SUPPORT — bookings.js
 // Colección: /bookings/{id} → {
 //   idVisible, tipo ('cache'|'promotor'),
-//   artistaRosterId, artistaNombre,
+//   artistas: [{ rosterId, nombre, cache, comisionPct, ivaPct }],
 //   origenCache ('cliente'|'propuesta'), clienteId, clienteNombre,
 //   propuestaId, propuestaIdVisible,
-//   espacio, espacioDireccion,
-//   fecha, ciudad, cache, comisionPct, ivaPct,
+//   venueId, espacio, espacioDireccion, modalidadIndice,
+//   repartoPromotorPct, repartoVenuePct,
+//   costeVenue, costeVenueIvaPct (solo "como promotora"),
+//   fecha, ciudad, notas,
 //   creadoPor, creadoPorUid, creadoEl
 // }
-// Al crear un booking, también se marca en el Calendario (tipo "Booking").
+// Un booking puede tener varios artistas (cada uno con su propio
+// caché/comisión/IVA). Al crear un booking, también se marca en el
+// Calendario (tipo "Booking").
 // =========================================================
 
 let usuarioActualBk = null;
 let rosterCacheBk = [];
 let clientesCacheBk = [];
 let propuestasCacheBk = [];
-let comisionesCacheBk = [];
 let venuesCacheBk = [];
 let bookingRepartoPromotorPct = null;
 let bookingRepartoVenuePct = null;
+let artistasBooking = []; // [{ rosterId, nombre, cache, comisionPct, ivaPct }]
 
 (async function () {
   usuarioActualBk = await protegerPagina(["Comercial", "Admin"]);
@@ -33,20 +37,16 @@ let bookingRepartoVenuePct = null;
     avatarEl.textContent = inicialesDe(nombreCompletoDe(usuarioActualBk) || usuarioActualBk.email);
   }
 
-  await Promise.all([cargarRosterBk(), cargarClientesBk(), cargarPropuestasBk(), cargarComisionesBk(), cargarVenuesBk()]);
+  await Promise.all([cargarRosterBk(), cargarClientesBk(), cargarPropuestasBk(), cargarVenuesBk()]);
   escucharBookings();
 })();
 
-// ---------- Listas de apoyo (Roster, Clientes, Propuestas, Comisiones) ----------
+// ---------- Listas de apoyo (Roster, Clientes, Propuestas, Venues) ----------
 
 async function cargarRosterBk() {
-  const sel = document.getElementById("bk-artista");
   try {
     const snap = await db.collection("roster").orderBy("nombre").get();
     rosterCacheBk = snap.docs.map((d) => ({ id: d.id, ...d.data() }));
-    sel.innerHTML =
-      `<option value="">— Selecciona del Roster —</option>` +
-      rosterCacheBk.map((r) => `<option value="${r.id}">${escaparHtmlBk(r.nombre)}</option>`).join("");
   } catch (err) {
     console.error(err);
   }
@@ -80,19 +80,6 @@ async function cargarPropuestasBk() {
   }
 }
 
-async function cargarComisionesBk() {
-  const sel = document.getElementById("bk-comision-preset");
-  try {
-    const snap = await db.collection("comisiones").orderBy("nombre").get();
-    comisionesCacheBk = snap.docs.map((d) => ({ id: d.id, ...d.data() }));
-    sel.innerHTML =
-      `<option value="">— Manual —</option>` +
-      comisionesCacheBk.map((c) => `<option value="${c.id}">${escaparHtmlBk(c.nombre)} (${c.porcentaje}%)</option>`).join("");
-  } catch (err) {
-    console.error(err);
-  }
-}
-
 async function cargarVenuesBk() {
   try {
     const snap = await db.collection("venues").orderBy("nombre").get();
@@ -105,6 +92,82 @@ async function cargarVenuesBk() {
     console.error(err);
   }
 }
+
+// ---------- Artistas (varios por booking) ----------
+
+function renderArtistasBooking() {
+  const cont = document.getElementById("lista-artistas-bk");
+  const esPromotor = document.querySelector('input[name="bk-tipo"]:checked').value === "promotor";
+
+  if (artistasBooking.length === 0) {
+    cont.innerHTML = `<p style="color:var(--color-text-muted); font-size:13px;">Todavía no hay artistas añadidos.</p>`;
+  } else {
+    const opcionesHtml = (seleccionado) =>
+      `<option value="">— Selecciona del Roster —</option>` +
+      rosterCacheBk.map((r) => `<option value="${r.id}" ${seleccionado === r.id ? "selected" : ""}>${escaparHtmlBk(r.nombre)}</option>`).join("");
+
+    cont.innerHTML = artistasBooking
+      .map(
+        (a, i) => `
+          <div class="modalidad-card">
+            <div style="display:flex; gap:10px; align-items:center; margin-bottom:10px;">
+              <select style="flex:1;" onchange="alSeleccionarArtistaBookingRow(${i}, this.value)">${opcionesHtml(a.rosterId)}</select>
+              <button type="button" class="remove-row-btn" onclick="eliminarArtistaBooking(${i})">✕</button>
+            </div>
+            <div class="form-grid">
+              <div class="field"><label style="font-size:11px;">Caché (BI) €</label><input type="number" min="0" step="0.01" value="${a.cache != null ? a.cache : ""}" oninput="artistasBooking[${i}].cache=this.value===''?null:parseFloat(this.value); actualizarTotalArtistaBooking(${i})" /></div>
+              <div class="field" style="display:${esPromotor ? "none" : "block"};"><label style="font-size:11px;">Comisión %</label><input type="number" min="0" max="100" step="0.1" value="${a.comisionPct != null ? a.comisionPct : ""}" oninput="artistasBooking[${i}].comisionPct=this.value===''?0:parseFloat(this.value); actualizarTotalArtistaBooking(${i})" /></div>
+              <div class="field"><label style="font-size:11px;">IVA %</label><input type="number" min="0" max="100" step="0.1" value="${a.ivaPct != null ? a.ivaPct : ""}" oninput="artistasBooking[${i}].ivaPct=this.value===''?0:parseFloat(this.value); actualizarTotalArtistaBooking(${i})" /></div>
+            </div>
+            <div class="calc-box" style="margin-top:8px;">
+              <div class="calc-item calc-total"><div class="calc-label">Total</div><div class="calc-value" id="artista-total-${i}">${formatoEuroBk(totalArtistaBooking(a, esPromotor))}</div></div>
+            </div>
+          </div>
+        `
+      )
+      .join("");
+  }
+  recalcularBooking();
+}
+
+function totalArtistaBooking(a, esPromotor) {
+  const cache = a.cache || 0;
+  const comisionPct = esPromotor ? 0 : a.comisionPct || 0;
+  const ivaPct = a.ivaPct || 0;
+  const pvp = cache * (1 + comisionPct / 100);
+  return pvp * (1 + ivaPct / 100);
+}
+
+function actualizarTotalArtistaBooking(i) {
+  const esPromotor = document.querySelector('input[name="bk-tipo"]:checked').value === "promotor";
+  const el = document.getElementById(`artista-total-${i}`);
+  if (el) el.textContent = formatoEuroBk(totalArtistaBooking(artistasBooking[i], esPromotor));
+  recalcularBooking();
+}
+
+function alSeleccionarArtistaBookingRow(i, rosterId) {
+  const artista = rosterCacheBk.find((r) => r.id === rosterId);
+  artistasBooking[i].rosterId = rosterId || null;
+  artistasBooking[i].nombre = artista ? artista.nombre : "";
+  if (artista) {
+    if (artista.cache != null) artistasBooking[i].cache = artista.cache;
+    if (artista.comisionPorcentaje != null) artistasBooking[i].comisionPct = artista.comisionPorcentaje;
+    if (artista.ivaPorcentaje != null) artistasBooking[i].ivaPct = artista.ivaPorcentaje;
+  }
+  renderArtistasBooking();
+}
+
+function anadirArtistaBooking() {
+  artistasBooking.push({ rosterId: null, nombre: "", cache: null, comisionPct: 0, ivaPct: 21 });
+  renderArtistasBooking();
+}
+
+function eliminarArtistaBooking(i) {
+  artistasBooking.splice(i, 1);
+  renderArtistasBooking();
+}
+
+// ---------- Venue y modalidad ----------
 
 function alSeleccionarVenueBooking() {
   const venueId = document.getElementById("bk-venue-select").value;
@@ -122,8 +185,8 @@ function alSeleccionarVenueBooking() {
   document.getElementById("bk-espacio-direccion").value = venue.direccion || "";
 
   // La modalidad (y su coste/reparto) solo aplica cuando actuamos como
-  // promotora — en "a caché" el coste es el caché del artista, no el
-  // alquiler del venue, así que no tiene sentido mostrarla ahí.
+  // promotora — en "a caché" no hay coste de venue, solo el caché de
+  // los artistas.
   if (!esPromotor) {
     campoModalidad.style.display = "none";
     return;
@@ -149,7 +212,7 @@ function alSeleccionarVenueBooking() {
 
 function alSeleccionarModalidadBooking() {
   const esPromotor = document.querySelector('input[name="bk-tipo"]:checked').value === "promotor";
-  if (!esPromotor) return; // Salvaguarda: en "a caché" la modalidad nunca debe tocar el coste.
+  if (!esPromotor) return; // Salvaguarda: en "a caché" la modalidad nunca debe tocar ningún coste.
 
   const venueId = document.getElementById("bk-venue-id").value;
   const venue = venuesCacheBk.find((v) => v.id === venueId);
@@ -158,56 +221,34 @@ function alSeleccionarModalidadBooking() {
   const tarifa = venue.tarifas[idx];
   if (!tarifa) return;
 
-  document.getElementById("bk-cache").value = tarifa.importe || 0;
+  document.getElementById("bk-venue-cache").value = tarifa.importe || 0;
   // Si la modalidad del venue ya incluye IVA, no hace falta sumarlo aparte encima.
-  document.getElementById("bk-iva-pct").value = tarifa.impuestos === "con" ? 0 : document.getElementById("bk-iva-pct").value || 21;
+  document.getElementById("bk-venue-iva-pct").value = tarifa.impuestos === "con" ? 0 : document.getElementById("bk-venue-iva-pct").value || 21;
   bookingRepartoPromotorPct = tarifa.taquillaCompartida && tarifa.pctPromotor != null ? tarifa.pctPromotor : null;
   bookingRepartoVenuePct = tarifa.taquillaCompartida && tarifa.pctVenue != null ? tarifa.pctVenue : null;
   recalcularBooking();
 }
 
-
+// ---------- Tipo / origen ----------
 
 function alCambiarTipoBooking() {
   const tipo = document.querySelector('input[name="bk-tipo"]:checked').value;
-  document.getElementById("bloque-cache").style.display = tipo === "cache" ? "block" : "none";
-
   const esPromotor = tipo === "promotor";
-  document.getElementById("grupo-bk-comision").style.display = esPromotor ? "none" : "contents";
-  document.getElementById("bk-calc-item-comision").style.display = esPromotor ? "none" : "flex";
-  document.getElementById("bk-titulo-cifras").textContent = esPromotor ? "Coste e IVA" : "Caché, comisión e IVA";
-  document.getElementById("bk-label-cache").textContent = esPromotor ? "Coste (alquiler del venue) €" : "Caché (BI) €";
-  document.getElementById("bk-calc-label-cache").textContent = esPromotor ? "Coste" : "Caché (BI)";
+  document.getElementById("bloque-cache").style.display = esPromotor ? "none" : "block";
+  document.getElementById("bloque-coste-venue").style.display = esPromotor ? "block" : "none";
 
-  if (esPromotor) {
-    // Sin comisión: la agencia no se cobra a sí misma.
-    document.getElementById("bk-comision-pct").value = 0;
-  }
-
-  // Si ya había un venue elegido, reevalúa si la modalidad debe verse
-  // (solo aplica en "como promotora").
+  // Si ya había un venue elegido, reevalúa si la modalidad debe verse.
   if (document.getElementById("bk-venue-select").value) {
     alSeleccionarVenueBooking();
   }
 
-  recalcularBooking();
+  renderArtistasBooking(); // vuelve a pintar las filas para mostrar/ocultar Comisión
 }
 
 function alCambiarOrigenCache() {
   const origen = document.querySelector('input[name="bk-origen"]:checked').value;
   document.getElementById("campo-bk-cliente").style.display = origen === "cliente" ? "block" : "none";
   document.getElementById("campo-bk-propuesta").style.display = origen === "propuesta" ? "block" : "none";
-}
-
-function alSeleccionarArtistaBooking() {
-  const id = document.getElementById("bk-artista").value;
-  const artista = rosterCacheBk.find((r) => r.id === id);
-  if (!artista) return;
-  // Autocompleta caché / comisión / IVA con los valores guardados en la ficha del Roster.
-  if (artista.cache != null) document.getElementById("bk-cache").value = artista.cache;
-  if (artista.comisionPorcentaje != null) document.getElementById("bk-comision-pct").value = artista.comisionPorcentaje;
-  if (artista.ivaPorcentaje != null) document.getElementById("bk-iva-pct").value = artista.ivaPorcentaje;
-  recalcularBooking();
 }
 
 function alSeleccionarPropuestaBooking() {
@@ -218,35 +259,37 @@ function alSeleccionarPropuestaBooking() {
   }
 }
 
-function aplicarComisionPresetBooking() {
-  const id = document.getElementById("bk-comision-preset").value;
-  const preset = comisionesCacheBk.find((c) => c.id === id);
-  if (preset) {
-    document.getElementById("bk-comision-pct").value = preset.porcentaje;
-    recalcularBooking();
-  }
-}
+// ---------- Cálculo general ----------
 
 function formatoEuroBk(n) {
   return Number(n || 0).toLocaleString("es-ES", { minimumFractionDigits: 2, maximumFractionDigits: 2 }) + " €";
 }
 
 function recalcularBooking() {
-  const cache = parseFloat(document.getElementById("bk-cache").value) || 0;
-  const comisionPct = parseFloat(document.getElementById("bk-comision-pct").value) || 0;
-  const ivaPct = parseFloat(document.getElementById("bk-iva-pct").value) || 0;
+  const esPromotor = document.querySelector('input[name="bk-tipo"]:checked').value === "promotor";
 
-  const comisionImporte = cache * (comisionPct / 100);
-  const total = cache + comisionImporte;
-  const ivaImporte = total * (ivaPct / 100);
-  const totalConIva = total + ivaImporte;
+  const totalArtistas = artistasBooking.reduce((sum, a) => sum + totalArtistaBooking(a, esPromotor), 0);
+  document.getElementById("bk-calc-label-artistas").textContent = esPromotor ? "Total artistas (coste)" : "Total artistas (a facturar)";
+  document.getElementById("bk-calc-artistas-total").textContent = formatoEuroBk(totalArtistas);
 
-  document.getElementById("bk-calc-cache").textContent = formatoEuroBk(cache);
-  document.getElementById("bk-calc-comision").textContent = formatoEuroBk(comisionImporte);
-  document.getElementById("bk-calc-total").textContent = formatoEuroBk(total);
-  document.getElementById("bk-calc-total-iva").textContent = formatoEuroBk(totalConIva);
+  let totalGeneral = totalArtistas;
 
-  return totalConIva;
+  if (esPromotor) {
+    const costeVenue = parseFloat(document.getElementById("bk-venue-cache").value) || 0;
+    const ivaVenue = parseFloat(document.getElementById("bk-venue-iva-pct").value) || 0;
+    const ivaVenueImporte = costeVenue * (ivaVenue / 100);
+    const totalVenue = costeVenue + ivaVenueImporte;
+    document.getElementById("bk-calc-venue-cache").textContent = formatoEuroBk(costeVenue);
+    document.getElementById("bk-calc-venue-iva").textContent = formatoEuroBk(ivaVenueImporte);
+    document.getElementById("bk-calc-venue-total").textContent = formatoEuroBk(totalVenue);
+    totalGeneral += totalVenue;
+    document.getElementById("bk-resumen-label").textContent = "Coste total del booking (artistas + venue)";
+  } else {
+    document.getElementById("bk-resumen-label").textContent = "Total a facturar al cliente";
+  }
+
+  document.getElementById("bk-resumen-valor").textContent = formatoEuroBk(totalGeneral);
+  return totalGeneral;
 }
 
 // ---------- Listado ----------
@@ -265,6 +308,23 @@ function escucharBookings() {
   );
 }
 
+function nombresArtistasBooking(b) {
+  const artistas = Array.isArray(b.artistas) ? b.artistas : [];
+  if (artistas.length === 0) return "—";
+  return artistas.map((a) => a.nombre).join(", ");
+}
+
+function totalGeneralBookingGuardado(b) {
+  const esPromotor = b.tipo === "promotor";
+  const artistas = Array.isArray(b.artistas) ? b.artistas : [];
+  let total = artistas.reduce((sum, a) => sum + totalArtistaBooking(a, esPromotor), 0);
+  if (esPromotor) {
+    const costeVenue = b.costeVenue || 0;
+    total += costeVenue * (1 + (b.costeVenueIvaPct || 0) / 100);
+  }
+  return total;
+}
+
 function pintarTablaBookings(bookings) {
   const tbody = document.getElementById("tabla-bookings");
   document.getElementById("contador-bookings").textContent =
@@ -280,25 +340,21 @@ function pintarTablaBookings(bookings) {
   tbody.innerHTML = bookings
     .map((b) => {
       const fecha = b.fecha ? new Date(b.fecha + "T00:00:00").toLocaleDateString("es-ES") : "—";
-      const cache = b.cache || 0;
-      const comision = cache * ((b.comisionPct || 0) / 100);
-      const total = cache + comision;
-      const totalIva = total * (1 + (b.ivaPct || 0) / 100);
       const contraparte = b.tipo === "promotor" ? b.espacio : b.clienteNombre;
 
       return `
         <tr>
           <td><span class="id-badge">${escaparHtmlBk(b.idVisible || "—")}</span> <span class="permiso-tag">V${b.version || 1}</span></td>
-          <td style="font-weight:600;">${escaparHtmlBk(b.artistaNombre)}</td>
+          <td style="font-weight:600;">${escaparHtmlBk(nombresArtistasBooking(b))}</td>
           <td><span class="booking-tipo-badge ${b.tipo}">${b.tipo === "promotor" ? "Promotor" : "A caché"}</span></td>
           <td>${escaparHtmlBk(contraparte || "—")}</td>
           <td>${fecha}</td>
-          <td style="font-weight:600;">${formatoEuroBk(totalIva)}</td>
+          <td style="font-weight:600;">${formatoEuroBk(totalGeneralBookingGuardado(b))}</td>
           <td>
             <div class="row-actions" style="justify-content:flex-end;">
               <button class="icon-btn" title="Editar" onclick='abrirModalEdicionBooking(${JSON.stringify(b).replace(/'/g, "&#39;")})'>✎</button>
               <button class="icon-btn" title="Crear nueva versión" onclick='crearNuevaVersionBooking(${JSON.stringify(b).replace(/'/g, "&#39;")})'>⎘</button>
-              <button class="icon-btn danger" title="Eliminar" onclick="confirmarEliminarBooking('${b.id}', '${escaparHtmlBk(b.artistaNombre).replace(/'/g, "\\'")}')">🗑</button>
+              <button class="icon-btn danger" title="Eliminar" onclick="confirmarEliminarBooking('${b.id}', '${escaparHtmlBk(nombresArtistasBooking(b)).replace(/'/g, "\\'")}')">🗑</button>
             </div>
           </td>
         </tr>
@@ -329,16 +385,17 @@ function abrirModalBooking() {
   formBooking.reset();
   bookingRepartoPromotorPct = null;
   bookingRepartoVenuePct = null;
+  artistasBooking = [];
   document.getElementById("bk-id-edicion").value = "";
   document.getElementById("campo-id-existente").style.display = "none";
   document.getElementById("bk-fecha").value = fechaISOBk(new Date());
-  document.getElementById("bk-iva-pct").value = 21;
+  document.getElementById("bk-venue-iva-pct").value = 21;
   document.getElementById("modal-titulo").textContent = "Nuevo booking";
   document.getElementById("modal-sub").textContent = "Se le asignará automáticamente un ID correlativo (BO<año>-0001).";
   document.getElementById("btn-guardar").textContent = "Crear booking";
   alCambiarTipoBooking();
   alCambiarOrigenCache();
-  recalcularBooking();
+  anadirArtistaBooking(); // arranca con una fila lista para rellenar
   ocultarMsgModalBk();
   overlayBooking.classList.add("show");
 }
@@ -352,12 +409,15 @@ function abrirModalEdicionBooking(b) {
   document.getElementById("bk-id-badge").textContent = b.idVisible || "—";
 
   document.querySelector(`input[name="bk-tipo"][value="${b.tipo || "cache"}"]`).checked = true;
-  document.getElementById("bk-artista").value = b.artistaRosterId || "";
+
+  artistasBooking = Array.isArray(b.artistas) && b.artistas.length ? JSON.parse(JSON.stringify(b.artistas)) : [{ rosterId: null, nombre: "", cache: null, comisionPct: 0, ivaPct: 21 }];
 
   // El venue es común a los dos tipos de booking.
   document.getElementById("bk-venue-select").value = b.venueId || "";
   document.getElementById("bk-venue-id").value = b.venueId || "";
   document.getElementById("bk-espacio-direccion").value = b.espacioDireccion || "";
+  document.getElementById("bk-venue-cache").value = b.costeVenue != null ? b.costeVenue : "";
+  document.getElementById("bk-venue-iva-pct").value = b.costeVenueIvaPct != null ? b.costeVenueIvaPct : 21;
   if (b.venueId) {
     alSeleccionarVenueBooking();
     if (b.modalidadIndice != null) {
@@ -376,9 +436,6 @@ function abrirModalEdicionBooking(b) {
 
   document.getElementById("bk-fecha").value = b.fecha || fechaISOBk(new Date());
   document.getElementById("bk-ciudad").value = b.ciudad || "";
-  document.getElementById("bk-cache").value = b.cache != null ? b.cache : "";
-  document.getElementById("bk-comision-pct").value = b.comisionPct != null ? b.comisionPct : "";
-  document.getElementById("bk-iva-pct").value = b.ivaPct != null ? b.ivaPct : 21;
   document.getElementById("bk-notas").value = b.notas || "";
 
   document.getElementById("modal-titulo").textContent = "Editar booking";
@@ -387,7 +444,7 @@ function abrirModalEdicionBooking(b) {
 
   alCambiarTipoBooking();
   alCambiarOrigenCache();
-  recalcularBooking();
+  renderArtistasBooking();
   ocultarMsgModalBk();
   overlayBooking.classList.add("show");
 }
@@ -415,26 +472,21 @@ formBooking.addEventListener("submit", async (e) => {
   btn.disabled = true;
 
   const tipo = document.querySelector('input[name="bk-tipo"]:checked').value;
-  const artistaId = document.getElementById("bk-artista").value;
-  const artistaEncontrado = rosterCacheBk.find((r) => r.id === artistaId);
+  const artistasValidos = artistasBooking.filter((a) => a.rosterId);
 
-  if (!artistaId) {
-    mostrarMsgModalBk("Selecciona un artista del Roster.");
+  if (artistasValidos.length === 0) {
+    mostrarMsgModalBk("Añade al menos un artista del Roster.");
     btn.disabled = false;
     return;
   }
 
   const datosBase = {
     tipo,
-    artistaRosterId: artistaId,
-    artistaNombre: artistaEncontrado ? artistaEncontrado.nombre : "",
+    artistas: artistasValidos,
     fecha: document.getElementById("bk-fecha").value,
     ciudad: document.getElementById("bk-ciudad").value.trim(),
-    cache: parseFloat(document.getElementById("bk-cache").value) || 0,
-    comisionPct: parseFloat(document.getElementById("bk-comision-pct").value) || 0,
-    ivaPct: parseFloat(document.getElementById("bk-iva-pct").value) || 0,
     notas: document.getElementById("bk-notas").value.trim(),
-    // El venue ahora es común a los dos tipos de booking, y se elige de la lista.
+    // El venue es común a los dos tipos de booking, y se elige de la lista.
     espacio: (() => {
       const venueId = document.getElementById("bk-venue-id").value;
       const venue = venuesCacheBk.find((v) => v.id === venueId);
@@ -445,6 +497,8 @@ formBooking.addEventListener("submit", async (e) => {
     repartoPromotorPct: bookingRepartoPromotorPct,
     repartoVenuePct: bookingRepartoVenuePct,
     espacioDireccion: document.getElementById("bk-espacio-direccion").value.trim(),
+    costeVenue: tipo === "promotor" ? parseFloat(document.getElementById("bk-venue-cache").value) || 0 : null,
+    costeVenueIvaPct: tipo === "promotor" ? parseFloat(document.getElementById("bk-venue-iva-pct").value) || 0 : null,
   };
 
   if (tipo === "promotor") {
@@ -492,9 +546,10 @@ formBooking.addEventListener("submit", async (e) => {
 
       // También queda marcada en el Calendario, el día de creación.
       const contraparte = tipo === "promotor" ? datosBase.espacio : datosBase.clienteNombre;
+      const nombresArtistas = artistasValidos.map((a) => a.nombre).join(", ");
       await db.collection("documentos").add({
         tipo: "Booking",
-        titulo: `${datosBase.artistaNombre} — ${contraparte || "—"} (${idVisible})`,
+        titulo: `${nombresArtistas} — ${contraparte || "—"} (${idVisible})`,
         fecha: fechaISOBk(new Date()),
         enlace: "",
         notas: `Booking ${idVisible}`,

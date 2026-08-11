@@ -98,7 +98,7 @@ async function cargarBookingsProd() {
         return fb - fa;
       });
     const opciones = bookingsCacheProd
-      .map((b) => `<option value="${b.id}">${escaparHtmlPD(b.idVisible)} — ${escaparHtmlPD(b.artistaNombre)} @ ${escaparHtmlPD(b.espacio || "")}</option>`)
+      .map((b) => `<option value="${b.id}">${escaparHtmlPD(b.idVisible)} — ${escaparHtmlPD(nombresArtistasBookingProd(b))} @ ${escaparHtmlPD(b.espacio || "")}</option>`)
       .join("");
     sel.innerHTML = `<option value="">— Sin vincular —</option>${opciones}`;
   } catch (err) {
@@ -118,7 +118,12 @@ function reflejarEstadoBookingProd() {
 
 // Se usa cuando el usuario elige un booking distinto en el desplegable:
 // además de reflejar el estado, importa automáticamente coste, sala y aforo.
-async function alVincularBookingProd() {
+async function nombresArtistasBookingProd(b) {
+  const artistas = Array.isArray(b.artistas) ? b.artistas : [];
+  return artistas.length ? artistas.map((a) => a.nombre).join(", ") : "—";
+}
+
+function alVincularBookingProd() {
   reflejarEstadoBookingProd();
   if (!bookingVinculado && document.getElementById("pd-panel-taquilla").classList.contains("active")) {
     cambiarTabProd("general");
@@ -131,37 +136,28 @@ async function alVincularBookingProd() {
 async function importarCosteVenueProd() {
   if (!bookingVinculado) return;
 
-  // Alquiler del venue: en bookings "como promotora", el campo caché del
-  // propio booking es el coste del venue (no el del artista).
-  const costeVenue = bookingVinculado.cache || 0;
-  const ivaVenue = bookingVinculado.ivaPct || 0;
+  // Alquiler del venue: campo propio del booking (costeVenue/costeVenueIvaPct),
+  // independiente del caché de los artistas.
+  const costeVenue = bookingVinculado.costeVenue || 0;
+  const ivaVenue = bookingVinculado.costeVenueIvaPct || 0;
   costesProd = costesProd.filter((c) => !(c.concepto || "").startsWith("Alquiler venue —"));
   costesProd.push({ concepto: `Alquiler venue — ${bookingVinculado.espacio || ""}`, importe: costeVenue, ivaPct: ivaVenue, nota: "" });
 
-  // Caché del artista: se toma de su ficha en el Roster — en un booking
-  // "como promotora" el campo caché del booking ya está usado para el venue,
-  // así que la fuente fiable del caché del artista es siempre su propia ficha.
-  let filaCache = costesProd.find((c) => c.concepto === "Caché");
-  if (!filaCache) {
-    filaCache = { concepto: "Caché", importe: null, ivaPct: 21, nota: "" };
-    costesProd.unshift(filaCache);
-  }
-  if (bookingVinculado.artistaRosterId) {
-    try {
-      const snapArtista = await db.collection("roster").doc(bookingVinculado.artistaRosterId).get();
-      if (snapArtista.exists) {
-        const artista = snapArtista.data();
-        if (artista.cache != null) filaCache.importe = artista.cache;
-        filaCache.ivaPct = artista.ivaPorcentaje != null ? artista.ivaPorcentaje : 21;
-      }
-    } catch (err) {
-      console.error(err);
-    }
-  }
-  filaCache.nota = bookingVinculado.artistaNombre || filaCache.nota;
+  // Caché de cada artista del booking: ya viene guardado en el propio
+  // booking (con su comisión/IVA ya resueltos en el momento de crearlo).
+  costesProd = costesProd.filter((c) => !(c.concepto || "").startsWith("Caché —"));
+  const artistas = Array.isArray(bookingVinculado.artistas) ? bookingVinculado.artistas : [];
+  artistas.forEach((a) => {
+    costesProd.unshift({
+      concepto: `Caché — ${a.nombre || "artista"}`,
+      importe: a.cache != null ? a.cache : null,
+      ivaPct: a.ivaPct != null ? a.ivaPct : 21,
+      nota: "",
+    });
+  });
   renderCostesProd();
 
-  document.getElementById("pd-artista-nombre").value = bookingVinculado.artistaNombre || "";
+  document.getElementById("pd-artista-nombre").value = artistas.map((a) => a.nombre).join(", ");
 
   document.getElementById("pd-sala-nombre").value = bookingVinculado.espacio || "";
   if (bookingVinculado.repartoPromotorPct != null) {
