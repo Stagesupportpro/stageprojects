@@ -70,13 +70,15 @@ function pintarTablaPropuestas(propuestas) {
     .map(
       (p) => `
         <tr>
-          <td><span class="id-badge">${escaparHtmlProp(p.idVisible || "—")}</span></td>
+          <td><span class="id-badge">${escaparHtmlProp(p.idVisible || "—")}</span> <span class="permiso-tag">V${p.version || 1}</span></td>
           <td style="font-weight:600;">${escaparHtmlProp(p.nombre)}</td>
           <td>${escaparHtmlProp(p.clienteNombre || "—")}</td>
           <td><span class="role-badge">${ETIQUETAS_ESTADO_PROPUESTA[p.estado] || "Borrador"}</span></td>
           <td>
             <div class="row-actions" style="justify-content:flex-end;">
+              <a class="btn-ghost" style="text-decoration:none; padding:6px 12px; font-size:12px;" href="propuesta-ver.html?id=${p.id}" target="_blank">Ver</a>
               <a class="btn-ghost" style="text-decoration:none; padding:6px 12px; font-size:12px;" href="propuesta-detalle.html?id=${p.id}">Abrir</a>
+              <button class="icon-btn" title="Crear nueva versión" onclick='crearNuevaVersionPropuesta(${JSON.stringify(p).replace(/'/g, "&#39;")})'>⎘</button>
               <button class="icon-btn danger" title="Eliminar" onclick="confirmarEliminarPropuesta('${p.id}', '${escaparHtmlProp(p.nombre).replace(/'/g, "\\'")}')">🗑</button>
             </div>
           </td>
@@ -137,6 +139,33 @@ formPropuesta.addEventListener("submit", async (e) => {
     btn.disabled = false;
   }
 });
+
+// ---------- Versiones ----------
+
+async function crearNuevaVersionPropuesta(p) {
+  if (!confirm(`¿Crear la versión V${(p.version || 1) + 1} de esta propuesta? La original (V${p.version || 1}) se conserva como histórico.`)) return;
+
+  try {
+    const { id, creadoEl, ...datos } = p;
+    await db.collection("propuestas").add({
+      ...datos,
+      estado: "Borrador",
+      version: (p.version || 1) + 1,
+      grupoVersionId: p.grupoVersionId || p.id,
+      versionAnteriorId: p.id,
+      creadoPor: nombreCompletoDe(usuarioActualProp) || usuarioActualProp.email,
+      creadoPorUid: usuarioActualProp.uid,
+      creadoEl: firebase.firestore.FieldValue.serverTimestamp(),
+    });
+    if (!p.grupoVersionId) {
+      await db.collection("propuestas").doc(p.id).update({ grupoVersionId: p.id });
+    }
+    mostrarToast(`Versión V${(p.version || 1) + 1} creada.`);
+  } catch (err) {
+    console.error(err);
+    mostrarToast("No se pudo crear la nueva versión.");
+  }
+}
 
 function confirmarEliminarPropuesta(id, nombre) {
   if (!confirm(`¿Eliminar la propuesta "${nombre}"?`)) return;

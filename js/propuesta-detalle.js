@@ -72,7 +72,7 @@ async function cargarPropuesta() {
     }
     const d = snap.data();
 
-    document.getElementById("prop-id-badge").textContent = d.idVisible || "—";
+    document.getElementById("prop-id-badge").textContent = `${d.idVisible || "—"} · V${d.version || 1}`;
     document.getElementById("prop-titulo-cabecera").textContent = d.nombre || "Propuesta";
     document.getElementById("pd-nombre").value = d.nombre || "";
     document.getElementById("pd-estado").value = d.estado || "Borrador";
