@@ -1320,6 +1320,12 @@ table.doc-table td.label { font-weight: 700; background: #fafafa; width: 22%; }
 .field textarea:focus { border-color: var(--color-text); outline: none; background: #fff; }
 
 .tarifa-row { grid-template-columns: 1.4fr 1fr 1fr auto; }
+.costes-row { grid-template-columns: 1.3fr 0.9fr 0.6fr 0.9fr 1.2fr auto; align-items: center; }
+.costes-row input[readonly] { background: var(--color-bg-soft); font-weight: 700; color: var(--color-text); cursor: default; }
+
+@media (max-width: 900px) {
+  .costes-row { grid-template-columns: 1fr; }
+}
 .tramo-row { grid-template-columns: 1fr 1fr 1fr auto; }
 .segmento-row { grid-template-columns: 2fr 1fr auto; }
 .rider-row { grid-template-columns: 1fr 2fr auto; }
