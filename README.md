@@ -106,6 +106,28 @@ extra no se incluye porque no corresponde a la producción.
 > al de pago Blaze — tiene una capa gratuita amplia). Cuando queráis
 > dar ese paso, ya tengo mapeados los endpoints exactos a usar.
 
+## Información y Backup (Administración)
+
+Nuevo submenú, solo Admin:
+
+- **Contadores de numeración** — muestra el último número usado este
+  año para cada prefijo (PRO, HR, PROV, BO, PR) y permite reiniciarlo
+  a 0000. Úsalo con cuidado: reiniciar un contador con IDs ya usados
+  puede hacer que se repitan.
+- **Backup completo** — descarga un `.json` con todas las colecciones
+  de la plataforma (usuarios, bookings, producciones, roster,
+  propuestas, clientes, venues, etc.), por si hace falta restaurar
+  algo o guardar una copia aparte de Firebase.
+
+## Ajustes rápidos
+
+- **Preparar Propuesta**: al añadir una opción desde el Roster, ahora
+  también se trae la descripción comercial (antes solo el cartel).
+  Además, cualquier opción (venga del Roster o sea manual) permite
+  subir o cambiar su foto con el botón "Cambiar foto".
+- **Producción**: al vincular un booking ya **no salta solo** a la
+  pestaña Cifras — se queda donde estabas.
+
 ## Preparar Propuesta — precios opcionales, fecha y ciclo por opción
 
 Cada propuesta tiene ahora un interruptor **"Mostrar precios al
