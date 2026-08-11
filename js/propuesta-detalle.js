@@ -77,6 +77,7 @@ async function cargarPropuesta() {
     document.getElementById("pd-nombre").value = d.nombre || "";
     document.getElementById("pd-estado").value = d.estado || "Borrador";
     document.getElementById("pd-notas").value = d.notas || "";
+    document.getElementById("pd-mostrar-precios").value = d.mostrarPrecios === false ? "no" : "si";
     if (d.clienteId) document.getElementById("pd-cliente").value = d.clienteId;
 
     itemsPropuesta = Array.isArray(d.items) ? d.items : [];
@@ -97,13 +98,17 @@ function anadirItemDesdeRoster(rosterId) {
     nombre: r.nombre,
     imagen: r.imagenCartel || null,
     descripcion: "",
-    precio: null,
+    fecha: "",
+    ciclo: "",
+    bi: r.cache != null ? r.cache : null,
+    comisionPct: r.comisionPorcentaje != null ? r.comisionPorcentaje : 0,
+    ivaPct: r.ivaPorcentaje != null ? r.ivaPorcentaje : 21,
   });
   renderItemsPropuesta();
 }
 
 function anadirItemManual() {
-  itemsPropuesta.push({ rosterId: null, nombre: "", imagen: null, descripcion: "", precio: null });
+  itemsPropuesta.push({ rosterId: null, nombre: "", imagen: null, descripcion: "", fecha: "", ciclo: "", bi: null, comisionPct: 0, ivaPct: 21 });
   renderItemsPropuesta();
 }
 
@@ -112,8 +117,30 @@ function eliminarItemPropuesta(i) {
   renderItemsPropuesta();
 }
 
+function pvpItemPropuesta(it) {
+  return (it.bi || 0) * (1 + (it.comisionPct || 0) / 100);
+}
+
+function totalItemPropuesta(it) {
+  return pvpItemPropuesta(it) * (1 + (it.ivaPct || 0) / 100);
+}
+
+function actualizarPrecioItemPropuesta(i) {
+  const it = itemsPropuesta[i];
+  const pvpEl = document.getElementById(`item-pvp-${i}`);
+  const totalEl = document.getElementById(`item-total-${i}`);
+  if (pvpEl) pvpEl.textContent = formatoEuroPD(pvpItemPropuesta(it));
+  if (totalEl) totalEl.textContent = formatoEuroPD(totalItemPropuesta(it));
+}
+
+function formatoEuroPD(n) {
+  return Number(n || 0).toLocaleString("es-ES", { minimumFractionDigits: 2, maximumFractionDigits: 2 }) + " €";
+}
+
 function renderItemsPropuesta() {
   const cont = document.getElementById("lista-items-propuesta");
+  const mostrarPrecios = document.getElementById("pd-mostrar-precios").value !== "no";
+
   if (itemsPropuesta.length === 0) {
     cont.innerHTML = `<p style="color:var(--color-text-muted); font-size:13px;">Todavía no hay opciones añadidas a esta propuesta.</p>`;
     return;
@@ -125,14 +152,33 @@ function renderItemsPropuesta() {
         ? `<img src="${it.imagen}" alt="" style="width:64px; height:64px; border-radius:8px; object-fit:cover; flex-shrink:0;" />`
         : `<div style="width:64px; height:64px; border-radius:8px; background:var(--color-bg-soft); flex-shrink:0;"></div>`;
 
+      const precioHtml = mostrarPrecios
+        ? `
+          <div class="form-grid" style="margin-top:8px;">
+            <div class="field"><label style="font-size:11px;">Caché / coste (BI) €</label><input type="number" min="0" step="0.01" value="${it.bi != null ? it.bi : ""}" oninput="itemsPropuesta[${i}].bi=this.value===''?null:parseFloat(this.value); actualizarPrecioItemPropuesta(${i})" /></div>
+            <div class="field"><label style="font-size:11px;">Comisión %</label><input type="number" min="0" max="100" step="0.1" value="${it.comisionPct != null ? it.comisionPct : ""}" oninput="itemsPropuesta[${i}].comisionPct=this.value===''?0:parseFloat(this.value); actualizarPrecioItemPropuesta(${i})" /></div>
+            <div class="field"><label style="font-size:11px;">IVA %</label><input type="number" min="0" max="100" step="0.1" value="${it.ivaPct != null ? it.ivaPct : ""}" oninput="itemsPropuesta[${i}].ivaPct=this.value===''?0:parseFloat(this.value); actualizarPrecioItemPropuesta(${i})" /></div>
+          </div>
+          <div class="calc-box" style="margin-top:8px;">
+            <div class="calc-item"><div class="calc-label">PVP (con comisión)</div><div class="calc-value" id="item-pvp-${i}">${formatoEuroPD(pvpItemPropuesta(it))}</div></div>
+            <div class="calc-item calc-total"><div class="calc-label">Total con IVA</div><div class="calc-value" id="item-total-${i}">${formatoEuroPD(totalItemPropuesta(it))}</div></div>
+          </div>
+          <p style="font-size:11px; color:var(--color-text-muted); margin:4px 0 0;">Al cliente solo le aparece el PVP + IVA + Total — la comisión nunca se muestra por separado.</p>
+        `
+        : `<p style="font-size:12px; color:var(--color-text-muted); margin-top:6px;">Los precios no se muestran al cliente en esta propuesta (cambia "Mostrar precios" arriba si hace falta).</p>`;
+
       return `
         <div class="day-block">
           <div style="display:flex; gap:14px;">
             ${imgHtml}
             <div style="flex:1; display:flex; flex-direction:column; gap:8px;">
+              <div class="form-grid">
+                <div class="field"><label style="font-size:11px;">Fecha</label><input type="date" value="${it.fecha || ""}" oninput="itemsPropuesta[${i}].fecha=this.value" /></div>
+                <div class="field"><label style="font-size:11px;">Ciclo / Festival / Actuación</label><input placeholder="Ej. Festival Verano 2026" value="${escaparAttrPD(it.ciclo)}" oninput="itemsPropuesta[${i}].ciclo=this.value" /></div>
+              </div>
               <input placeholder="Nombre" value="${escaparAttrPD(it.nombre)}" oninput="itemsPropuesta[${i}].nombre=this.value" />
               <input placeholder="Descripción" value="${escaparAttrPD(it.descripcion)}" oninput="itemsPropuesta[${i}].descripcion=this.value" />
-              <input type="number" min="0" step="0.01" placeholder="Precio (opcional, se muestra al cliente)" value="${it.precio != null ? it.precio : ""}" oninput="itemsPropuesta[${i}].precio=this.value===''?null:parseFloat(this.value)" />
+              ${precioHtml}
             </div>
             <button type="button" class="icon-btn danger" style="align-self:flex-start;" onclick="eliminarItemPropuesta(${i})" title="Quitar">🗑</button>
           </div>
@@ -165,6 +211,7 @@ async function guardarPropuesta() {
     nombre: document.getElementById("pd-nombre").value.trim(),
     estado: document.getElementById("pd-estado").value,
     notas: document.getElementById("pd-notas").value.trim(),
+    mostrarPrecios: document.getElementById("pd-mostrar-precios").value !== "no",
     clienteId: clienteId || null,
     clienteNombre: clienteEncontrado ? clienteEncontrado.nombre : "",
     items: itemsPropuesta,
