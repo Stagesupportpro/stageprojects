@@ -13,6 +13,7 @@ let docIdProd = null;
 let opcionesPMProd = [];
 let bookingsCacheProd = [];
 let costesProd = [];
+let personalProd = []; // [{ tipo, id, nombre, bi, jornadas }]
 let documentosProd = [];
 let hospitalidadProd = [];
 let bookingVinculado = null;
@@ -88,24 +89,42 @@ async function cargarOpcionesPMProd() {
 async function cargarBookingsProd() {
   const sel = document.getElementById("pd-booking");
   try {
-    const snap = await db.collection("bookings").where("tipo", "==", "promotor").orderBy("creadoEl", "desc").get();
-    bookingsCacheProd = snap.docs.map((d) => ({ id: d.id, ...d.data() }));
+    const snap = await db.collection("bookings").where("tipo", "==", "promotor").get();
+    bookingsCacheProd = snap.docs
+      .map((d) => ({ id: d.id, ...d.data() }))
+      .sort((a, b) => {
+        const fa = a.creadoEl && a.creadoEl.toMillis ? a.creadoEl.toMillis() : 0;
+        const fb = b.creadoEl && b.creadoEl.toMillis ? b.creadoEl.toMillis() : 0;
+        return fb - fa;
+      });
     const opciones = bookingsCacheProd
       .map((b) => `<option value="${b.id}">${escaparHtmlPD(b.idVisible)} — ${escaparHtmlPD(b.artistaNombre)} @ ${escaparHtmlPD(b.espacio || "")}</option>`)
       .join("");
     sel.innerHTML = `<option value="">— Sin vincular —</option>${opciones}`;
   } catch (err) {
     console.error(err);
+    mostrarToast("No se pudieron cargar los bookings.");
   }
 }
 
-function alVincularBookingProd() {
+// Se usa al cargar la ficha (el booking ya estaba guardado de antes):
+// solo refleja el estado, sin volver a importar nada para no duplicar costes.
+function reflejarEstadoBookingProd() {
   const id = document.getElementById("pd-booking").value;
   bookingVinculado = bookingsCacheProd.find((b) => b.id === id) || null;
   document.getElementById("btn-importar-venue").style.display = bookingVinculado ? "inline-flex" : "none";
   document.getElementById("pd-btn-tab-taquilla").style.display = bookingVinculado ? "block" : "none";
+}
+
+// Se usa cuando el usuario elige un booking distinto en el desplegable:
+// además de reflejar el estado, importa automáticamente coste, sala y aforo.
+async function alVincularBookingProd() {
+  reflejarEstadoBookingProd();
   if (!bookingVinculado && document.getElementById("pd-panel-taquilla").classList.contains("active")) {
     cambiarTabProd("general");
+  }
+  if (bookingVinculado) {
+    await importarCosteVenueProd();
   }
 }
 
@@ -114,6 +133,8 @@ async function importarCosteVenueProd() {
   const cache = bookingVinculado.cache || 0;
   const ivaPct = bookingVinculado.ivaPct || 0;
   const total = cache * (1 + ivaPct / 100);
+  // Si ya había una línea de alquiler importada antes, se sustituye en vez de duplicarla.
+  costesProd = costesProd.filter((c) => !(c.concepto || "").startsWith("Alquiler venue —"));
   costesProd.push({ concepto: `Alquiler venue — ${bookingVinculado.espacio || ""}`, importe: total });
   renderCostesProd();
 
@@ -174,7 +195,7 @@ async function cargarProduccion() {
     if (d.pmTipo && d.pmId) document.getElementById("pd-pm").value = `${d.pmTipo}:${d.pmId}`;
     if (d.bookingId) {
       document.getElementById("pd-booking").value = d.bookingId;
-      alVincularBookingProd();
+      reflejarEstadoBookingProd();
     }
 
     costesProd = Array.isArray(d.costes) ? d.costes : [];
@@ -187,6 +208,9 @@ async function cargarProduccion() {
       }));
     }
     renderCostesProd();
+
+    personalProd = Array.isArray(d.personal) ? d.personal : [];
+    renderPersonalProd();
 
     document.getElementById("pd-sala-nombre").value = d.salaNombre || "";
     document.getElementById("pd-sala-provincia").value = d.salaProvincia || "";
@@ -258,6 +282,66 @@ function eliminarCosteProd(i) {
   renderCostesProd();
 }
 
+// ---------- Personal asignado ----------
+// Jornada estándar = BI. Jornada y media = BI + 50% BI (1.5×BI).
+// Doble jornada = BI + BI (2×BI).
+
+function costePersonaProd(p) {
+  return (p.bi || 0) * (p.jornadas || 1);
+}
+
+function renderPersonalProd() {
+  const cont = document.getElementById("pd-lista-personal");
+  if (personalProd.length === 0) {
+    cont.innerHTML = `<p style="color:var(--color-text-muted); font-size:13px;">Todavía no hay personal asignado.</p>`;
+  } else {
+    const opcionesHtml = (seleccionado) =>
+      `<option value="">— Selecciona —</option>` +
+      opcionesPMProd.map((o) => `<option value="${o.tipo}:${o.id}" ${seleccionado === `${o.tipo}:${o.id}` ? "selected" : ""}>${escaparHtmlPD(o.nombre)}</option>`).join("");
+
+    cont.innerHTML = personalProd
+      .map((p, i) => {
+        const valorActual = p.id ? `${p.tipo}:${p.id}` : "";
+        return `
+          <div class="repeat-row personal-row">
+            <select onchange="alSeleccionarPersonaProd(${i}, this.value)">${opcionesHtml(valorActual)}</select>
+            <input type="number" min="0" step="0.01" placeholder="BI (€/jornada)" value="${p.bi != null ? p.bi : ""}" oninput="personalProd[${i}].bi=this.value===''?0:parseFloat(this.value); recalcularCifrasProd()" />
+            <select onchange="personalProd[${i}].jornadas=parseFloat(this.value); recalcularCifrasProd()">
+              <option value="1" ${p.jornadas === 1 || !p.jornadas ? "selected" : ""}>1 jornada</option>
+              <option value="1.5" ${p.jornadas === 1.5 ? "selected" : ""}>1,5 jornadas</option>
+              <option value="2" ${p.jornadas === 2 ? "selected" : ""}>2 jornadas</option>
+            </select>
+            <div style="align-self:center; font-weight:600; font-size:13.5px;">${formatoEuroPD(costePersonaProd(p))}</div>
+            <button type="button" class="remove-row-btn" onclick="eliminarPersonalProd(${i})">✕</button>
+          </div>
+        `;
+      })
+      .join("");
+  }
+  const total = personalProd.reduce((sum, p) => sum + costePersonaProd(p), 0);
+  document.getElementById("pd-calc-personal-total").textContent = formatoEuroPD(total);
+  recalcularCifrasProd();
+}
+
+function alSeleccionarPersonaProd(i, valor) {
+  const [tipo, id] = valor.split(":");
+  const encontrada = opcionesPMProd.find((o) => o.tipo === tipo && o.id === id);
+  personalProd[i].tipo = tipo || null;
+  personalProd[i].id = id || null;
+  personalProd[i].nombre = encontrada ? encontrada.nombre : "";
+  renderPersonalProd();
+}
+
+function anadirPersonalProd() {
+  personalProd.push({ tipo: null, id: null, nombre: "", bi: 0, jornadas: 1 });
+  renderPersonalProd();
+}
+
+function eliminarPersonalProd(i) {
+  personalProd.splice(i, 1);
+  renderPersonalProd();
+}
+
 // ---------- Simulación, reparto y break even ----------
 // Verificado contra el modelo real: la Sala cobra su % sobre la
 // VENTA BRUTA de cada tramo; el Artista/Promotor se queda su % sobre
@@ -272,7 +356,8 @@ function formatoEuroPD(n) {
 function recalcularCifrasProd() {
   const totalHosp = hospitalidadProd.reduce((sum, h) => sum + (h.precio || 0), 0);
   const totalCostesManual = costesProd.reduce((sum, c) => sum + (c.importe || 0), 0);
-  const gastos = totalCostesManual + totalHosp;
+  const totalPersonal = personalProd.reduce((sum, p) => sum + costePersonaProd(p), 0);
+  const gastos = totalCostesManual + totalHosp + totalPersonal;
 
   const aforoTotal = parseFloat(document.getElementById("pd-venta-prevista").value) || parseFloat(document.getElementById("pd-aforo").value) || 0;
   const precio = parseFloat(document.getElementById("pd-precio-entrada").value) || 0;
@@ -427,7 +512,8 @@ function recalcularTaquillaProd() {
 
   const totalHosp = hospitalidadProd.reduce((sum, h) => sum + (h.precio || 0), 0);
   const totalCostesManual = costesProd.reduce((sum, c) => sum + (c.importe || 0), 0);
-  const gastos = totalCostesManual + totalHosp;
+  const totalPersonal = personalProd.reduce((sum, p) => sum + costePersonaProd(p), 0);
+  const gastos = totalCostesManual + totalHosp + totalPersonal;
 
   const vsBreakEven = document.getElementById("pd-tq-vs-breakeven");
   if (precio > 0) {
@@ -460,6 +546,7 @@ async function guardarProduccion() {
     pmNombre: pmEncontrado ? pmEncontrado.nombre : "",
     bookingId: document.getElementById("pd-booking").value || null,
     costes: costesProd,
+    personal: personalProd,
     salaNombre: document.getElementById("pd-sala-nombre").value.trim(),
     salaProvincia: document.getElementById("pd-sala-provincia").value.trim(),
     aforo: parseFloat(document.getElementById("pd-aforo").value) || null,

@@ -7,6 +7,7 @@
 
 let usuarioActualCat = null;
 let catalogoCache = [];
+let filtrosActivosCat = new Set(); // valores tipo "cat:Artistas" o "tag:Rock"
 
 (async function () {
   usuarioActualCat = await protegerPagina(["Comercial", "Admin"]);
@@ -33,8 +34,11 @@ function cargarCatalogo() {
         imagenCartel: d.data().imagenCartel,
         descripcionComercial: d.data().descripcionComercial,
         redesSociales: d.data().redesSociales,
+        categoria: d.data().categoria,
+        etiquetas: d.data().etiquetas,
         // Deliberadamente NO se incluyen cache / comisionPorcentaje / ivaPorcentaje / tarifas.
       }));
+      pintarFiltrosCatalogo();
       pintarCatalogo();
     },
     (err) => {
@@ -44,20 +48,68 @@ function cargarCatalogo() {
   );
 }
 
+function pintarFiltrosCatalogo() {
+  const cont = document.getElementById("catalogo-filtros");
+  const categorias = new Set();
+  const etiquetas = new Set();
+  catalogoCache.forEach((r) => {
+    if (r.categoria) categorias.add(r.categoria);
+    (r.etiquetas || []).forEach((e) => etiquetas.add(e));
+  });
+
+  if (categorias.size === 0 && etiquetas.size === 0) {
+    cont.innerHTML = "";
+    return;
+  }
+
+  const chip = (valor, label) => `
+    <button type="button" class="filter-chip ${filtrosActivosCat.has(valor) ? "active" : ""}" onclick="toggleFiltroCatalogo('${valor}')">${escaparHtmlCat(label)}</button>
+  `;
+
+  cont.innerHTML =
+    [...categorias].map((c) => chip(`cat:${c}`, c)).join("") + [...etiquetas].map((e) => chip(`tag:${e}`, e)).join("");
+}
+
+function toggleFiltroCatalogo(valor) {
+  if (filtrosActivosCat.has(valor)) {
+    filtrosActivosCat.delete(valor);
+  } else {
+    filtrosActivosCat.add(valor);
+  }
+  pintarFiltrosCatalogo();
+  pintarCatalogo();
+}
+
+function pasaFiltrosCatalogo(r) {
+  if (filtrosActivosCat.size === 0) return true;
+  for (const valor of filtrosActivosCat) {
+    if (valor.startsWith("cat:") && r.categoria === valor.slice(4)) return true;
+    if (valor.startsWith("tag:") && (r.etiquetas || []).includes(valor.slice(4))) return true;
+  }
+  return false;
+}
+
 function pintarCatalogo() {
   const grid = document.getElementById("catalogo-grid");
+  const items = catalogoCache.filter(pasaFiltrosCatalogo);
+
   if (catalogoCache.length === 0) {
     grid.innerHTML = `<div class="empty-state"><strong>Todavía no hay nada en el Roster</strong>Añade espectáculos desde Booking &amp; Management → Roster.</div>`;
     return;
   }
+  if (items.length === 0) {
+    grid.innerHTML = `<div class="empty-state"><strong>Nada con estos filtros</strong>Prueba a quitar alguno.</div>`;
+    return;
+  }
 
-  grid.innerHTML = catalogoCache
+  grid.innerHTML = items
     .map(
       (r) => `
         <div class="catalogo-card" onclick="abrirModalCatalogo('${r.id}')">
           ${r.imagenCartel ? `<img class="cat-imagen" src="${r.imagenCartel}" alt="" />` : `<div class="cat-imagen-placeholder">${escaparHtmlCat(inicialesDe(r.nombre))}</div>`}
           <div class="cat-info">
             <div class="cat-nombre">${escaparHtmlCat(r.nombre)}</div>
+            ${r.categoria ? `<span class="categoria-badge">${escaparHtmlCat(r.categoria)}</span>` : ""}
             <div class="cat-oficina">${escaparHtmlCat(r.oficinaRepresentacion || "")}</div>
           </div>
         </div>
@@ -71,7 +123,7 @@ function abrirModalCatalogo(id) {
   if (!r) return;
 
   document.getElementById("cat-modal-nombre").textContent = r.nombre || "";
-  document.getElementById("cat-modal-oficina").textContent = r.oficinaRepresentacion || "";
+  document.getElementById("cat-modal-oficina").textContent = [r.categoria, r.oficinaRepresentacion].filter(Boolean).join(" · ");
   document.getElementById("cat-modal-descripcion").textContent = r.descripcionComercial || "Sin descripción todavía.";
 
   const img = document.getElementById("cat-modal-imagen");

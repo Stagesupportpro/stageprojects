@@ -12,6 +12,7 @@
 let usuarioActualRstD = null;
 let docIdRoster = null;
 let contactosRst = [];
+let etiquetasRst = [];
 let redesRst = [];
 let posterDataUrl = null;
 let logoRstDataUrl = null;
@@ -115,6 +116,10 @@ async function cargarRoster() {
     logoRstDataUrl = d.logo || null;
     mostrarPreviewLogoRst(logoRstDataUrl);
 
+    document.getElementById("rst-categoria").value = d.categoria || "";
+    etiquetasRst = Array.isArray(d.etiquetas) ? d.etiquetas : [];
+    renderEtiquetasRst();
+
     contactosRst = Array.isArray(d.contactos) ? d.contactos : [];
     renderContactosRst();
 
@@ -184,6 +189,37 @@ function anadirContactoRst() {
 function eliminarContactoRst(i) {
   contactosRst.splice(i, 1);
   renderContactosRst();
+}
+
+// ---------- Etiquetas ----------
+
+function renderEtiquetasRst() {
+  const cont = document.getElementById("lista-etiquetas-rst");
+  if (etiquetasRst.length === 0) {
+    cont.innerHTML = `<p style="color:var(--color-text-muted); font-size:13px; margin:0;">Sin etiquetas todavía.</p>`;
+    return;
+  }
+  cont.innerHTML = etiquetasRst
+    .map(
+      (e, i) => `
+        <span class="tag-chip">${escaparHtmlRstD(e)}<button type="button" onclick="eliminarEtiquetaRst(${i})" title="Quitar">✕</button></span>
+      `
+    )
+    .join("");
+}
+
+function anadirEtiquetaRst() {
+  const input = document.getElementById("rst-etiqueta-input");
+  const valor = input.value.trim();
+  if (!valor) return;
+  if (!etiquetasRst.includes(valor)) etiquetasRst.push(valor);
+  input.value = "";
+  renderEtiquetasRst();
+}
+
+function eliminarEtiquetaRst(i) {
+  etiquetasRst.splice(i, 1);
+  renderEtiquetasRst();
 }
 
 // ---------- Redes sociales ----------
@@ -622,6 +658,8 @@ async function guardarRoster() {
     ivaPorcentaje: parseFloat(document.getElementById("rst-iva-pct").value) || 0,
     imagenCartel: posterDataUrl,
     logo: logoRstDataUrl,
+    categoria: document.getElementById("rst-categoria").value,
+    etiquetas: etiquetasRst,
     contactos: contactosRst,
     redesSociales: redesRst,
     tarifas: tarifasRst,

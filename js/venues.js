@@ -39,7 +39,7 @@ function pintarTablaVenues(venues) {
     venues.length + (venues.length === 1 ? " venue" : " venues");
 
   if (venues.length === 0) {
-    tbody.innerHTML = `<tr><td colspan="6" style="text-align:center; padding:36px; color:var(--color-text-muted);">
+    tbody.innerHTML = `<tr><td colspan="7" style="text-align:center; padding:36px; color:var(--color-text-muted);">
       Todavía no hay venues creados.
     </td></tr>`;
     return;
@@ -53,6 +53,7 @@ function pintarTablaVenues(venues) {
       return `
         <tr>
           <td style="font-weight:600;">${escaparHtmlVen(v.nombre)}</td>
+          <td>${v.tipoVenue ? `<span class="categoria-badge">${escaparHtmlVen(v.tipoVenue)}</span>` : "—"}</td>
           <td>${escaparHtmlVen(v.direccion || "—")}</td>
           <td>${aforoTotal != null ? aforoTotal : "—"}</td>
           <td>${escaparHtmlVen(contactoPrincipal)}</td>

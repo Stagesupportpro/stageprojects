@@ -12,8 +12,26 @@ let usuarioActual = null;
   document.getElementById("pass-role").textContent = usuarioActual.rol;
   pintarAvatarPass(usuarioActual);
 
+  await cargarOpcionesRolUsuarios();
   escucharUsuarios();
 })();
+
+// ---------- Roles disponibles (tira de Administración → Roles) ----------
+
+async function cargarOpcionesRolUsuarios() {
+  const sel = document.getElementById("rol");
+  try {
+    const snap = await db.collection("roles").orderBy("nombre").get();
+    if (snap.empty) {
+      sel.innerHTML = `<option value="">Sin roles creados todavía</option>`;
+      return;
+    }
+    sel.innerHTML = snap.docs.map((d) => `<option value="${d.data().nombre}">${d.data().nombre}</option>`).join("");
+  } catch (err) {
+    console.error(err);
+    sel.innerHTML = `<option value="">No se pudieron cargar los roles</option>`;
+  }
+}
 
 // ---------- Foto de perfil ----------
 // Se guarda directamente en Firestore como imagen comprimida (Data URL),

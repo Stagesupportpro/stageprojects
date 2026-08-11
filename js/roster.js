@@ -41,7 +41,7 @@ function pintarTablaRoster(items) {
     items.length + (items.length === 1 ? " espectáculo" : " espectáculos");
 
   if (items.length === 0) {
-    tbody.innerHTML = `<tr><td colspan="4" style="text-align:center; padding:36px; color:var(--color-text-muted);">
+    tbody.innerHTML = `<tr><td colspan="5" style="text-align:center; padding:36px; color:var(--color-text-muted);">
       Todavía no hay espectáculos en el roster.
     </td></tr>`;
     return;
@@ -58,6 +58,7 @@ function pintarTablaRoster(items) {
               <div style="font-weight:600;">${escaparHtmlRoster(r.nombre)}</div>
             </div>
           </td>
+          <td>${r.categoria ? `<span class="categoria-badge">${escaparHtmlRoster(r.categoria)}</span>` : "—"}</td>
           <td>${escaparHtmlRoster(r.oficinaRepresentacion || "—")}</td>
           <td>${cacheTexto}</td>
           <td>

@@ -48,6 +48,7 @@ async function cargarVenue() {
 
     document.getElementById("ven-titulo-cabecera").textContent = d.nombre || "Venue";
     document.getElementById("v-nombre").value = d.nombre || "";
+    document.getElementById("v-tipo").value = d.tipoVenue || "";
     document.getElementById("v-direccion").value = d.direccion || "";
     document.getElementById("v-maps").value = d.mapsUrl || "";
     document.getElementById("v-condiciones").value = d.condiciones || "";
@@ -170,7 +171,10 @@ function renderTarifasVen() {
           <div class="repeat-row modalidad-top">
             <input placeholder="Nombre de la modalidad (Ej. Modalidad 1)" value="${escaparAttrVen(t.concepto)}" oninput="tarifasVen[${i}].concepto=this.value" />
             <input type="number" min="0" step="0.01" placeholder="Importe alquiler €" value="${t.importe != null ? t.importe : ""}" oninput="tarifasVen[${i}].importe=this.value===''?null:parseFloat(this.value)" />
-            <div></div>
+            <select onchange="tarifasVen[${i}].impuestos=this.value">
+              <option value="sin" ${t.impuestos !== "con" ? "selected" : ""}>Sin IVA</option>
+              <option value="con" ${t.impuestos === "con" ? "selected" : ""}>Con IVA</option>
+            </select>
             <button type="button" class="remove-row-btn" onclick="eliminarTarifaVen(${i})">✕</button>
           </div>
           <label class="taquilla-toggle">
@@ -194,7 +198,7 @@ function renderTarifasVen() {
 }
 
 function anadirTarifaVen() {
-  tarifasVen.push({ concepto: "", importe: null, taquillaCompartida: false, pctVenue: null, pctPromotor: null });
+  tarifasVen.push({ concepto: "", importe: null, impuestos: "sin", taquillaCompartida: false, pctVenue: null, pctPromotor: null });
   renderTarifasVen();
 }
 
@@ -256,6 +260,7 @@ async function guardarVenue() {
 
   const datos = {
     nombre: document.getElementById("v-nombre").value.trim(),
+    tipoVenue: document.getElementById("v-tipo").value,
     direccion: document.getElementById("v-direccion").value.trim(),
     mapsUrl: document.getElementById("v-maps").value.trim(),
     condiciones: document.getElementById("v-condiciones").value.trim(),
