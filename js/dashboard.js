@@ -26,6 +26,7 @@ let usuarioActualDash = null;
   await pintarStats(usuarioActualDash.rol);
   pintarPanelesPorRol(usuarioActualDash.rol);
   escucharNotificaciones();
+  escucharEvaluaciones();
 })();
 
 // ---------- Estadísticas reales ----------
@@ -148,12 +149,16 @@ function pintarPanelesPorRol(rol) {
 function escucharNotificaciones() {
   db.collection("notificaciones")
     .where("paraUid", "==", usuarioActualDash.uid)
-    .orderBy("creadoEl", "desc")
     .limit(20)
     .onSnapshot(
       (snap) => {
         const filas = [];
         snap.forEach((doc) => filas.push({ id: doc.id, ...doc.data() }));
+        filas.sort((a, b) => {
+          const fa = a.creadoEl && a.creadoEl.toMillis ? a.creadoEl.toMillis() : 0;
+          const fb = b.creadoEl && b.creadoEl.toMillis ? b.creadoEl.toMillis() : 0;
+          return fb - fa;
+        });
         pintarNotificaciones(filas);
       },
       (err) => console.error("No se pudieron cargar las notificaciones:", err)
@@ -213,5 +218,92 @@ async function marcarTodasLeidas() {
     await batch.commit();
   } catch (err) {
     console.error(err);
+  }
+}
+
+// ---------- Evaluaciones de propuestas ----------
+
+function escucharEvaluaciones() {
+  if (usuarioActualDash.rol !== "Admin") return; // decisión de evaluar es cosa de Admin
+
+  db.collection("evaluaciones")
+    .where("estado", "==", "Pendiente")
+    .onSnapshot(
+      (snap) => {
+        const filas = [];
+        snap.forEach((doc) => filas.push({ id: doc.id, ...doc.data() }));
+        filas.sort((a, b) => {
+          const fa = a.solicitadoEl && a.solicitadoEl.toMillis ? a.solicitadoEl.toMillis() : 0;
+          const fb = b.solicitadoEl && b.solicitadoEl.toMillis ? b.solicitadoEl.toMillis() : 0;
+          return fb - fa;
+        });
+        pintarEvaluaciones(filas);
+      },
+      (err) => console.error("No se pudieron cargar las evaluaciones:", err)
+    );
+}
+
+function pintarEvaluaciones(evaluaciones) {
+  const card = document.getElementById("card-evaluaciones");
+  const cont = document.getElementById("lista-evaluaciones");
+
+  if (evaluaciones.length === 0) {
+    card.style.display = "none";
+    return;
+  }
+  card.style.display = "block";
+
+  cont.innerHTML = evaluaciones
+    .map((ev) => {
+      const fecha = ev.solicitadoEl && ev.solicitadoEl.toDate ? ev.solicitadoEl.toDate().toLocaleDateString("es-ES") : "";
+      return `
+        <div class="evaluacion-row">
+          <div class="evaluacion-info">
+            <div class="evaluacion-titulo">${escaparHtmlDash(ev.propuestaNombre)} <span class="id-badge" style="margin-left:6px;">${escaparHtmlDash(ev.propuestaIdVisible || "")}</span></div>
+            <div class="evaluacion-meta">${escaparHtmlDash(ev.clienteNombre || "—")} · Solicitado por ${escaparHtmlDash(ev.solicitadoPor || "—")}${fecha ? " · " + fecha : ""}</div>
+          </div>
+          <div class="evaluacion-acciones">
+            <a class="btn-ghost" style="text-decoration:none; padding:7px 12px; font-size:12px;" href="${ev.enlace}" target="_blank">Ver</a>
+            <button class="btn-ghost" style="padding:7px 12px; font-size:12px;" onclick="decidirEvaluacion('${ev.id}', 'Rechazada')">✕ Rechazar</button>
+            <button class="btn-accent" style="padding:7px 12px; font-size:12px;" onclick="decidirEvaluacion('${ev.id}', 'Aceptada')">✓ Aceptar</button>
+          </div>
+        </div>
+      `;
+    })
+    .join("");
+}
+
+async function decidirEvaluacion(id, decision) {
+  if (!confirm(`¿Marcar esta propuesta como "${decision}"?`)) return;
+
+  try {
+    const snap = await db.collection("evaluaciones").doc(id).get();
+    if (!snap.exists) return;
+    const ev = snap.data();
+
+    await db.collection("evaluaciones").doc(id).update({
+      estado: decision,
+      resueltoPor: nombreCompletoDe(usuarioActualDash) || usuarioActualDash.email,
+      resueltoEl: firebase.firestore.FieldValue.serverTimestamp(),
+    });
+
+    if (ev.propuestaId) {
+      await db.collection("propuestas").doc(ev.propuestaId).update({ estado: decision });
+    }
+
+    if (ev.solicitadoPorUid) {
+      await crearNotificacion(
+        ev.solicitadoPorUid,
+        "sistema",
+        `tu propuesta "${ev.propuestaNombre}" ha sido ${decision.toLowerCase()}`,
+        ev.enlace || "ver-propuestas.html",
+        usuarioActualDash
+      );
+    }
+
+    mostrarToast(`Propuesta marcada como ${decision.toLowerCase()}.`);
+  } catch (err) {
+    console.error(err);
+    mostrarToast("No se pudo registrar la decisión.");
   }
 }

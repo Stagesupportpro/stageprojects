@@ -1,24 +1,29 @@
 // =========================================================
 // STAGE SUPPORT — propuesta-ver.js
-// Vista limpia (sin menú) para mostrar la propuesta desde un
-// dispositivo delante del cliente. Requiere sesión iniciada
-// (el empleado abre esto ya logueado en su propio dispositivo).
+// Vista de la propuesta en "modo cliente", con una barra de staff
+// arriba (visible solo estando logueado) para exportar a PDF o
+// mandarla a evaluar. Requiere sesión iniciada.
 // =========================================================
 
+let usuarioActualPV = null;
+let propuestaActualPV = null;
+let docIdPV = null;
+
 (async function () {
-  await protegerPagina(); // cualquier rol con acceso activo
+  usuarioActualPV = await protegerPagina(); // cualquier rol con acceso activo
 
   const params = new URLSearchParams(window.location.search);
-  const id = params.get("id");
-  if (!id) return;
+  docIdPV = params.get("id");
+  if (!docIdPV) return;
 
   try {
-    const snap = await db.collection("propuestas").doc(id).get();
+    const snap = await db.collection("propuestas").doc(docIdPV).get();
     if (!snap.exists) {
       document.getElementById("pv-nombre").textContent = "Propuesta no encontrada";
       return;
     }
     const d = snap.data();
+    propuestaActualPV = { id: docIdPV, ...d };
 
     document.getElementById("pv-nombre").textContent = d.nombre || "Propuesta";
     document.getElementById("pv-subtitulo").textContent = d.clienteNombre
@@ -79,4 +84,85 @@ function escaparHtmlPV(str) {
   const d = document.createElement("div");
   d.textContent = str || "";
   return d.innerHTML;
+}
+
+// ---------- Exportar a PDF ----------
+
+function exportarPdfPropuesta() {
+  if (!propuestaActualPV) return;
+  const btn = document.getElementById("btn-pdf-propuesta");
+  btn.disabled = true;
+  btn.textContent = "Generando…";
+
+  const nombreArchivo = `${propuestaActualPV.idVisible || "propuesta"}_${(propuestaActualPV.nombre || "").replace(/[^\w\- ]/g, "").trim()}.pdf`;
+
+  html2pdf()
+    .from(document.getElementById("pv-content"))
+    .set({
+      margin: 10,
+      filename: nombreArchivo,
+      html2canvas: { scale: 2, backgroundColor: "#ffffff" },
+      jsPDF: { unit: "mm", format: "a4", orientation: "portrait" },
+    })
+    .save()
+    .then(() => {
+      btn.disabled = false;
+      btn.textContent = "📄 Exportar PDF";
+    })
+    .catch((err) => {
+      console.error(err);
+      mostrarToast("No se pudo generar el PDF.");
+      btn.disabled = false;
+      btn.textContent = "📄 Exportar PDF";
+    });
+}
+
+// ---------- Enviar a evaluar ----------
+
+async function enviarAEvaluarPropuesta() {
+  if (!propuestaActualPV) return;
+  const btn = document.getElementById("btn-evaluar-propuesta");
+  btn.disabled = true;
+
+  const enlace = `${window.location.origin}${window.location.pathname}?id=${docIdPV}`;
+
+  try {
+    await db.collection("evaluaciones").add({
+      propuestaId: docIdPV,
+      propuestaIdVisible: propuestaActualPV.idVisible || "",
+      propuestaNombre: propuestaActualPV.nombre || "",
+      clienteNombre: propuestaActualPV.clienteNombre || "",
+      enlace,
+      estado: "Pendiente",
+      comentario: "",
+      solicitadoPor: nombreCompletoDe(usuarioActualPV) || usuarioActualPV.email,
+      solicitadoPorUid: usuarioActualPV.uid,
+      solicitadoEl: firebase.firestore.FieldValue.serverTimestamp(),
+    });
+
+    await db.collection("propuestas").doc(docIdPV).update({ estado: "Enviada" });
+
+    try {
+      await navigator.clipboard.writeText(enlace);
+      mostrarToast("Marcada como enviada. Enlace de evaluación copiado al portapapeles.");
+    } catch (errClip) {
+      mostrarToast(`Marcada como enviada. Enlace: ${enlace}`);
+    }
+  } catch (err) {
+    console.error(err);
+    mostrarToast("No se pudo registrar el envío a evaluar.");
+  } finally {
+    btn.disabled = false;
+  }
+}
+
+// ---------- Toast ----------
+
+let toastTimerPV;
+function mostrarToast(texto) {
+  const t = document.getElementById("toast");
+  document.getElementById("toast-msg").textContent = texto;
+  t.classList.add("show");
+  clearTimeout(toastTimerPV);
+  toastTimerPV = setTimeout(() => t.classList.remove("show"), 3200);
 }

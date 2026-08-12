@@ -33,6 +33,7 @@ const COLECCIONES_BACKUP = [
   "roles",
   "comisiones",
   "configuracion",
+  "evaluaciones",
 ];
 
 let usuarioActualBackup = null;

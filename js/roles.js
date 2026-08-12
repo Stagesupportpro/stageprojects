@@ -43,7 +43,7 @@ const ROLES_POR_DEFECTO = [
   },
   {
     nombre: "Comercial",
-    permisos: { dashboard: true, calendario: true, agenda: true, notas: true, bookings: true, catalogo: true, propuestas: true, clientes: true },
+    permisos: { dashboard: true, calendario: true, agenda: true, notas: true, bookings: true, catalogo: true, propuestas: true, "ver-propuestas": true, clientes: true },
   },
   {
     nombre: "Producción",

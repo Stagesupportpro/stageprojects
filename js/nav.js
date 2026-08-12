@@ -22,6 +22,7 @@ const NAV_ESTRUCTURA = [
     items: [
       { id: "catalogo", label: "Catálogo", href: "catalogo.html", roles: ["Comercial", "Admin"], listo: true },
       { id: "propuestas", label: "Preparar Propuesta", href: "propuestas.html", roles: ["Comercial", "Admin"], listo: true },
+      { id: "ver-propuestas", label: "Ver Propuestas", href: "ver-propuestas.html", roles: ["Comercial", "Admin"], listo: true },
     ],
   },
   {
