@@ -255,6 +255,40 @@ Debajo del usuario logueado, en el menú lateral, aparece la versión
 de la plataforma (`VERSION_PLATAFORMA` en `js/nav.js`) — súbela a
 mano cada vez que publiquéis una ronda de cambios importante.
 
+## Auditoría — errores graves en Producción (arreglados)
+
+Barrido completo del archivo (funciones definidas vs. llamadas,
+IDs del HTML vs. los que busca el JS) y encontrados dos fallos reales
+introducidos en un refactor anterior:
+
+- `alVincularBookingProd()` usaba `await` sin ser `async function` —
+  un error de sintaxis real que podía impedir que se cargara el
+  script entero de la página.
+- `nombresArtistasBookingProd()` estaba mal marcada como `async` y se
+  usaba de forma síncrona — el desplegable de "Booking vinculado"
+  mostraba literalmente `[object Promise]` en vez de los nombres.
+
+Ambos arreglados. Repetí el mismo barrido en **todos** los demás
+archivos JS del proyecto por si el mismo patrón se había colado en
+otro sitio — no encontré ningún caso más.
+
+## Auditoría — cuentas de usuario "en el limbo"
+
+Encontrada la causa: crear un usuario son **dos pasos separados**
+(cuenta en Firebase Authentication, luego perfil en Firestore). Si el
+segundo paso falla por lo que sea, la cuenta de acceso queda creada
+pero sin perfil — no puede entrar y no aparece en el listado de
+Usuarios. Es lo que le pasó a `cgarcia@stagesupport.com`.
+
+- **Para recuperar una cuenta así**: copia su UID desde Firebase
+  Console → Authentication → Users, y crea a mano el documento que
+  falta en Firestore → `usuarios` con ese mismo ID como nombre de
+  documento (o, más simple, bórrala en Authentication y créala de
+  nuevo normal desde la plataforma).
+- **De cara a que no pase en silencio**: si el segundo paso falla
+  ahora, el formulario te avisa explícitamente con el UID exacto de
+  la cuenta a medio crear, en vez de fallar sin más explicación.
+
 ## Auditoría — permisos reales por rol (arreglo de raíz)
 
 **El fallo que reportaste** ("creé un rol y no aparecen menús") tenía
