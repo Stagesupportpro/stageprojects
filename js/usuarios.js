@@ -271,16 +271,31 @@ form.addEventListener("submit", async (e) => {
       // Se crea en la app "Secondary" para no cerrar la sesión del admin actual.
       const cred = await secondaryAuth.createUserWithEmailAndPassword(email, password);
 
-      await db.collection("usuarios").doc(cred.user.uid).set({
-        nombre,
-        apellidos,
-        telefono,
-        foto,
-        email,
-        rol,
-        activo: true,
-        creadoEl: firebase.firestore.FieldValue.serverTimestamp(),
-      });
+      try {
+        await db.collection("usuarios").doc(cred.user.uid).set({
+          nombre,
+          apellidos,
+          telefono,
+          foto,
+          email,
+          rol,
+          activo: true,
+          creadoEl: firebase.firestore.FieldValue.serverTimestamp(),
+        });
+      } catch (errPerfil) {
+        // La cuenta de acceso YA se creó en Authentication, pero el perfil
+        // en Firestore ha fallado — sin esto, la cuenta queda "en el limbo"
+        // (no puede entrar y no aparece en este listado). Se avisa con el
+        // UID exacto para poder recuperarla a mano desde Firebase Console
+        // (Firestore → usuarios → nuevo documento con ese ID).
+        console.error(errPerfil);
+        mostrarMsgModal(
+          `Se creó el acceso pero falló al guardar el perfil. UID de la cuenta: ${cred.user.uid} — créala a mano en Firestore → usuarios con ese ID, o bórrala en Authentication y vuelve a intentarlo.`
+        );
+        await secondaryAuth.signOut();
+        btn.disabled = false;
+        return;
+      }
 
       await secondaryAuth.signOut();
       mostrarToast("Usuario creado correctamente.");

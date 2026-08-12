@@ -116,14 +116,14 @@ function reflejarEstadoBookingProd() {
   document.getElementById("pd-btn-tab-taquilla").style.display = bookingVinculado ? "block" : "none";
 }
 
-// Se usa cuando el usuario elige un booking distinto en el desplegable:
-// además de reflejar el estado, importa automáticamente coste, sala y aforo.
-async function nombresArtistasBookingProd(b) {
+function nombresArtistasBookingProd(b) {
   const artistas = Array.isArray(b.artistas) ? b.artistas : [];
   return artistas.length ? artistas.map((a) => a.nombre).join(", ") : "—";
 }
 
-function alVincularBookingProd() {
+// Se usa cuando el usuario elige un booking distinto en el desplegable:
+// además de reflejar el estado, importa automáticamente coste, sala y aforo.
+async function alVincularBookingProd() {
   reflejarEstadoBookingProd();
   if (!bookingVinculado && document.getElementById("pd-panel-taquilla").classList.contains("active")) {
     cambiarTabProd("general");
