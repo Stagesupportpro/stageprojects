@@ -1751,3 +1751,42 @@ table.doc-table td.label { font-weight: 700; background: #fafafa; width: 22%; }
   border-radius: 12px;
 }
 .backup-box .backup-texto { max-width: 480px; font-size: 13.5px; color: var(--color-text-muted); }
+
+/* ---------- Barra de staff en la vista de cliente de Propuestas ---------- */
+
+.pv-staff-toolbar {
+  position: sticky;
+  top: 0;
+  z-index: 20;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  flex-wrap: wrap;
+  padding: 12px 24px;
+  background: #14151A;
+  border-bottom: 3px solid var(--color-accent);
+}
+.pv-staff-toolbar .btn-ghost {
+  border-color: #303030;
+  color: #fff;
+  background: transparent;
+}
+.pv-staff-toolbar .btn-ghost:hover { background: #232323; }
+
+/* ---------- Evaluaciones (Dashboard) ---------- */
+
+.evaluacion-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 14px;
+  flex-wrap: wrap;
+  padding: 12px 4px;
+  border-bottom: 1px solid var(--color-border);
+}
+.evaluacion-row:last-child { border-bottom: none; }
+.evaluacion-row .evaluacion-info { font-size: 13.5px; }
+.evaluacion-row .evaluacion-info .evaluacion-titulo { font-weight: 700; }
+.evaluacion-row .evaluacion-info .evaluacion-meta { color: var(--color-text-muted); font-size: 12px; margin-top: 2px; }
+.evaluacion-row .evaluacion-acciones { display: flex; gap: 8px; }
