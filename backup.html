@@ -50,11 +50,26 @@
       <div id="lista-contadores">Cargando…</div>
     </div>
 
-    <div class="card">
+    <div class="card" style="margin-bottom:20px;">
       <h3 style="font-size:15px; font-family:var(--font-display); margin-bottom:14px;">Copia de seguridad</h3>
       <div class="backup-box">
         <p class="backup-texto">Descarga un archivo con todos los datos de la plataforma (usuarios, bookings, producciones, roster, propuestas, clientes, venues, etc.) en formato JSON, por si necesitas restaurar algo o guardar una copia aparte de Firebase.</p>
         <button class="btn-accent" id="btn-backup" onclick="descargarBackup()">⬇️ Descargar backup completo</button>
+      </div>
+    </div>
+
+    <div class="card">
+      <h3 style="font-size:15px; font-family:var(--font-display); margin-bottom:6px;">Restaurar desde backup</h3>
+      <p style="font-size:12.5px; color:var(--color-text-muted); margin-bottom:14px;">
+        Sube un archivo <code>.json</code> generado con "Descargar backup completo". <strong>Sobrescribe</strong> los documentos que compartan ID con los que ya existen en la base de datos — no borra nada que no esté en el archivo. Úsalo solo si sabes lo que estás restaurando.
+      </p>
+      <div class="backup-box">
+        <p class="backup-texto" id="backup-import-estado">Ningún archivo seleccionado.</p>
+        <div style="display:flex; gap:10px;">
+          <button class="btn-ghost" onclick="document.getElementById('backup-import-input').click()">Elegir archivo…</button>
+          <button class="btn-accent" id="btn-importar-backup" onclick="importarBackup()" disabled>⬆️ Restaurar backup</button>
+        </div>
+        <input type="file" id="backup-import-input" accept="application/json" style="display:none;" onchange="alElegirArchivoBackup(event)" />
       </div>
     </div>
   </main>

@@ -255,6 +255,49 @@ Debajo del usuario logueado, en el menú lateral, aparece la versión
 de la plataforma (`VERSION_PLATAFORMA` en `js/nav.js`) — súbela a
 mano cada vez que publiquéis una ronda de cambios importante.
 
+## Auditoría — permisos reales por rol (arreglo de raíz)
+
+**El fallo que reportaste** ("creé un rol y no aparecen menús") tenía
+una causa de fondo: desde el principio, el menú lateral y el acceso a
+cada página comprobaban el **nombre literal** del rol
+(`"Admin"`/`"Comercial"`/`"Producción"`), no los permisos que
+marcabas en Administración → Roles. Un rol personalizado nunca podía
+coincidir con esos tres nombres, así que no veía nada — daba igual lo
+que marcaras en el árbol de permisos, porque nada lo estaba leyendo
+de verdad. Quedó anotado como pendiente hace unas rondas y ahora es
+justo lo que estabas notando.
+
+**La solución**, en `js/auth.js` (se carga en todas las páginas):
+- `protegerPagina()` ya no compara nombres de rol. Ahora carga los
+  permisos reales del rol del usuario desde `roles/{id}` y decide el
+  acceso según si esa página en concreto está marcada — funciona
+  igual de bien para Admin/Comercial/Producción que para cualquier
+  rol nuevo que crees.
+- El **Dashboard** ("Personalizado para cada rol") ya no tiene
+  ramas fijas por nombre de rol — muestra hasta 3 indicadores y hasta
+  4 accesos directos según qué secciones ve realmente ese rol.
+- El menú lateral (`js/nav.js`) se filtra igual, por permisos reales.
+
+**Qué tienes que hacer para el rol que ya creaste**: entra en
+Administración → Roles → edítalo → marca las secciones a las que
+debería tener acceso → Guardar. No hace falta que nadie cierre sesión
+— los permisos se recargan solos en cada página.
+
+> **Límite conocido, por ahora**: esto controla el acceso a nivel de
+> página completa (ej. "puede entrar en Roster o no"). Los checkboxes
+> de pestañas internas (Roster → Jurídico, Producción → Cifras...) se
+> guardan pero **todavía no se aplican** dentro de esas páginas — es
+> el siguiente paso natural si hace falta ese nivel de detalle.
+
+## Auditoría — importar backup
+
+Antes solo se podía **exportar**. Ahora, en Información y Backup, hay
+una segunda tarjeta "Restaurar desde backup": subes el `.json`
+generado antes, y sobrescribe (por lotes de 400, dentro del límite de
+Firestore) los documentos cuyo ID coincida con los del archivo — no
+borra nada que no esté en el archivo. Pide confirmación explícita
+antes de tocar nada, porque no tiene deshacer.
+
 ## Flujo completo: de Propuesta a Booking
 
 Con todo lo construido hasta ahora, así queda encadenado el trabajo
