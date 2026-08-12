@@ -254,9 +254,38 @@ function alCambiarOrigenCache() {
 function alSeleccionarPropuestaBooking() {
   const id = document.getElementById("bk-propuesta").value;
   const propuesta = propuestasCacheBk.find((p) => p.id === id);
-  if (propuesta && propuesta.clienteId) {
+  if (!propuesta) return;
+
+  if (propuesta.clienteId) {
     document.getElementById("bk-cliente").value = propuesta.clienteId;
   }
+
+  // Artistas: se traen todas las opciones de la propuesta como artistas
+  // del booking, con su caché/comisión/IVA ya definidos ahí.
+  const items = Array.isArray(propuesta.items) ? propuesta.items.filter((it) => it.rosterId) : [];
+  if (items.length > 0) {
+    artistasBooking = items.map((it) => ({
+      rosterId: it.rosterId,
+      nombre: it.nombre || "",
+      cache: it.bi != null ? it.bi : null,
+      comisionPct: it.comisionPct != null ? it.comisionPct : 0,
+      ivaPct: it.ivaPct != null ? it.ivaPct : 21,
+    }));
+    renderArtistasBooking();
+  }
+
+  // Fecha: se toma la del primer ítem con fecha, si la hay (si la
+  // propuesta cubre varias fechas distintas, revisa/ajusta a mano).
+  const itemConFecha = items.find((it) => it.fecha);
+  if (itemConFecha) {
+    document.getElementById("bk-fecha").value = itemConFecha.fecha;
+  }
+
+  mostrarToast(
+    items.length > 0
+      ? `${items.length} artista(s) importado(s) desde la propuesta.`
+      : "Cliente importado — esta propuesta no tenía opciones/artistas guardados."
+  );
 }
 
 // ---------- Cálculo general ----------
