@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-<title>Stage Support · Dashboard</title>
+<title>Stage Support · Ver Propuestas</title>
 <link rel="icon" href="assets/logo_stagesupport.png" />
 <link rel="stylesheet" href="css/styles.css" />
 </head>
@@ -37,30 +37,35 @@
     <div class="topbar">
       <button class="mobile-menu-btn" onclick="document.getElementById('sidebar').classList.toggle('open')">☰</button>
       <div>
-        <div class="eyebrow" id="fecha-hoy"></div>
-        <h1 id="saludo">Hola —</h1>
+        <div class="eyebrow">Comercial</div>
+        <h1>Ver Propuestas</h1>
       </div>
     </div>
+    <p style="color:var(--color-text-muted); font-size:14px; margin:-18px 0 24px;">
+      Pulsa "Ver" para abrir cada propuesta en modo cliente — desde ahí puedes exportarla a PDF o enviarla a evaluar.
+    </p>
 
-    <div class="stat-grid" id="stat-grid"></div>
-
-    <div class="card" id="card-notificaciones" style="margin-bottom:24px; display:none;">
-      <div style="display:flex; align-items:center; justify-content:space-between; margin-bottom:14px;">
-        <h3 style="font-size:15px; font-family:var(--font-display);">Notificaciones</h3>
-        <button class="btn-ghost" onclick="marcarTodasLeidas()" style="font-size:12px; padding:6px 12px;">Marcar todas como leídas</button>
-      </div>
-      <div id="lista-notificaciones"></div>
+    <div class="table-toolbar">
+      <div style="color:var(--color-text-muted); font-size:14px;" id="contador-vp">Cargando…</div>
     </div>
 
-    <div class="card" id="card-evaluaciones" style="margin-bottom:24px; display:none;">
-      <h3 style="font-size:15px; font-family:var(--font-display); margin-bottom:14px;">Evaluaciones pendientes</h3>
-      <div id="lista-evaluaciones"></div>
-    </div>
-
-    <div class="role-panels" id="role-panels"></div>
+    <table class="users-table">
+      <thead>
+        <tr>
+          <th>ID</th>
+          <th>Nombre</th>
+          <th>Cliente</th>
+          <th>Estado</th>
+          <th style="text-align:right;">Acciones</th>
+        </tr>
+      </thead>
+      <tbody id="tabla-vp"></tbody>
+    </table>
   </main>
 
 </div>
+
+<div class="toast" id="toast"><span class="dot"></span><span id="toast-msg"></span></div>
 
 <script src="https://www.gstatic.com/firebasejs/10.13.0/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.13.0/firebase-auth-compat.js"></script>
@@ -68,7 +73,6 @@
 <script src="js/firebase-config.js"></script>
 <script src="js/auth.js"></script>
 <script src="js/nav.js"></script>
-<script src="js/notificaciones.js"></script>
-<script src="js/dashboard.js"></script>
+<script src="js/ver-propuestas.js"></script>
 </body>
 </html>

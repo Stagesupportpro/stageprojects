@@ -255,6 +255,39 @@ Debajo del usuario logueado, en el menú lateral, aparece la versión
 de la plataforma (`VERSION_PLATAFORMA` en `js/nav.js`) — súbela a
 mano cada vez que publiquéis una ronda de cambios importante.
 
+## Flujo completo: de Propuesta a Booking
+
+Con todo lo construido hasta ahora, así queda encadenado el trabajo
+de punta a punta:
+
+1. **Preparar Propuesta** (Comercial) — se crea la propuesta, se
+   añaden opciones desde el Roster (con fecha, ciclo, cartel,
+   descripción y precio), y se decide si se muestran precios al
+   cliente. Empieza en estado **Borrador**.
+2. **Ver Propuestas** (nuevo submenú en Comercial) — listado de solo
+   consulta con el estado de cada una. El botón **Ver** abre la
+   propuesta en modo cliente (`propuesta-ver.html`), pensada para
+   enseñarla desde un dispositivo delante del cliente.
+3. Dentro de esa vista, dos acciones para el equipo:
+   - **Exportar PDF** — descarga la propuesta tal cual la ve el
+     cliente (usa html2pdf.js, igual que en Hojas de Ruta).
+   - **Enviar a evaluar** — crea un registro en `evaluaciones`, pasa
+     la propuesta a estado **Enviada**, y copia al portapapeles un
+     enlace directo a esa propuesta para compartir por donde
+     prefiráis (Slack, WhatsApp...).
+     > No hay envío de correo real (ni automático ni con `mailto:`) —
+     > sin servidor propio (plan gratuito de Firebase) no es fiable
+     > hacerlo bien; lo descartamos explícitamente. El enlace
+     > copiado cumple la misma función a mano.
+4. **Dashboard → Evaluaciones pendientes** (Admin) — cada propuesta
+   enviada aparece aquí con botones **Aceptar** / **Rechazar**. Al
+   decidir, se actualiza el estado de la propuesta y **se notifica
+   automáticamente** (con el sistema de notificaciones que ya
+   teníamos) a quien la envió a evaluar.
+5. Si se acepta, desde **Bookings** se puede crear un booking "a
+   caché" con origen **"Desde propuesta"**, que ya trae el cliente
+   vinculado — cerrando el círculo hasta la Producción.
+
 ## Bookings y Producción — varios artistas por booking
 
 Un booking ya no está limitado a un solo artista: la sección
