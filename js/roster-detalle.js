@@ -22,6 +22,7 @@ let ridersRst = [];
 let hospPdfsRst = [];
 let pressKitRst = [];
 let contratoRst = [];
+let clausulasEspecialesRst = [];
 let juridicoyaCargado = false;
 
 const LIMITE_PDF_BYTES = 600 * 1024;
@@ -149,12 +150,57 @@ async function cargarRoster() {
 async function cargarJuridico() {
   try {
     const snap = await db.collection("rosterJuridico").doc(docIdRoster).get();
-    contratoRst = snap.exists && Array.isArray(snap.data().contratos) ? snap.data().contratos : [];
+    const datos = snap.exists ? snap.data() : {};
+    contratoRst = Array.isArray(datos.contratos) ? datos.contratos : [];
+    clausulasEspecialesRst = Array.isArray(datos.clausulasEspeciales) ? datos.clausulasEspeciales : [];
     juridicoyaCargado = true;
     renderContratoRst();
+    renderClausulasEspecialesRst();
   } catch (err) {
     console.error(err);
     mostrarToast("No se pudo cargar el apartado jurídico.");
+  }
+}
+
+function renderClausulasEspecialesRst() {
+  const cont = document.getElementById("lista-clausulas-esp-rst");
+  if (clausulasEspecialesRst.length === 0) {
+    cont.innerHTML = `<p style="color:var(--color-text-muted); font-size:13px;">Todavía no hay cláusulas especiales para este artista.</p>`;
+    return;
+  }
+  cont.innerHTML = clausulasEspecialesRst
+    .map(
+      (c, i) => `
+        <div class="clausula-card">
+          <div class="clausula-top">
+            <input placeholder="Título de la cláusula" value="${escaparAttrRst(c.titulo)}" oninput="clausulasEspecialesRst[${i}].titulo=this.value" />
+            <button type="button" class="remove-row-btn" onclick="eliminarClausulaEspecialRst(${i})">✕</button>
+          </div>
+          <textarea placeholder="Texto de la cláusula…" oninput="clausulasEspecialesRst[${i}].texto=this.value">${escaparHtmlRstD(c.texto)}</textarea>
+        </div>
+      `
+    )
+    .join("");
+}
+
+async function anadirClausulaEspecialRst() {
+  clausulasEspecialesRst.push({ titulo: "", texto: "" });
+  renderClausulasEspecialesRst();
+  await guardarClausulasEspecialesRst();
+}
+
+async function eliminarClausulaEspecialRst(i) {
+  clausulasEspecialesRst.splice(i, 1);
+  renderClausulasEspecialesRst();
+  await guardarClausulasEspecialesRst();
+}
+
+async function guardarClausulasEspecialesRst() {
+  try {
+    await db.collection("rosterJuridico").doc(docIdRoster).set({ clausulasEspeciales: clausulasEspecialesRst }, { merge: true });
+  } catch (err) {
+    console.error(err);
+    mostrarToast("No se pudieron guardar las cláusulas especiales.");
   }
 }
 

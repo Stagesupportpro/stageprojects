@@ -6,6 +6,10 @@
 // empieza abierta.
 // Añade aquí nuevas secciones a medida que crees más páginas.
 // =========================================================
+// NOTA: el campo "roles" de cada item ya no controla nada — se deja
+// solo como documentación de qué rol pensó cada página originalmente.
+// El acceso de verdad (menú y URL directa) lo decide el árbol de
+// permisos de Administración → Roles, vía auth.js/permisosActuales.
 
 const NAV_ESTRUCTURA = [
   {
@@ -50,6 +54,7 @@ const NAV_ESTRUCTURA = [
       { id: "roles", label: "Roles", href: "roles.html", roles: ["Admin"], listo: true },
       { id: "comisiones", label: "Comisiones", href: "comisiones.html", roles: ["Admin"], listo: true },
       { id: "configuracion", label: "Datos de la empresa", href: "configuracion.html", roles: ["Admin"], listo: true },
+      { id: "gestion-contratos", label: "Gestión Contratos", href: "gestion-contratos.html", roles: ["Admin"], listo: true },
       { id: "backup", label: "Información y Backup", href: "backup.html", roles: ["Admin"], listo: true },
     ],
   },
@@ -72,8 +77,13 @@ function pintarNav(rol, paginaActiva) {
   if (!cont) return;
   cont.innerHTML = "";
 
+  // El menú ya no depende del nombre del rol, sino de sus permisos
+  // reales (Administración → Roles) — así funciona igual de bien con
+  // roles personalizados que con Admin/Comercial/Producción.
+  const permisos = permisosActuales || {};
+
   NAV_ESTRUCTURA.forEach((grupo, indiceGrupo) => {
-    const itemsVisibles = grupo.items.filter((it) => it.roles.includes(rol));
+    const itemsVisibles = grupo.items.filter((it) => permisos[it.id] === true);
     if (itemsVisibles.length === 0) return;
 
     const contieneActiva = itemsVisibles.some((it) => it.id === paginaActiva);

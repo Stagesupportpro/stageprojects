@@ -145,11 +145,25 @@ async function cargarJuridicoRV() {
   cont.innerHTML = `<p style="color:var(--color-text-muted); font-size:13px;">Cargando…</p>`;
   try {
     const snap = await db.collection("rosterJuridico").doc(docIdRV).get();
-    const contratos = snap.exists && Array.isArray(snap.data().contratos) ? snap.data().contratos : [];
+    const datos = snap.exists ? snap.data() : {};
+    const contratos = Array.isArray(datos.contratos) ? datos.contratos : [];
+    const clausulas = Array.isArray(datos.clausulasEspeciales) ? datos.clausulasEspeciales : [];
     juridicoCargadoRV = true;
-    cont.innerHTML = contratos.length
+
+    const contratosHtml = contratos.length
       ? contratos.map((c) => `<div class="press-item"><div class="press-thumb" style="display:flex; align-items:center; justify-content:center;">📄</div><div class="press-name">${escaparHtmlRV(c.nombre)}</div><a class="btn-ghost" style="text-decoration:none; padding:6px 12px; font-size:12px;" href="${c.data}" download="${c.nombre}">Descargar</a></div>`).join("")
       : `<p style="color:var(--color-text-muted); font-size:13px;">Sin contratos subidos.</p>`;
+
+    const clausulasHtml = clausulas.length
+      ? clausulas.map((c) => `<div class="ver-field-row"><div class="ver-label">${escaparHtmlRV(c.titulo || "Cláusula")}</div><div>${escaparHtmlRV(c.texto)}</div></div>`).join("")
+      : `<p style="color:var(--color-text-muted); font-size:13px;">Sin cláusulas especiales.</p>`;
+
+    cont.innerHTML = `
+      <h3 style="font-size:14px; margin-bottom:8px;">Contrato de colaboración</h3>
+      ${contratosHtml}
+      <h3 style="font-size:14px; margin:18px 0 8px;">Cláusulas especiales para booking</h3>
+      ${clausulasHtml}
+    `;
   } catch (err) {
     console.error(err);
     cont.innerHTML = `<p style="color:var(--color-text-muted); font-size:13px;">No se pudo cargar (¿eres Admin?).</p>`;
