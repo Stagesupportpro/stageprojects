@@ -147,6 +147,12 @@ service cloud.firestore {
     }
 
     // ---- Configuración de la empresa (datos fiscales, logo) ----
+    // ---- Cláusulas estándar de contratos (Booking / Colaboración) ----
+    match /contratosConfig/{tipo} {
+      allow read: if estoyActivo();
+      allow write: if esAdmin();
+    }
+
     match /configuracion/{docId} {
       // Cualquier empleado activo puede leerla (para pintar el logo, etc.)
       allow read: if estoyActivo();

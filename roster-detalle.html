@@ -231,18 +231,29 @@
 
         <!-- ============ JURÍDICO (solo Admin) ============ -->
         <div class="rst-tab-panel" id="panel-juridico">
-          <div class="hr-section" style="border:none;">
+          <div class="hr-section">
             <div class="hr-section-head"><h3>Contrato de colaboración (PDF)</h3></div>
             <p style="font-size:12px; color:var(--color-text-muted); margin:-4px 0 12px;">Solo visible para Admin — se guarda en un espacio aparte con permisos restringidos.</p>
             <div id="lista-contrato-rst"></div>
             <button type="button" class="add-row-link" onclick="document.getElementById('contrato-input').click()">+ Añadir contrato (PDF)</button>
             <input type="file" id="contrato-input" accept="application/pdf" onchange="procesarContratoPdf(event)" style="display:none;" />
           </div>
+
+          <div class="hr-section" style="border:none;">
+            <div class="hr-section-head"><h3>Cláusulas especiales para booking</h3></div>
+            <p style="font-size:12px; color:var(--color-text-muted); margin:-4px 0 12px;">Se incluyen automáticamente al generar el contrato de cualquier booking en el que participe este artista.</p>
+            <div id="lista-clausulas-esp-rst"></div>
+            <div style="display:flex; gap:10px; margin-top:8px;">
+              <button type="button" class="add-row-link" onclick="anadirClausulaEspecialRst()">+ Añadir cláusula</button>
+              <button type="button" class="btn-ghost" onclick="guardarClausulasEspecialesRst()">Guardar cláusulas</button>
+            </div>
+          </div>
         </div>
 
       </form>
     </div>
   </main>
+
 
 </div>
 

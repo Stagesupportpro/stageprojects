@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-<title>Stage Support · Bookings</title>
+<title>Stage Support · Gestión Contratos</title>
 <link rel="icon" href="assets/logo_stagesupport.png" />
 <link rel="stylesheet" href="css/styles.css" />
 </head>
@@ -37,30 +37,30 @@
     <div class="topbar">
       <button class="mobile-menu-btn" onclick="document.getElementById('sidebar').classList.toggle('open')">☰</button>
       <div>
-        <div class="eyebrow">Booking &amp; Management</div>
-        <h1>Bookings</h1>
+        <div class="eyebrow">Administración</div>
+        <h1>Gestión Contratos</h1>
       </div>
-      <button class="btn-accent" onclick="crearBookingRapido()" id="btn-nuevo-booking">+ Nuevo booking</button>
+      <button class="btn-accent" onclick="guardarClausulas()" id="btn-guardar-gc">Guardar cambios</button>
     </div>
 
-    <div class="table-toolbar">
-      <div style="color:var(--color-text-muted); font-size:14px;" id="contador-bookings">Cargando…</div>
-    </div>
+    <div class="card">
+      <div class="rst-tabs" id="gc-tabs">
+        <button type="button" data-tab="booking" onclick="cambiarTabGC('booking')">Contratos Booking</button>
+        <button type="button" data-tab="colaboracion" onclick="cambiarTabGC('colaboracion')">Contratos Colaboración</button>
+      </div>
 
-    <table class="users-table">
-      <thead>
-        <tr>
-          <th>ID</th>
-          <th>Artistas</th>
-          <th>Tipo</th>
-          <th>Cliente / Espacio</th>
-          <th>Fecha</th>
-          <th>Total + IVA</th>
-          <th style="text-align:right;">Acciones</th>
-        </tr>
-      </thead>
-      <tbody id="tabla-bookings"></tbody>
-    </table>
+      <div class="rst-tab-panel active" id="gc-panel-booking">
+        <p style="font-size:12.5px; color:var(--color-text-muted); margin-bottom:14px;">Cláusulas y condiciones estándar que se incluyen al generar un contrato de booking (desde la ficha de cada Booking → pestaña Contratos).</p>
+        <div id="lista-clausulas-booking"></div>
+        <button type="button" class="add-row-link" onclick="anadirClausula('booking')">+ Añadir cláusula</button>
+      </div>
+
+      <div class="rst-tab-panel" id="gc-panel-colaboracion">
+        <p style="font-size:12.5px; color:var(--color-text-muted); margin-bottom:14px;">Cláusulas estándar para contratos de colaboración con artistas (Roster → Jurídico).</p>
+        <div id="lista-clausulas-colaboracion"></div>
+        <button type="button" class="add-row-link" onclick="anadirClausula('colaboracion')">+ Añadir cláusula</button>
+      </div>
+    </div>
   </main>
 
 </div>
@@ -73,7 +73,6 @@
 <script src="js/firebase-config.js"></script>
 <script src="js/auth.js"></script>
 <script src="js/nav.js"></script>
-<script src="js/ids.js"></script>
-<script src="js/bookings.js"></script>
+<script src="js/gestion-contratos.js"></script>
 </body>
 </html>

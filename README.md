@@ -255,6 +255,64 @@ Debajo del usuario logueado, en el menú lateral, aparece la versión
 de la plataforma (`VERSION_PLATAFORMA` en `js/nav.js`) — súbela a
 mano cada vez que publiquéis una ronda de cambios importante.
 
+## Gestión Contratos, Bookings como página completa, y contratos generados
+
+Todo esto ya estaba construido de un paso oculto anterior — lo audité
+a fondo (ver más abajo) antes de darlo por bueno.
+
+**Administración → Gestión Contratos**: dos pestañas — Contratos
+Booking y Contratos Colaboración. En cada una, una lista de
+cláusulas (título + texto), editables y eliminables, guardadas en
+`contratosConfig/booking` y `contratosConfig/colaboracion`.
+
+**Bookings ya no es un modal** — pasó a ser una ficha completa
+(`booking-detalle.html`) con 3 pestañas, igual que Producción:
+- **Información general** — lo mismo que antes (tipo, artistas,
+  venue/modalidad, cliente/propuesta, fecha).
+- **Cifras** — la calculadora, ahora en su propia pestaña.
+- **Contratos** (nueva) — botón "Generar contrato" que recopila las
+  cláusulas de Contratos Booking, los datos del cliente (o del venue,
+  si es "como promotora"), y por cada artista: su caché ya calculado,
+  sus **Cláusulas Especiales** (ver más abajo) y sus riders técnicos
+  como anexo. Genera un documento con Reconocimientos, Objeto del
+  contrato, Condiciones básicas, Condiciones especiales por artista,
+  Anexos y casillas de firma — con el logo de documentos de la
+  empresa (el mismo de Hojas de Ruta) — listo para **Imprimir** o
+  **Exportar PDF**.
+
+El listado (`bookings.html`) ahora solo crea un registro mínimo y
+redirige a la ficha completa, igual que Producciones y Hojas de Ruta.
+
+**Roster → Jurídico**: además del contrato de colaboración, cada
+ficha tiene ahora **Cláusulas Especiales** propias (título + texto,
+editables/eliminables) que se usan automáticamente al generar el
+contrato de cualquier booking en el que participe ese artista. Vive
+en la misma colección `rosterJuridico` (protegida solo para Admin) —
+si alguien sin ese permiso genera un contrato, esa parte se omite sin
+romper el resto del documento.
+
+## Auditoría de este bloque — cómo se verificó
+
+Como en Producción encontramos errores reales de sintaxis
+(`await` fuera de función `async`), audité este bloque más a fondo:
+
+- **`node --check`** en los 33 archivos JS del proyecto — es una
+  verificación real del intérprete, no una heurística; confirma sin
+  ambigüedad si hay errores de sintaxis (incluido `await` mal usado,
+  que sí lo detecta). Cero errores en todo el proyecto.
+- Comparación automática de cada `onclick`/`onchange`/`oninput` del
+  HTML contra las funciones definidas en su JS — cero llamadas a
+  funciones inexistentes.
+- Comparación de cada `getElementById(...)` del JS contra los `id`
+  reales del HTML — cero IDs que no existen.
+- Todas las colecciones de Firestore que usa el código, comparadas
+  una a una contra las reglas — todas cubiertas (incluida
+  `contratosConfig`, que ya estaba).
+- Encontrado y arreglado un hueco real aparte: faltaba
+  `booking-detalle.html` en el mapa de permisos de `js/auth.js` — sin
+  eso, nadie habría podido abrir la ficha completa de un booking por
+  mucho acceso que tuviera a Bookings.
+
 ## Auditoría — errores graves en Producción (arreglados)
 
 Barrido completo del archivo (funciones definidas vs. llamadas,
