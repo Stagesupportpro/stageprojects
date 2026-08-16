@@ -12,6 +12,17 @@ let docIdPV = null;
 (async function () {
   usuarioActualPV = await protegerPagina(); // cualquier rol con acceso activo
 
+  // El logo de la vista de propuesta debe ser el de documentos
+  // (fondo blanco), no el claro del menú/login.
+  try {
+    const snapEmpresa = await db.collection("configuracion").doc("empresa").get();
+    if (snapEmpresa.exists && snapEmpresa.data().logoDocumentos) {
+      document.getElementById("pv-logo").src = snapEmpresa.data().logoDocumentos;
+    }
+  } catch (errLogo) {
+    console.error(errLogo);
+  }
+
   const params = new URLSearchParams(window.location.search);
   docIdPV = params.get("id");
   if (!docIdPV) return;
