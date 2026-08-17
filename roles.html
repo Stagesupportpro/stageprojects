@@ -44,7 +44,10 @@
 
     <div class="table-toolbar">
       <div style="color:var(--color-text-muted); font-size:14px;" id="contador-roles">Cargando…</div>
-      <button class="btn-accent" onclick="abrirModalRol()">+ Nuevo rol</button>
+      <div style="display:flex; gap:10px;">
+        <button class="btn-ghost" onclick="sincronizarPaginasNuevas()" id="btn-sincronizar-roles">🔄 Sincronizar páginas nuevas</button>
+        <button class="btn-accent" onclick="abrirModalRol()">+ Nuevo rol</button>
+      </div>
     </div>
 
     <table class="users-table">
@@ -76,7 +79,13 @@
       </div>
 
       <div class="field">
-        <label>Secciones a las que tiene acceso</label>
+        <label style="display:flex; align-items:center; justify-content:space-between;">
+          Secciones a las que tiene acceso
+          <span style="display:flex; gap:8px;">
+            <button type="button" class="btn-ghost" style="font-size:11px; padding:4px 8px;" onclick="marcarTodosLosPermisos(true)">Marcar todo</button>
+            <button type="button" class="btn-ghost" style="font-size:11px; padding:4px 8px;" onclick="marcarTodosLosPermisos(false)">Desmarcar todo</button>
+          </span>
+        </label>
         <div class="permisos-grid" id="permisos-grid"></div>
       </div>
 
