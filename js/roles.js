@@ -25,6 +25,11 @@ const TABS_POR_PAGINA = {
     { id: "documentos", label: "Documentos" },
     { id: "hospitalidad", label: "Hospitalidad" },
   ],
+  bookings: [
+    { id: "general", label: "Información general" },
+    { id: "cifras", label: "Cifras" },
+    { id: "contratos", label: "Contratos" },
+  ],
 };
 
 // Lista plana de todas las páginas (para sembrar el rol Admin con
@@ -211,6 +216,10 @@ function alTogglePaginaRol(checkbox) {
   document.querySelectorAll(`#permisos-grid input[data-permiso^="${paginaId}."]`).forEach((c) => (c.checked = false));
 }
 
+function marcarTodosLosPermisos(valor) {
+  document.querySelectorAll("#permisos-grid input[type=checkbox]").forEach((c) => (c.checked = valor));
+}
+
 function abrirModalRol() {
   formRol.reset();
   document.getElementById("rol-id-edicion").value = "";
@@ -285,6 +294,53 @@ formRol.addEventListener("submit", async (e) => {
 });
 
 // ---------- Eliminar ----------
+
+// ---------- Sincronizar páginas nuevas ----------
+// Cada vez que se añade una página nueva a la plataforma (un nuevo id
+// en NAV_ESTRUCTURA), los roles que ya existían en Firestore de antes
+// NO la reciben solos — su documento de permisos se queda tal cual
+// estaba. Este botón revisa todos los roles y añade las páginas que
+// falten: a Admin con acceso concedido, al resto sin marcar (para
+// decidir a mano cada caso).
+async function sincronizarPaginasNuevas() {
+  const btn = document.getElementById("btn-sincronizar-roles");
+  btn.disabled = true;
+  btn.textContent = "Sincronizando…";
+
+  try {
+    const paginas = todasLasPaginas();
+    const snap = await db.collection("roles").get();
+    let rolesActualizados = 0;
+
+    for (const doc of snap.docs) {
+      const rol = doc.data();
+      const permisosActuales = rol.permisos || {};
+      const faltantes = paginas.filter((id) => !(id in permisosActuales));
+      if (faltantes.length === 0) continue;
+
+      const esRolAdmin = rol.nombre === "Admin";
+      const permisosNuevos = { ...permisosActuales };
+      faltantes.forEach((id) => {
+        permisosNuevos[id] = esRolAdmin; // Admin: acceso directo. Otros: sin marcar, a decidir.
+      });
+
+      await db.collection("roles").doc(doc.id).update({ permisos: permisosNuevos });
+      rolesActualizados++;
+    }
+
+    mostrarToast(
+      rolesActualizados > 0
+        ? `${rolesActualizados} rol(es) actualizados con las páginas nuevas. Revisa los permisos de cada uno si hace falta.`
+        : "Todos los roles ya estaban al día — nada que sincronizar."
+    );
+  } catch (err) {
+    console.error(err);
+    mostrarToast("No se pudo sincronizar.");
+  } finally {
+    btn.disabled = false;
+    btn.textContent = "🔄 Sincronizar páginas nuevas";
+  }
+}
 
 async function confirmarEliminarRol(id, nombre) {
   try {
