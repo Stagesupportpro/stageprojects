@@ -313,6 +313,23 @@ Como en Producción encontramos errores reales de sintaxis
   eso, nadie habría podido abrir la ficha completa de un booking por
   mucho acceso que tuviera a Bookings.
 
+## Roles — Admin ya no necesita sincronizarse a mano
+
+Cada vez que añadimos una sección nueva, los roles que ya existían en
+tu Firestore no la recibían solos (el "Sincronizar páginas nuevas" de
+Roles lo arreglaba, pero solo si te acordabas de pulsarlo). Ahora el
+rol **Admin se autosincroniza solo en cada login** (`js/auth.js`): si
+detecta una página que no tenía marcada, se la añade y la guarda sin
+que tengas que hacer nada — así Admin siempre tiene acceso completo
+desde el primer momento tras añadir algo nuevo a la plataforma.
+
+Para el resto de roles (Comercial, Producción, o cualquiera
+personalizado que crees), sigue sin ser automático **a propósito** —
+darle acceso a una sección nueva es una decisión tuya, no algo que
+deba pasar solo. El botón "🔄 Sincronizar páginas nuevas" en Roles
+sigue ahí para esos casos: añade la página que falte sin marcar, para
+que la actives cuando quieras.
+
 ## Marketing — nueva sección para el Community Manager
 
 Nuevo grupo "Marketing" en el menú, con dos páginas:
