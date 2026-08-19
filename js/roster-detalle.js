@@ -164,9 +164,44 @@ async function cargarJuridico() {
     juridicoyaCargado = true;
     renderContratoRst();
     renderClausulasEspecialesRst();
+
+    const fiscal = datos.fiscal || {};
+    document.getElementById("rj-razon-social").value = fiscal.razonSocial || "";
+    document.getElementById("rj-nif").value = fiscal.nif || "";
+    document.getElementById("rj-representante").value = fiscal.representante || "";
+    document.getElementById("rj-direccion-fiscal").value = fiscal.direccion || "";
+    document.getElementById("rj-email-fiscal").value = fiscal.email || "";
+    document.getElementById("rj-telefono-fiscal").value = fiscal.telefono || "";
+    document.getElementById("rj-iban").value = fiscal.iban || "";
   } catch (err) {
     console.error(err);
     mostrarToast("No se pudo cargar el apartado jurídico.");
+  }
+}
+
+async function guardarDatosFiscalesRst() {
+  try {
+    await db
+      .collection("rosterJuridico")
+      .doc(docIdRoster)
+      .set(
+        {
+          fiscal: {
+            razonSocial: document.getElementById("rj-razon-social").value.trim(),
+            nif: document.getElementById("rj-nif").value.trim(),
+            representante: document.getElementById("rj-representante").value.trim(),
+            direccion: document.getElementById("rj-direccion-fiscal").value.trim(),
+            email: document.getElementById("rj-email-fiscal").value.trim(),
+            telefono: document.getElementById("rj-telefono-fiscal").value.trim(),
+            iban: document.getElementById("rj-iban").value.trim(),
+          },
+        },
+        { merge: true }
+      );
+    mostrarToast("Datos fiscales guardados.");
+  } catch (err) {
+    console.error(err);
+    mostrarToast("No se pudieron guardar los datos fiscales.");
   }
 }
 

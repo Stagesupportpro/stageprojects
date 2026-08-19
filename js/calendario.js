@@ -72,6 +72,11 @@ function cargarMes() {
 
   if (unsubscribeDocs) unsubscribeDocs();
 
+  // La cuadrícula se pinta ya mismo, aunque los documentos todavía no
+  // hayan llegado (o la consulta falle) — así los números de los días
+  // siempre se ven.
+  pintarCalendario();
+
   unsubscribeDocs = db
     .collection("documentos")
     .where("fecha", ">=", inicio)

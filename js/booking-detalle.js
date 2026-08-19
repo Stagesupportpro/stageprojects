@@ -518,10 +518,13 @@ async function generarContratoBooking() {
       artistasValidos.map(async (a) => {
         const rosterDoc = rosterCacheBk.find((r) => r.id === a.rosterId);
         let clausulasEspeciales = [];
+        let fiscal = null;
         try {
           const snapJur = await db.collection("rosterJuridico").doc(a.rosterId).get();
           if (snapJur.exists) {
-            clausulasEspeciales = Array.isArray(snapJur.data().clausulasEspeciales) ? snapJur.data().clausulasEspeciales : [];
+            const datosJur = snapJur.data();
+            clausulasEspeciales = Array.isArray(datosJur.clausulasEspeciales) ? datosJur.clausulasEspeciales : [];
+            fiscal = datosJur.fiscal || null;
           }
         } catch (errJur) {
           // Sin permiso (no-Admin) — esa parte se omite con normalidad, el
@@ -532,6 +535,7 @@ async function generarContratoBooking() {
           total: totalArtistaBooking(a, tipo === "promotor"),
           ridersPdf: rosterDoc && Array.isArray(rosterDoc.ridersPdf) ? rosterDoc.ridersPdf : [],
           clausulasEspeciales,
+          fiscal,
         };
       })
     );
@@ -592,6 +596,10 @@ function construirHtmlContratoBooking(d) {
 
   const condicionesArtistasHtml = d.artistas
     .map((a) => {
+      const f = a.fiscal;
+      const filaFiscal = f && (f.razonSocial || f.nif)
+        ? `<tr><td class="label">Datos fiscales</td><td>${escaparHtmlBk(f.razonSocial || a.nombre)}${f.nif ? ` — NIF/CIF ${escaparHtmlBk(f.nif)}` : ""}${f.direccion ? `<br/>${escaparHtmlBk(f.direccion)}` : ""}${f.representante ? `<br/>Representado por: ${escaparHtmlBk(f.representante)}` : ""}</td></tr>`
+        : "";
       const filaImporte = `<tr><td class="label">Caché acordado</td><td>${formatoEuroBk(a.total)} (IVA incluido)</td></tr>`;
       const clausulasHtml = a.clausulasEspeciales.length
         ? a.clausulasEspeciales.map((c, i) => `<tr><td><strong>${i + 1}. ${escaparHtmlBk(c.titulo)}</strong><br/>${escaparHtmlBk(c.texto)}</td></tr>`).join("")
@@ -599,6 +607,7 @@ function construirHtmlContratoBooking(d) {
       return `
         <table class="doc-table">
           <tr><th class="doc-section-title">CONDICIONES ESPECIALES — ${escaparHtmlBk(a.nombre).toUpperCase()}</th></tr>
+          ${filaFiscal}
           ${filaImporte}
           ${clausulasHtml}
         </table>

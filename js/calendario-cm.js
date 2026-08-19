@@ -58,6 +58,11 @@ function cargarMesCM() {
 
   if (unsubscribeCampanasCM) unsubscribeCampanasCM();
 
+  // La cuadrícula del mes se pinta ya mismo, aunque las campañas todavía
+  // no hayan llegado (o la consulta falle) — así los números de los días
+  // siempre se ven, y solo los puntos de campaña dependen de Firestore.
+  pintarCalendarioCM();
+
   // Una campaña "cabe" en el mes visible si empezó como muy tarde el
   // último día del mes — el otro extremo (que no haya terminado antes
   // de que empezara el mes) se filtra en el navegador, porque Firestore

@@ -150,7 +150,7 @@ function pvpItemPropuesta(it) {
 }
 
 function totalItemPropuesta(it) {
-  return pvpItemPropuesta(it) * (1 + (it.ivaPct || 0) / 100);
+  return pvpItemPropuesta(it) * (1 + (it.ivaPct || 0) / 100) + (it.costeProduccion || 0);
 }
 
 function actualizarPrecioItemPropuesta(i) {
@@ -190,6 +190,11 @@ function renderItemsPropuesta() {
             <div class="field"><label style="font-size:11px;">Caché / coste (BI) €</label><input type="number" min="0" step="0.01" value="${it.bi != null ? it.bi : ""}" oninput="itemsPropuesta[${i}].bi=this.value===''?null:parseFloat(this.value); actualizarPrecioItemPropuesta(${i})" /></div>
             <div class="field"><label style="font-size:11px;">Comisión %</label><input type="number" min="0" max="100" step="0.1" value="${it.comisionPct != null ? it.comisionPct : ""}" oninput="itemsPropuesta[${i}].comisionPct=this.value===''?0:parseFloat(this.value); actualizarPrecioItemPropuesta(${i})" /></div>
             <div class="field"><label style="font-size:11px;">IVA %</label><input type="number" min="0" max="100" step="0.1" value="${it.ivaPct != null ? it.ivaPct : ""}" oninput="itemsPropuesta[${i}].ivaPct=this.value===''?0:parseFloat(this.value); actualizarPrecioItemPropuesta(${i})" /></div>
+          </div>
+          <div class="field" style="margin-top:8px;">
+            <label style="font-size:11px;">Costes de producción para esta fecha (opcional) €</label>
+            <input type="number" min="0" step="0.01" placeholder="Ej. desplazamiento, técnica, hospitalidad para este artista…" value="${it.costeProduccion != null ? it.costeProduccion : ""}" oninput="itemsPropuesta[${i}].costeProduccion=this.value===''?null:parseFloat(this.value); actualizarPrecioItemPropuesta(${i})" />
+            <p style="font-size:11px; color:var(--color-text-muted); margin:4px 0 0;">Se suma directo al Total de este artista (sin comisión ni IVA aparte) — para repercutir al cliente costes reales de producir esa fecha en concreto.</p>
           </div>
           <div class="calc-box" style="margin-top:8px;">
             <div class="calc-item"><div class="calc-label">PVP (con comisión)</div><div class="calc-value" id="item-pvp-${i}">${formatoEuroPD(pvpItemPropuesta(it))}</div></div>

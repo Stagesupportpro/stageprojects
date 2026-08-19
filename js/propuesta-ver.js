@@ -60,12 +60,15 @@ let docIdPV = null;
         let precioHtml = "";
         if (mostrarPrecios) {
           const pvp = (it.bi || 0) * (1 + (it.comisionPct || 0) / 100);
-          const total = pvp * (1 + (it.ivaPct || 0) / 100);
+          const ivaImporte = pvp * ((it.ivaPct || 0) / 100);
+          const costeProduccion = it.costeProduccion || 0;
+          const total = pvp + ivaImporte + costeProduccion;
           if (pvp > 0) {
             precioHtml = `
               <div class="pv-precio-box">
                 <span>PVP: <strong>${pvp.toLocaleString("es-ES", { minimumFractionDigits: 2, maximumFractionDigits: 2 })} €</strong></span>
-                <span>IVA (${it.ivaPct || 0}%): <strong>${(total - pvp).toLocaleString("es-ES", { minimumFractionDigits: 2, maximumFractionDigits: 2 })} €</strong></span>
+                <span>IVA (${it.ivaPct || 0}%): <strong>${ivaImporte.toLocaleString("es-ES", { minimumFractionDigits: 2, maximumFractionDigits: 2 })} €</strong></span>
+                ${costeProduccion > 0 ? `<span>Costes de producción: <strong>${costeProduccion.toLocaleString("es-ES", { minimumFractionDigits: 2, maximumFractionDigits: 2 })} €</strong></span>` : ""}
                 <span class="pv-precio">Total: ${total.toLocaleString("es-ES", { minimumFractionDigits: 2, maximumFractionDigits: 2 })} €</span>
               </div>
             `;

@@ -191,12 +191,13 @@ function pintarNotificaciones(notifs) {
     .map((n) => {
       const fecha = n.creadoEl && n.creadoEl.toDate ? n.creadoEl.toDate().toLocaleString("es-ES") : "";
       return `
-        <div class="notif-row ${n.leida ? "leida" : ""}" onclick="abrirNotificacion('${n.id}', '${escaparAttrDash(n.enlace || "")}')">
+        <div class="notif-row ${n.leida ? "leida" : ""}">
           <div class="notif-dot"></div>
-          <div>
+          <div style="flex:1; cursor:pointer;" onclick="abrirNotificacion('${n.id}', '${escaparAttrDash(n.enlace || "")}')">
             <div class="notif-msg"><strong>${escaparHtmlDash(n.deNombre || "Alguien")}</strong> ${escaparHtmlDash(n.mensaje || "")}</div>
             <div class="notif-meta">${fecha}</div>
           </div>
+          <button class="icon-btn" title="Eliminar" onclick="event.stopPropagation(); eliminarNotificacion('${n.id}')">✕</button>
         </div>
       `;
     })
@@ -230,6 +231,28 @@ async function marcarTodasLeidas() {
     await batch.commit();
   } catch (err) {
     console.error(err);
+  }
+}
+
+async function eliminarNotificacion(id) {
+  try {
+    await db.collection("notificaciones").doc(id).delete();
+  } catch (err) {
+    console.error(err);
+    mostrarToast("No se pudo eliminar la notificación.");
+  }
+}
+
+async function eliminarTodasNotificaciones() {
+  if (!confirm("¿Eliminar todas tus notificaciones? No se puede deshacer.")) return;
+  try {
+    const snap = await db.collection("notificaciones").where("paraUid", "==", usuarioActualDash.uid).get();
+    const batch = db.batch();
+    snap.forEach((doc) => batch.delete(doc.ref));
+    await batch.commit();
+  } catch (err) {
+    console.error(err);
+    mostrarToast("No se pudieron eliminar las notificaciones.");
   }
 }
 
@@ -486,4 +509,19 @@ async function decidirEvaluacion(id, decision) {
     console.error(err);
     mostrarToast("No se pudo registrar la decisión.");
   }
+}
+
+// ---------- Toast ----------
+// (esta función ya se usaba en el archivo, pero nunca llegó a
+// definirse — por eso no se veía confirmación al aceptar/rechazar
+// una evaluación; ahora sí existe, con su elemento en dashboard.html.)
+
+let toastTimerDash;
+function mostrarToast(texto) {
+  const t = document.getElementById("toast");
+  if (!t) return;
+  document.getElementById("toast-msg").textContent = texto;
+  t.classList.add("show");
+  clearTimeout(toastTimerDash);
+  toastTimerDash = setTimeout(() => t.classList.remove("show"), 3200);
 }
