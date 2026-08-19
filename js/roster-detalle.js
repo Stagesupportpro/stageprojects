@@ -327,8 +327,8 @@ function renderCamposExtraRst() {
     .map(
       (c, i) => `
         <div class="repeat-row campo-extra-row">
-          <input placeholder="Título (Ej. Fecha de estreno)" value="${escaparAttrRstD(c.titulo)}" oninput="camposExtraRst[${i}].titulo=this.value" />
-          <input placeholder="Descripción (Ej. 29-10-2023)" value="${escaparAttrRstD(c.descripcion)}" oninput="camposExtraRst[${i}].descripcion=this.value" />
+          <input placeholder="Título (Ej. Fecha de estreno)" value="${escaparAttrRst(c.titulo)}" oninput="camposExtraRst[${i}].titulo=this.value" />
+          <input placeholder="Descripción (Ej. 29-10-2023)" value="${escaparAttrRst(c.descripcion)}" oninput="camposExtraRst[${i}].descripcion=this.value" />
           <button type="button" class="remove-row-btn" onclick="eliminarCampoExtraRst(${i})">✕</button>
         </div>
       `
@@ -781,8 +781,8 @@ function renderVideosRst() {
     .map(
       (v, i) => `
         <div class="repeat-row video-row">
-          <input placeholder="Título (opcional)" value="${escaparAttrRstD(v.titulo)}" oninput="videosYoutubeRst[${i}].titulo=this.value" />
-          <input placeholder="Enlace de YouTube" value="${escaparAttrRstD(v.url)}" oninput="videosYoutubeRst[${i}].url=this.value" onblur="actualizarMiniaturaVideoRst(${i})" />
+          <input placeholder="Título (opcional)" value="${escaparAttrRst(v.titulo)}" oninput="videosYoutubeRst[${i}].titulo=this.value" />
+          <input placeholder="Enlace de YouTube" value="${escaparAttrRst(v.url)}" oninput="videosYoutubeRst[${i}].url=this.value" onblur="actualizarMiniaturaVideoRst(${i})" />
           <button type="button" class="remove-row-btn" onclick="eliminarVideoRst(${i})">✕</button>
         </div>
         <div id="video-thumb-${i}" style="margin:6px 0 12px;">${miniaturaVideoRstHtml(videosYoutubeRst[i])}</div>
@@ -794,7 +794,7 @@ function renderVideosRst() {
 function miniaturaVideoRstHtml(v) {
   const idYt = extraerIdYoutube(v.url);
   return idYt
-    ? `<a class="video-thumb-link" href="${escaparAttrRstD(v.url)}" target="_blank" style="max-width:220px;"><img src="https://img.youtube.com/vi/${idYt}/hqdefault.jpg" alt="" /><span class="play-badge">▶</span></a>`
+    ? `<a class="video-thumb-link" href="${escaparAttrRst(v.url)}" target="_blank" style="max-width:220px;"><img src="https://img.youtube.com/vi/${idYt}/hqdefault.jpg" alt="" /><span class="play-badge">▶</span></a>`
     : "";
 }
 

@@ -142,7 +142,7 @@ formTipoServicio.addEventListener("submit", async (e) => {
     cerrarModal();
   } catch (err) {
     console.error(err);
-    document.getElementById("modal-msg").textContent = "No se pudo guardar. Inténtalo de nuevo.";
+    document.getElementById("modal-msg").textContent = `No se pudo guardar: ${err.code || ""} ${err.message || err}`.trim();
     document.getElementById("modal-msg").className = "form-msg show error";
   } finally {
     btn.disabled = false;
