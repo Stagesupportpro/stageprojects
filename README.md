@@ -363,6 +363,23 @@ verdad en vez de descartar posibilidades a ciegas.
 
 De 48px a 130px.
 
+## Roster — foto solapada en "Ver" (arreglado) y campos adicionales
+
+**El solape de la foto con el texto**: el estilo de la miniatura
+(`.poster-preview`) solo se aplicaba cuando estaba dentro de un
+contenedor `.poster-picker` — en la ficha "Ver" se usa suelta, así
+que no recibía ningún tamaño ni recorte, y la imagen se expandía a su
+tamaño real por encima del texto. Ahora el estilo funciona igual
+tanto suelta como dentro de ese contenedor.
+
+**Campos adicionales en Descripción comercial**: botón "+ Añadir
+campo" que añade pares de **Título + Descripción** (para datos tipo
+ficha técnica: fecha de estreno, duración, edad recomendada...). El
+título aparece en negrita, como una lista, tanto en la ficha del
+Roster ("Ver") como en el Catálogo — separado de la descripción
+principal, así ya no hay que meterlo todo apretado en un único bloque
+de texto.
+
 ## Ronda de arreglos y funciones nuevas (7 puntos)
 
 **1. Roster/Jurídico — Datos fiscales.** Nueva sección (razón
