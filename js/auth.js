@@ -22,6 +22,7 @@ const PAGINA_A_PERMISO = {
   "propuesta-ver.html": "propuestas",
   "booking-detalle.html": "bookings",
   "registro-servicio-ver.html": "registro-servicios",
+  "registro-servicio-detalle.html": "registro-servicios",
 };
 
 // El dashboard es la página de aterrizaje segura — siempre accesible
