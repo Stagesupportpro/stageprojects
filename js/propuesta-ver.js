@@ -161,7 +161,10 @@ async function enviarAEvaluarPropuesta() {
     }
   } catch (err) {
     console.error(err);
-    mostrarToast("No se pudo registrar el envío a evaluar.");
+    // Se muestra el error real (código + mensaje de Firebase) en vez de uno
+    // genérico — así, si vuelve a fallar, se puede ver exactamente el motivo
+    // sin tener que abrir la consola del navegador.
+    mostrarToast(`No se pudo registrar el envío: ${err.code || ""} ${err.message || err}`.trim(), true);
   } finally {
     btn.disabled = false;
   }
@@ -170,10 +173,10 @@ async function enviarAEvaluarPropuesta() {
 // ---------- Toast ----------
 
 let toastTimerPV;
-function mostrarToast(texto) {
+function mostrarToast(texto, esError) {
   const t = document.getElementById("toast");
   document.getElementById("toast-msg").textContent = texto;
   t.classList.add("show");
   clearTimeout(toastTimerPV);
-  toastTimerPV = setTimeout(() => t.classList.remove("show"), 3200);
+  toastTimerPV = setTimeout(() => t.classList.remove("show"), esError ? 12000 : 3200);
 }

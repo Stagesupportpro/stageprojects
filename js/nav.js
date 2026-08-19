@@ -48,6 +48,13 @@ const NAV_ESTRUCTURA = [
     ],
   },
   {
+    grupo: "Marketing",
+    items: [
+      { id: "calendario-cm", label: "Calendario CM", href: "calendario-cm.html", roles: ["Comercial", "Admin"], listo: true },
+      { id: "campanas", label: "Campañas", href: "campanas.html", roles: ["Comercial", "Admin"], listo: true },
+    ],
+  },
+  {
     grupo: "Administración",
     items: [
       { id: "usuarios", label: "Usuarios", href: "usuarios.html", roles: ["Admin"], listo: true },
