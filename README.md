@@ -363,6 +363,28 @@ verdad en vez de descartar posibilidades a ciegas.
 
 De 48px a 130px.
 
+## Roster — "Añadir campo" no funcionaba (fallo real encontrado)
+
+La causa: al construir tanto los **Campos adicionales** como los
+**vídeos de YouTube**, el código llamaba a una función
+`escaparAttrRstD` que **nunca llegó a existir** en el archivo (un
+error de nombre desde que se construyeron ambas funciones) — el clic
+sí añadía el campo por dentro, pero al intentar pintarlo en pantalla
+fallaba en silencio (solo visible en la consola del navegador), así
+que parecía que el botón no hacía nada. Esto también explica que los
+vídeos de YouTube probablemente seguían sin funcionar del todo pese
+al arreglo anterior del foco — corregidas las 5 apariciones, usando
+la función correcta que sí existe (`escaparAttrRst`).
+
+## Servicios — mejor diagnóstico si vuelve a fallar
+
+Revisado el código de guardado de Tipos de Servicio — correcto, y las
+reglas de Firestore para `tiposServicio` también están bien en
+nuestro archivo. Como no lo puedo reproducir yo mismo, apliqué la
+misma mejora que en "Enviar a evaluar": si vuelve a fallar, el aviso
+mostrará el **código y mensaje real de Firebase** en vez de uno
+genérico.
+
 ## Roster/Medios — YouTube no dejaba escribir enlaces (arreglado)
 
 Fallo real: cada letra que se escribía en el campo del enlace volvía
