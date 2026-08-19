@@ -67,7 +67,7 @@ async function cargarOpcionesPMProd() {
       const opts = snapUsuarios.docs.map((d) => {
         const u = d.data();
         const nombre = nombreCompletoDe(u) || u.email;
-        opcionesPMProd.push({ tipo: "usuario", id: d.id, nombre });
+        opcionesPMProd.push({ tipo: "usuario", id: d.id, nombre, tarifa: null });
         return `<option value="usuario:${d.id}">${nombre}</option>`;
       });
       grupos.push(`<optgroup label="Empleados">${opts.join("")}</optgroup>`);
@@ -76,7 +76,7 @@ async function cargarOpcionesPMProd() {
       const opts = snapPersonal.docs.map((d) => {
         const p = d.data();
         const nombre = [p.nombre, p.apellidos].filter(Boolean).join(" ");
-        opcionesPMProd.push({ tipo: "personal", id: d.id, nombre });
+        opcionesPMProd.push({ tipo: "personal", id: d.id, nombre, tarifa: p.tarifa != null ? p.tarifa : null });
         return `<option value="personal:${d.id}">${nombre}</option>`;
       });
       grupos.push(`<optgroup label="Bolsa de personal">${opts.join("")}</optgroup>`);
@@ -409,6 +409,12 @@ function alSeleccionarPersonaProd(i, valor) {
   personalProd[i].tipo = tipo || null;
   personalProd[i].id = id || null;
   personalProd[i].nombre = encontrada ? encontrada.nombre : "";
+  // Autocompleta el BI con la tarifa guardada en su ficha de la bolsa de
+  // Personal (los empleados internos no tienen tarifa/día guardada, así
+  // que ahí se deja tal cual estuviera para rellenar a mano).
+  if (encontrada && encontrada.tarifa != null) {
+    personalProd[i].bi = encontrada.tarifa;
+  }
   renderPersonalProd();
 }
 
@@ -438,6 +444,7 @@ function recalcularCifrasProd() {
   const totalCostesConIva = costesProd.reduce((sum, c) => sum + costeTotalConIva(c), 0);
   const totalPersonal = personalProd.reduce((sum, p) => sum + costePersonaProd(p), 0);
   const gastos = totalCostesConIva + totalHosp + totalPersonal;
+  document.getElementById("pd-calc-resumen-personal").textContent = formatoEuroPD(totalPersonal);
 
   const aforoTotal = parseFloat(document.getElementById("pd-venta-prevista").value) || parseFloat(document.getElementById("pd-aforo").value) || 0;
   const precio = parseFloat(document.getElementById("pd-precio-entrada").value) || 0;
