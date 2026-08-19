@@ -15,6 +15,7 @@ let bookingsCacheProd = [];
 let rosterCacheProd = [];
 let costesProd = [];
 let personalProd = []; // [{ tipo, id, nombre, bi, jornadas }]
+let tecnicaProd = []; // [{ numPresupuesto, proveedor, concepto, bi, ivaPct }]
 let documentosProd = [];
 let hospitalidadProd = [];
 let bookingVinculado = null;
@@ -280,6 +281,9 @@ async function cargarProduccion() {
     personalProd = Array.isArray(d.personal) ? d.personal : [];
     renderPersonalProd();
 
+    tecnicaProd = Array.isArray(d.tecnica) ? d.tecnica : [];
+    renderTecnicaProd();
+
     document.getElementById("pd-sala-nombre").value = d.salaNombre || "";
     document.getElementById("pd-sala-provincia").value = d.salaProvincia || "";
     document.getElementById("pd-aforo").value = d.aforo != null ? d.aforo : "";
@@ -428,6 +432,56 @@ function eliminarPersonalProd(i) {
   renderPersonalProd();
 }
 
+// ---------- Técnica (presupuestos de proveedores) ----------
+
+function totalTecnicaProd(t) {
+  return (t.bi || 0) * (1 + (t.ivaPct || 0) / 100);
+}
+
+function renderTecnicaProd() {
+  const cont = document.getElementById("pd-lista-tecnica");
+  if (tecnicaProd.length === 0) {
+    cont.innerHTML = `<p style="color:var(--color-text-muted); font-size:13px;">Todavía no hay presupuestos técnicos añadidos.</p>`;
+  } else {
+    cont.innerHTML = tecnicaProd
+      .map(
+        (t, i) => `
+          <div class="repeat-row tecnica-row">
+            <input placeholder="Núm. presupuesto" value="${escaparAttrPD(t.numPresupuesto)}" oninput="tecnicaProd[${i}].numPresupuesto=this.value" />
+            <input placeholder="Proveedor" value="${escaparAttrPD(t.proveedor)}" oninput="tecnicaProd[${i}].proveedor=this.value" />
+            <input placeholder="Concepto" value="${escaparAttrPD(t.concepto)}" oninput="tecnicaProd[${i}].concepto=this.value" />
+            <input type="number" min="0" step="0.01" placeholder="BI €" value="${t.bi != null ? t.bi : ""}" oninput="tecnicaProd[${i}].bi=this.value===''?null:parseFloat(this.value); actualizarTotalTecnicaProd(${i})" />
+            <input type="number" min="0" max="100" step="0.1" placeholder="IVA %" value="${t.ivaPct != null ? t.ivaPct : ""}" oninput="tecnicaProd[${i}].ivaPct=this.value===''?null:parseFloat(this.value); actualizarTotalTecnicaProd(${i})" />
+            <input type="text" id="tecnica-total-${i}" readonly value="${formatoEuroPD(totalTecnicaProd(t))}" title="Total con IVA (calculado)" />
+            <button type="button" class="remove-row-btn" onclick="eliminarTecnicaProd(${i})">✕</button>
+          </div>
+        `
+      )
+      .join("");
+  }
+  const total = tecnicaProd.reduce((sum, t) => sum + totalTecnicaProd(t), 0);
+  document.getElementById("pd-calc-tecnica-total").textContent = formatoEuroPD(total);
+  recalcularCifrasProd();
+}
+
+function actualizarTotalTecnicaProd(i) {
+  const el = document.getElementById(`tecnica-total-${i}`);
+  if (el) el.value = formatoEuroPD(totalTecnicaProd(tecnicaProd[i]));
+  const total = tecnicaProd.reduce((sum, t) => sum + totalTecnicaProd(t), 0);
+  document.getElementById("pd-calc-tecnica-total").textContent = formatoEuroPD(total);
+  recalcularCifrasProd();
+}
+
+function anadirTecnicaProd() {
+  tecnicaProd.push({ numPresupuesto: "", proveedor: "", concepto: "", bi: null, ivaPct: 21 });
+  renderTecnicaProd();
+}
+
+function eliminarTecnicaProd(i) {
+  tecnicaProd.splice(i, 1);
+  renderTecnicaProd();
+}
+
 // ---------- Simulación, reparto y break even ----------
 // Verificado contra el modelo real: la Sala cobra su % sobre la
 // VENTA BRUTA de cada tramo; el Artista/Promotor se queda su % sobre
@@ -443,8 +497,10 @@ function recalcularCifrasProd() {
   const totalHosp = hospitalidadProd.reduce((sum, h) => sum + (h.precio || 0), 0);
   const totalCostesConIva = costesProd.reduce((sum, c) => sum + costeTotalConIva(c), 0);
   const totalPersonal = personalProd.reduce((sum, p) => sum + costePersonaProd(p), 0);
-  const gastos = totalCostesConIva + totalHosp + totalPersonal;
+  const totalTecnica = tecnicaProd.reduce((sum, t) => sum + totalTecnicaProd(t), 0);
+  const gastos = totalCostesConIva + totalHosp + totalPersonal + totalTecnica;
   document.getElementById("pd-calc-resumen-personal").textContent = formatoEuroPD(totalPersonal);
+  document.getElementById("pd-calc-resumen-tecnica").textContent = formatoEuroPD(totalTecnica);
 
   const aforoTotal = parseFloat(document.getElementById("pd-venta-prevista").value) || parseFloat(document.getElementById("pd-aforo").value) || 0;
   const precio = parseFloat(document.getElementById("pd-precio-entrada").value) || 0;
@@ -600,7 +656,8 @@ function recalcularTaquillaProd() {
   const totalHosp = hospitalidadProd.reduce((sum, h) => sum + (h.precio || 0), 0);
   const totalCostesConIva = costesProd.reduce((sum, c) => sum + costeTotalConIva(c), 0);
   const totalPersonal = personalProd.reduce((sum, p) => sum + costePersonaProd(p), 0);
-  const gastos = totalCostesConIva + totalHosp + totalPersonal;
+  const totalTecnica = tecnicaProd.reduce((sum, t) => sum + totalTecnicaProd(t), 0);
+  const gastos = totalCostesConIva + totalHosp + totalPersonal + totalTecnica;
 
   const vsBreakEven = document.getElementById("pd-tq-vs-breakeven");
   if (precio > 0) {
@@ -636,6 +693,7 @@ async function guardarProduccion() {
     artistaRosterId: document.getElementById("pd-artista-select").value || null,
     costes: costesProd,
     personal: personalProd,
+    tecnica: tecnicaProd,
     salaNombre: document.getElementById("pd-sala-nombre").value.trim(),
     salaProvincia: document.getElementById("pd-sala-provincia").value.trim(),
     aforo: parseFloat(document.getElementById("pd-aforo").value) || null,

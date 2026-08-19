@@ -23,37 +23,48 @@ let usuarioActualDash = null;
     weekday: "long", day: "numeric", month: "long",
   });
 
-  await pintarStats(usuarioActualDash.rol);
+  escucharStats(usuarioActualDash.rol);
   pintarPanelesPorRol(usuarioActualDash.rol);
   escucharNotificaciones();
   escucharEvaluaciones();
+  escucharActivoAhora();
+  escucharPropuestasPendientes();
+  escucharProximasCitas();
 })();
 
 // ---------- Estadísticas reales ----------
 
-async function contarColeccion(nombre, filtro) {
-  try {
-    let ref = db.collection(nombre);
-    if (filtro) ref = filtro(ref);
-    const snap = await ref.get();
-    return snap.size;
-  } catch (err) {
-    console.error(`No se pudo contar ${nombre}:`, err);
-    return "—";
-  }
+function escucharConteoColeccion(nombre, filtro, indice) {
+  let ref = db.collection(nombre);
+  if (filtro) ref = filtro(ref);
+  ref.onSnapshot(
+    (snap) => {
+      const el = document.getElementById(`stat-valor-${indice}`);
+      if (el) el.textContent = snap.size;
+    },
+    (err) => console.error(`No se pudo escuchar ${nombre}:`, err)
+  );
 }
 
-async function proximoEvento() {
-  try {
-    const hoyISO = fechaISODash(new Date());
-    const snap = await db.collection("documentos").where("fecha", ">=", hoyISO).orderBy("fecha", "asc").limit(1).get();
-    if (snap.empty) return "—";
-    const d = snap.docs[0].data();
-    return new Date(d.fecha + "T00:00:00").toLocaleDateString("es-ES", { day: "numeric", month: "short" });
-  } catch (err) {
-    console.error(err);
-    return "—";
-  }
+function escucharProximoEvento(indice) {
+  const hoyISO = fechaISODash(new Date());
+  db.collection("documentos")
+    .where("fecha", ">=", hoyISO)
+    .orderBy("fecha", "asc")
+    .limit(1)
+    .onSnapshot(
+      (snap) => {
+        const el = document.getElementById(`stat-valor-${indice}`);
+        if (!el) return;
+        if (snap.empty) {
+          el.textContent = "—";
+          return;
+        }
+        const d = snap.docs[0].data();
+        el.textContent = new Date(d.fecha + "T00:00:00").toLocaleDateString("es-ES", { day: "numeric", month: "short" });
+      },
+      (err) => console.error(err)
+    );
 }
 
 function fechaISODash(date) {
@@ -63,80 +74,81 @@ function fechaISODash(date) {
   return `${y}-${m}-${d}`;
 }
 
-async function pintarStats(rol) {
+// Catálogo de posibles tarjetas — se muestran las que encajen con los
+// permisos reales del rol (hasta 3), en este orden de prioridad. Así
+// funciona igual de bien con roles personalizados que con los 3
+// originales, sin tener que tocar código cada vez que se crea un rol.
+const CATALOGO_STATS_DASH = [
+  { permiso: "usuarios", label: "Usuarios activos", coleccion: "usuarios", filtro: (ref) => ref.where("activo", "==", true) },
+  { permiso: "bookings", label: "Bookings", coleccion: "bookings" },
+  { permiso: "producciones", label: "Producciones", coleccion: "producciones" },
+  { permiso: "hojasderuta", label: "Hojas de ruta", coleccion: "hojasDeRuta" },
+  { permiso: "clientes", label: "Clientes en cartera", coleccion: "clientes" },
+  { permiso: "propuestas", label: "Propuestas creadas", coleccion: "propuestas" },
+  { permiso: "roster", label: "Espectáculos en Roster", coleccion: "roster" },
+  { permiso: "venues", label: "Venues dados de alta", coleccion: "venues" },
+];
+
+// A diferencia de la versión anterior (una sola lectura al cargar la
+// página), esto deja una escucha en vivo por cada tarjeta — si algo
+// cambia mientras el Dashboard está abierto, el número se actualiza
+// solo, sin tener que recargar la página.
+function escucharStats(rol) {
   const cont = document.getElementById("stat-grid");
-  cont.innerHTML = `<div class="stat-card"><div class="stat-accent"></div><div class="stat-label">Cargando…</div><div class="stat-value">—</div></div>`;
+  const permisos = permisosActuales || {};
+  const seleccionadas = CATALOGO_STATS_DASH.filter((s) => permisos[s.permiso]).slice(0, 3);
 
-  let stats = [];
-
-  if (rol === "Comercial") {
-    const [bookings, clientes, propuestas] = await Promise.all([
-      contarColeccion("bookings"),
-      contarColeccion("clientes"),
-      contarColeccion("propuestas"),
-    ]);
-    stats = [
-      { label: "Bookings", valor: bookings },
-      { label: "Clientes en cartera", valor: clientes },
-      { label: "Propuestas creadas", valor: propuestas },
-    ];
-  } else if (rol === "Producción") {
-    const [producciones, hojasRuta, proximo] = await Promise.all([
-      contarColeccion("producciones"),
-      contarColeccion("hojasDeRuta"),
-      proximoEvento(),
-    ]);
-    stats = [
-      { label: "Producciones", valor: producciones },
-      { label: "Hojas de ruta", valor: hojasRuta },
-      { label: "Próximo evento", valor: proximo },
-    ];
-  } else if (rol === "Admin") {
-    const [usuariosActivos, bookings, producciones] = await Promise.all([
-      contarColeccion("usuarios", (ref) => ref.where("activo", "==", true)),
-      contarColeccion("bookings"),
-      contarColeccion("producciones"),
-    ]);
-    stats = [
-      { label: "Usuarios activos", valor: usuariosActivos },
-      { label: "Bookings", valor: bookings },
-      { label: "Producciones", valor: producciones },
-    ];
+  const hayHuecoParaEvento = seleccionadas.length < 3 && permisos.calendario;
+  if (hayHuecoParaEvento) {
+    seleccionadas.push({ label: "Próximo evento", especial: "proximoEvento" });
   }
 
-  cont.innerHTML = stats
+  if (seleccionadas.length === 0) {
+    cont.innerHTML = `<div class="empty-state"><strong>Sin indicadores configurados</strong>Tu rol todavía no tiene acceso a ninguna sección con estadísticas.</div>`;
+    return;
+  }
+
+  cont.innerHTML = seleccionadas
     .map(
-      (s) => `
+      (s, i) => `
         <div class="stat-card">
           <div class="stat-accent"></div>
           <div class="stat-label">${s.label}</div>
-          <div class="stat-value">${s.valor}</div>
+          <div class="stat-value" id="stat-valor-${i}">—</div>
         </div>
       `
     )
     .join("");
+
+  seleccionadas.forEach((s, i) => {
+    if (s.especial === "proximoEvento") {
+      escucharProximoEvento(i);
+    } else {
+      escucharConteoColeccion(s.coleccion, s.filtro, i);
+    }
+  });
 }
+
+// Catálogo de posibles accesos directos — se muestran los que
+// encajen con los permisos reales del rol (hasta 4).
+const CATALOGO_ENLACES_DASH = [
+  { permiso: "bookings", label: "Ver Bookings", href: "bookings.html" },
+  { permiso: "propuestas", label: "Preparar una propuesta", href: "propuestas.html" },
+  { permiso: "catalogo", label: "Ver Catálogo", href: "catalogo.html" },
+  { permiso: "producciones", label: "Ver Producciones", href: "producciones.html" },
+  { permiso: "hojasderuta", label: "Ver Hojas de Ruta", href: "hojasderuta.html" },
+  { permiso: "usuarios", label: "Gestionar usuarios", href: "usuarios.html" },
+  { permiso: "roles", label: "Ver Roles y permisos", href: "roles.html" },
+  { permiso: "roster", label: "Abrir el Roster", href: "roster.html" },
+  { permiso: "venues", label: "Ver Venues", href: "venues.html" },
+  { permiso: "clientes", label: "Ver Clientes", href: "clientes.html" },
+];
 
 function pintarPanelesPorRol(rol) {
   const cont = document.getElementById("role-panels");
+  const permisos = permisosActuales || {};
+  const items = CATALOGO_ENLACES_DASH.filter((it) => permisos[it.permiso]).slice(0, 4);
 
-  const enlaces = {
-    Comercial: [
-      { label: "Ver Bookings", href: "bookings.html" },
-      { label: "Preparar una propuesta", href: "propuestas.html" },
-      { label: "Ver Catálogo", href: "catalogo.html" },
-    ],
-    "Producción": [
-      { label: "Ver Producciones", href: "producciones.html" },
-      { label: "Ver Hojas de Ruta", href: "hojasderuta.html" },
-    ],
-    Admin: [
-      { label: "Gestionar usuarios", href: "usuarios.html" },
-      { label: "Ver Roles y permisos", href: "roles.html" },
-    ],
-  };
-
-  const items = enlaces[rol] || [];
   cont.innerHTML = items.length
     ? `<div class="stat-grid">${items
         .map((it) => `<a href="${it.href}" class="stat-card" style="text-decoration:none; display:flex; align-items:center; justify-content:center; text-align:center; color:var(--color-text); font-weight:700;">${it.label} →</a>`)
@@ -221,10 +233,178 @@ async function marcarTodasLeidas() {
   }
 }
 
-// ---------- Evaluaciones de propuestas ----------
+// ---------- Activo ahora (Calendario, próximos 14 días) ----------
+
+function escucharActivoAhora() {
+  const permisos = permisosActuales || {};
+  if (!permisos.calendario) return;
+
+  const hoy = new Date();
+  const en14dias = new Date();
+  en14dias.setDate(hoy.getDate() + 14);
+
+  db.collection("documentos")
+    .where("fecha", ">=", fechaISODash(hoy))
+    .where("fecha", "<=", fechaISODash(en14dias))
+    .onSnapshot(
+      (snap) => {
+        const filas = [];
+        snap.forEach((doc) => filas.push({ id: doc.id, ...doc.data() }));
+        filas.sort((a, b) => (a.fecha || "").localeCompare(b.fecha || ""));
+        pintarActivoAhora(filas);
+      },
+      (err) => console.error("No se pudo escuchar el calendario:", err)
+    );
+}
+
+function pintarActivoAhora(filas) {
+  const card = document.getElementById("card-activo");
+  const cont = document.getElementById("lista-activo");
+
+  if (filas.length === 0) {
+    card.style.display = "none";
+    return;
+  }
+  card.style.display = "block";
+
+  cont.innerHTML = filas
+    .slice(0, 8)
+    .map((d) => {
+      const fecha = d.fecha ? new Date(d.fecha + "T00:00:00").toLocaleDateString("es-ES", { day: "numeric", month: "short" }) : "";
+      return `
+        <div class="dash-mini-row">
+          <div>
+            <div class="dash-mini-titulo">${escaparHtmlDash(d.titulo || "Sin título")}</div>
+            <div class="dash-mini-meta">${escaparHtmlDash(d.tipo || "")}</div>
+          </div>
+          <div class="dash-mini-fecha">${fecha}</div>
+        </div>
+      `;
+    })
+    .join("");
+}
+
+// ---------- Propuestas pendientes ----------
+
+function escucharPropuestasPendientes() {
+  const permisos = permisosActuales || {};
+  if (!permisos.propuestas) return;
+
+  db.collection("propuestas")
+    .where("estado", "in", ["Borrador", "Enviada"])
+    .onSnapshot(
+      (snap) => {
+        const filas = [];
+        snap.forEach((doc) => filas.push({ id: doc.id, ...doc.data() }));
+        filas.sort((a, b) => {
+          const fa = a.creadoEl && a.creadoEl.toMillis ? a.creadoEl.toMillis() : 0;
+          const fb = b.creadoEl && b.creadoEl.toMillis ? b.creadoEl.toMillis() : 0;
+          return fb - fa;
+        });
+        pintarPropuestasPendientes(filas);
+      },
+      (err) => console.error("No se pudieron escuchar las propuestas:", err)
+    );
+}
+
+function pintarPropuestasPendientes(filas) {
+  const card = document.getElementById("card-propuestas-pendientes");
+  const cont = document.getElementById("lista-propuestas-pendientes");
+
+  if (filas.length === 0) {
+    card.style.display = "none";
+    return;
+  }
+  card.style.display = "block";
+
+  cont.innerHTML = filas
+    .slice(0, 8)
+    .map(
+      (p) => `
+        <div class="dash-mini-row" style="cursor:pointer;" onclick="window.location.href='propuesta-detalle.html?id=${p.id}'">
+          <div>
+            <div class="dash-mini-titulo">${escaparHtmlDash(p.nombre)}</div>
+            <div class="dash-mini-meta">${escaparHtmlDash(p.clienteNombre || "Sin cliente")}</div>
+          </div>
+          <div class="dash-mini-fecha">${escaparHtmlDash(p.estado || "Borrador")}</div>
+        </div>
+      `
+    )
+    .join("");
+}
+
+// ---------- Próximas citas (Agenda propia + compartida, 14 días) ----------
+
+let citasPropiasDash = [];
+let citasCompartidasDash = [];
+
+function escucharProximasCitas() {
+  const permisos = permisosActuales || {};
+  if (!permisos.agenda) return;
+
+  const hoyISO = fechaISODash(new Date());
+  const en14dias = new Date();
+  en14dias.setDate(new Date().getDate() + 14);
+  const en14ISO = fechaISODash(en14dias);
+
+  db.collection("agenda")
+    .where("propietarioUid", "==", usuarioActualDash.uid)
+    .onSnapshot(
+      (snap) => {
+        citasPropiasDash = [];
+        snap.forEach((doc) => citasPropiasDash.push({ id: doc.id, ...doc.data() }));
+        pintarProximasCitas(hoyISO, en14ISO);
+      },
+      (err) => console.error(err)
+    );
+
+  db.collection("agenda")
+    .where("compartidoCon", "array-contains", usuarioActualDash.uid)
+    .onSnapshot(
+      (snap) => {
+        citasCompartidasDash = [];
+        snap.forEach((doc) => citasCompartidasDash.push({ id: doc.id, ...doc.data() }));
+        pintarProximasCitas(hoyISO, en14ISO);
+      },
+      (err) => console.error(err)
+    );
+}
+
+function pintarProximasCitas(hoyISO, en14ISO) {
+  const card = document.getElementById("card-proximas-citas");
+  const cont = document.getElementById("lista-proximas-citas");
+
+  const todas = [...citasPropiasDash, ...citasCompartidasDash]
+    .filter((c) => c.fecha && c.fecha >= hoyISO && c.fecha <= en14ISO)
+    .sort((a, b) => (a.fecha || "").localeCompare(b.fecha || "") || (a.hora || "").localeCompare(b.hora || ""));
+
+  if (todas.length === 0) {
+    card.style.display = "none";
+    return;
+  }
+  card.style.display = "block";
+
+  cont.innerHTML = todas
+    .slice(0, 8)
+    .map((c) => {
+      const fecha = new Date(c.fecha + "T00:00:00").toLocaleDateString("es-ES", { day: "numeric", month: "short" });
+      return `
+        <div class="dash-mini-row" style="cursor:pointer;" onclick="window.location.href='agenda.html'">
+          <div>
+            <div class="dash-mini-titulo">${escaparHtmlDash(c.titulo)}</div>
+            <div class="dash-mini-meta">${[c.hora, c.ubicacion].filter(Boolean).map(escaparHtmlDash).join(" · ")}</div>
+          </div>
+          <div class="dash-mini-fecha">${fecha}</div>
+        </div>
+      `;
+    })
+    .join("");
+}
 
 function escucharEvaluaciones() {
-  if (usuarioActualDash.rol !== "Admin") return; // decisión de evaluar es cosa de Admin
+  // Ver y decidir evaluaciones es cosa de perfiles con acceso administrativo
+  // (se usa el permiso de "usuarios" como indicador de ese nivel de confianza).
+  if (!permisosActuales || !permisosActuales.usuarios) return;
 
   db.collection("evaluaciones")
     .where("estado", "==", "Pendiente")
