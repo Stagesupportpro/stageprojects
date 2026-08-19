@@ -1592,7 +1592,7 @@ table.doc-table td.label { font-weight: 700; background: #fafafa; width: 22%; }
 }
 .calc-box .calc-item.calc-total .calc-value { color: var(--color-accent); }
 
-.poster-picker .poster-preview {
+.poster-preview {
   width: 120px; height: 160px;
   border-radius: 10px;
   background: var(--color-bg-soft);
@@ -1603,7 +1603,7 @@ table.doc-table td.label { font-weight: 700; background: #fafafa; width: 22%; }
   font-size: 12px;
   text-align: center;
 }
-.poster-picker .poster-preview img { width: 100%; height: 100%; object-fit: cover; }
+.poster-preview img { width: 100%; height: 100%; object-fit: cover; display: block; }
 
 .pdf-picker {
   display: flex;
@@ -2006,4 +2006,32 @@ table.doc-table td.label { font-weight: 700; background: #fafafa; width: 22%; }
   border-radius: 3px;
   margin-top: 2px;
   font-size: 0;
+}
+
+/* ---------- Campos adicionales (Roster) ---------- */
+
+.campo-extra-row { grid-template-columns: 1fr 2fr auto; }
+@media (max-width: 700px) {
+  .campo-extra-row { grid-template-columns: 1fr; }
+}
+
+.campos-extra-lista {
+  list-style: none;
+  padding: 0;
+  margin: 6px 0 0;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+.campos-extra-lista li {
+  font-size: 14px;
+  line-height: 1.5;
+  padding-left: 16px;
+  position: relative;
+}
+.campos-extra-lista li::before {
+  content: "–";
+  position: absolute;
+  left: 0;
+  color: var(--color-text-muted);
 }
