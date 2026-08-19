@@ -21,6 +21,7 @@ const TABS_POR_PAGINA = {
   producciones: [
     { id: "general", label: "Información general" },
     { id: "cifras", label: "Cifras" },
+    { id: "personal", label: "Personal" },
     { id: "taquilla", label: "Taquilla" },
     { id: "documentos", label: "Documentos" },
     { id: "hospitalidad", label: "Hospitalidad" },
