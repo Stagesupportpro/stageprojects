@@ -363,6 +363,35 @@ verdad en vez de descartar posibilidades a ciegas.
 
 De 48px a 130px.
 
+## Registro de Servicios (construido completo)
+
+Ya no está en stand by — funciona igual que Producciones/Bookings:
+
+- **Listado** (`registro-servicios.html`) con búsqueda por texto,
+  botones **Ver** / Editar / **Crear nueva versión** (⎘) / Eliminar
+  por fila — mismo patrón que el resto de módulos con versiones.
+- **ID correlativo nuevo**: `R<año>-0001` (prefijo `R`), generado
+  igual que PRO/HR/PROV/BO/PR.
+- **Campos**: Cliente (conectado a Clientes), Servicio (conectado a
+  Tipos de Servicio — autocompleta la tarifa como importe sugerido),
+  Actuación y Localización (texto), Fecha, Importe (BI). **Forma de
+  pago**: Pendiente de confirmar / Factura / Efectivo — al elegir
+  Factura aparece el campo Núm. de factura.
+- **Totales**, debajo de la tabla, recalculados en vivo según lo que
+  esté filtrado por la búsqueda: Total Efectivo, Total Factura (BI),
+  **IVA (21%, solo sobre Factura — nunca sobre Efectivo ni
+  Pendiente)**, Total Pendiente, e **Importe a pagar** (suma de
+  todos los anteriores, incluido el IVA).
+- **Ficha "Ver"** (`registro-servicio-ver.html`) — de solo lectura,
+  con **Exportar PDF** e **Imprimir**, logo de documentos en la
+  cabecera y fecha/hora de generación en el pie, igual que en Hojas
+  de Ruta y Contratos.
+
+De paso, revisé el backup completo y encontré que faltaban tres
+colecciones que ya existían pero nunca se habían añadido a la lista
+de exportación: `contratosConfig`, `campanas` y ahora
+`registroServicios` — ya están las tres incluidas.
+
 ## Roster — "Añadir campo" no funcionaba (fallo real encontrado)
 
 La causa: al construir tanto los **Campos adicionales** como los

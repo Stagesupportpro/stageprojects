@@ -68,6 +68,13 @@ service cloud.firestore {
     }
 
     // ---- Clientes ----
+    // ---- Registro de servicios técnicos (con ID correlativo R<año>-0001) ----
+    match /registroServicios/{id} {
+      allow read, create: if estoyActivo();
+      allow update, delete: if estoyActivo()
+        && (resource.data.creadoPorUid == request.auth.uid || esAdmin());
+    }
+
     // ---- Tipos de servicio técnico (instalaciones, soporte...) ----
     match /tiposServicio/{id} {
       allow read, write: if estoyActivo();

@@ -1,0 +1,80 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Stage Support · Registro de Servicio</title>
+<link rel="icon" href="assets/logo_stagesupport.png" />
+<link rel="stylesheet" href="css/styles.css" />
+</head>
+<body>
+
+<div class="app-shell">
+
+  <aside class="sidebar" id="sidebar">
+    <div class="brand-mark">
+      <img src="assets/logo_stagesupport.png" alt="Stage Support" onerror="this.style.display='none'" />
+    </div>
+
+    <nav id="nav-container" style="flex:1; overflow-y:auto;"></nav>
+
+    <div class="sidebar-footer">
+      <div class="access-pass">
+        <div class="pass-top">
+          <div class="pass-avatar" id="pass-avatar">—</div>
+          <div>
+            <div class="pass-name" id="pass-name">—</div>
+            <div class="pass-role" id="pass-role">—</div>
+          </div>
+        </div>
+        <div class="pass-version" id="pass-version"></div>
+        <button class="pass-logout" onclick="cerrarSesion()">Cerrar sesión</button>
+      </div>
+    </div>
+  </aside>
+
+  <main class="main">
+    <div class="topbar">
+      <button class="mobile-menu-btn" onclick="document.getElementById('sidebar').classList.toggle('open')">☰</button>
+      <div>
+        <div class="eyebrow">Servicios · <a href="registro-servicios.html" style="color:inherit;">Registro de Servicios</a> · <span class="id-badge" id="rv-id-badge">—</span></div>
+        <h1 id="rv-titulo-cabecera">Registro de servicio</h1>
+      </div>
+      <div style="display:flex; gap:10px;">
+        <button class="btn-ghost" onclick="imprimirRS()">🖨️ Imprimir</button>
+        <button class="btn-accent" onclick="descargarPdfRS()">📄 Exportar PDF</button>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="ver-field-row"><div class="ver-label">Cliente</div><div id="rv-cliente">—</div></div>
+      <div class="ver-field-row"><div class="ver-label">Servicio</div><div id="rv-servicio">—</div></div>
+      <div class="ver-field-row"><div class="ver-label">Actuación</div><div id="rv-actuacion">—</div></div>
+      <div class="ver-field-row"><div class="ver-label">Localización</div><div id="rv-localizacion">—</div></div>
+      <div class="ver-field-row"><div class="ver-label">Fecha</div><div id="rv-fecha">—</div></div>
+      <div class="ver-field-row"><div class="ver-label">Importe (BI)</div><div id="rv-importe">—</div></div>
+      <div class="ver-field-row"><div class="ver-label">IVA (21%)</div><div id="rv-iva">—</div></div>
+      <div class="ver-field-row"><div class="ver-label">Total</div><div id="rv-total">—</div></div>
+      <div class="ver-field-row"><div class="ver-label">Forma de pago</div><div id="rv-forma-pago">—</div></div>
+      <div class="ver-field-row" id="fila-rv-nfactura" style="display:none;"><div class="ver-label">Núm. factura</div><div id="rv-nfactura">—</div></div>
+      <div class="ver-field-row"><div class="ver-label">Observaciones</div><div id="rv-observaciones">—</div></div>
+      <div class="ver-field-row"><div class="ver-label">Creado</div><div id="rv-creado">—</div></div>
+    </div>
+  </main>
+
+</div>
+
+<div id="print-area"></div>
+
+<div class="toast" id="toast"><span class="dot"></span><span id="toast-msg"></span></div>
+
+<script src="https://www.gstatic.com/firebasejs/10.13.0/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.13.0/firebase-auth-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.13.0/firebase-firestore-compat.js"></script>
+<script src="js/firebase-config.js"></script>
+<script src="js/auth.js"></script>
+<script src="js/nav.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
+<script src="js/registro-servicio-ver.js"></script>
+</body>
+</html>
