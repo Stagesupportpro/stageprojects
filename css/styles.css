@@ -2035,3 +2035,40 @@ table.doc-table td.label { font-weight: 700; background: #fafafa; width: 22%; }
   left: 0;
   color: var(--color-text-muted);
 }
+
+/* ---------- Barra de búsqueda + filtros (listados) ---------- */
+
+.lista-filtros-bar {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  margin-bottom: 20px;
+}
+.lista-busqueda {
+  position: relative;
+  max-width: 360px;
+}
+.lista-busqueda input {
+  width: 100%;
+  padding: 10px 14px 10px 36px;
+  border: 1.5px solid var(--color-border);
+  border-radius: 10px;
+  font-size: 13.5px;
+  font-family: inherit;
+  background: #fff;
+}
+.lista-busqueda input:focus { border-color: var(--color-sidebar); outline: none; }
+.lista-busqueda .lista-busqueda-icono {
+  position: absolute;
+  left: 12px;
+  top: 50%;
+  transform: translateY(-50%);
+  font-size: 13px;
+  color: var(--color-text-muted);
+  pointer-events: none;
+}
+.lista-chips-fila {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
