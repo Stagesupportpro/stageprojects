@@ -62,7 +62,33 @@ async function cargarPermisosDeRol(nombreRol) {
   try {
     const snap = await db.collection("roles").where("nombre", "==", nombreRol).limit(1).get();
     if (snap.empty) return {};
-    return snap.docs[0].data().permisos || {};
+    const docRol = snap.docs[0];
+    const permisos = docRol.data().permisos || {};
+
+    // Autosincronización silenciosa: cada vez que se añade una página
+    // nueva a la plataforma, los roles que ya existían en Firestore de
+    // antes no la reciben solos (su documento se queda tal cual estaba
+    // guardado). Para Admin en concreto, se completa aquí mismo, sola,
+    // sin depender de que alguien se acuerde de entrar en Roles y pulsar
+    // "Sincronizar páginas nuevas" — así Admin siempre tiene acceso
+    // completo desde el primer login tras añadir algo nuevo. Para el
+    // resto de roles, seguir sin marcar es lo correcto por defecto (es
+    // una decisión que le corresponde a un Admin, no algo automático).
+    if (nombreRol === "Admin" && typeof NAV_ESTRUCTURA !== "undefined") {
+      const idsConocidos = [];
+      NAV_ESTRUCTURA.forEach((grupo) => grupo.items.forEach((it) => it.listo && idsConocidos.push(it.id)));
+      const faltantes = idsConocidos.filter((id) => !(id in permisos));
+      if (faltantes.length > 0) {
+        const permisosCompletos = { ...permisos };
+        faltantes.forEach((id) => {
+          permisosCompletos[id] = true;
+        });
+        docRol.ref.update({ permisos: permisosCompletos }).catch((err) => console.error("No se pudo autosincronizar el rol Admin:", err));
+        return permisosCompletos;
+      }
+    }
+
+    return permisos;
   } catch (err) {
     console.error("No se pudieron cargar los permisos del rol:", err);
     return {};
@@ -101,6 +127,19 @@ function protegerPagina(rolesPermitidosLegacy) {
       }
 
       permisosActuales = await cargarPermisosDeRol(perfil.rol);
+
+      // El rol "Admin" siempre ve todo, calculado en el momento a partir
+      // del menú real — no depende de una foto fija guardada en Firestore
+      // en el momento en que se creó el rol. Así, cuando se añade una
+      // página nueva (como pasó con Gestión Contratos), Admin la ve sin
+      // tener que ir a editar el rol a mano cada vez.
+      if (perfil.rol === "Admin" && typeof NAV_ESTRUCTURA !== "undefined") {
+        const todasPaginas = {};
+        NAV_ESTRUCTURA.forEach((grupo) => grupo.items.forEach((it) => {
+          if (it.listo) todasPaginas[it.id] = true;
+        }));
+        permisosActuales = todasPaginas;
+      }
 
       const archivo = window.location.pathname.split("/").pop() || "dashboard.html";
       const permisoRequerido = permisoDePaginaActual();

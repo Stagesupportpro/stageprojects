@@ -301,9 +301,11 @@ formRol.addEventListener("submit", async (e) => {
 // Cada vez que se añade una página nueva a la plataforma (un nuevo id
 // en NAV_ESTRUCTURA), los roles que ya existían en Firestore de antes
 // NO la reciben solos — su documento de permisos se queda tal cual
-// estaba. Este botón revisa todos los roles y añade las páginas que
-// falten: a Admin con acceso concedido, al resto sin marcar (para
-// decidir a mano cada caso).
+// estaba. El rol Admin ya se autosincroniza solo en cada login (ver
+// auth.js), así que este botón ahora sirve sobre todo para el resto
+// de roles: revisa todos y añade las páginas que falten (a Admin con
+// acceso concedido por si acaso, al resto sin marcar, para decidir a
+// mano cada caso).
 async function sincronizarPaginasNuevas() {
   const btn = document.getElementById("btn-sincronizar-roles");
   btn.disabled = true;
