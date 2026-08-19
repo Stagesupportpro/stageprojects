@@ -363,6 +363,55 @@ verdad en vez de descartar posibilidades a ciegas.
 
 De 48px a 130px.
 
+## Ronda de arreglos y funciones nuevas (7 puntos)
+
+**1. Roster/Jurídico — Datos fiscales.** Nueva sección (razón
+social, NIF/CIF, representante, dirección fiscal, email, teléfono,
+IBAN) por artista, conectada al generador de contratos de Bookings —
+aparece sola en las condiciones especiales de cada artista al generar
+un contrato.
+
+**2. Dashboard — notificaciones que no se podían eliminar.** No
+existía ninguna función para borrarlas — solo se podían marcar como
+leídas (y ni siquiera eso confirmaba nada, por el siguiente punto).
+Añadido botón de eliminar por notificación y "Eliminar todas". De
+paso, encontrado y arreglado otro fallo real: `decidirEvaluacion()`
+llamaba a una función `mostrarToast` que **nunca había existido** en
+`dashboard.js` — por eso no se veía confirmación al aceptar/rechazar
+una evaluación de propuesta. Ya está definida, con su elemento en el
+HTML.
+
+**3. Calendario de Marketing sin cuadrícula.** Mismo patrón de
+siempre: si la consulta a Firestore fallaba (reglas no publicadas,
+por ejemplo), la función que pinta los días del mes nunca llegaba a
+ejecutarse. Ahora la cuadrícula se pinta siempre, independientemente
+de si los datos de campañas llegan o no — apliqué la misma protección
+al Calendario general por si acaso.
+
+**4. Propuestas — coste de producción opcional por artista.** Nuevo
+campo en cada opción: "Costes de producción para esta fecha" — suma
+directo al Total de ese artista (sin comisión ni IVA aparte, es un
+traspaso de coste real), con su propia línea en el desglose que ve el
+cliente.
+
+**5. Nueva sección "Servicios".** Dos submenús: **Tipos de Servicio**
+(funcional — nombre, descripción, tarifa, unidad de cobro) y
+**Registro de servicios** (en stand by, tal como pediste — no se ha
+construido el formulario todavía). Nueva colección `tiposServicio`.
+
+**6. Logo de la vista de Propuesta — mucho más grande.** De 130px a
+220px.
+
+**7. Auditoría responsive.** Revisé específicamente todo lo añadido
+en las últimas rondas (Marketing, Servicios, Contratos, Bookings como
+página completa): sin bloques `flex` sueltos sin `flex-wrap`, todo
+reutiliza las clases ya responsive del proyecto (`.form-grid`,
+`.herramientas-cm-grid`, etc.). Encontré y arreglé dos casos menores
+sin cubrir del todo: la galería de fotos del Roster/Catálogo pasa a 2
+columnas en pantallas muy estrechas (antes 3, algo apretado), y las
+cajas de firma de los contratos se apilan en una columna por debajo
+de 500px si se previsualizan en el navegador antes de exportar a PDF.
+
 ## Producción — pestaña Técnica
 
 Nueva pestaña "Técnica" con el presupuesto de proveedores técnicos:

@@ -1,0 +1,126 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Stage Support · Tipos de Servicio</title>
+<link rel="icon" href="assets/logo_stagesupport.png" />
+<link rel="stylesheet" href="css/styles.css" />
+</head>
+<body>
+
+<div class="app-shell">
+
+  <aside class="sidebar" id="sidebar">
+    <div class="brand-mark">
+      <img src="assets/logo_stagesupport.png" alt="Stage Support" onerror="this.style.display='none'" />
+    </div>
+
+    <nav id="nav-container" style="flex:1; overflow-y:auto;"></nav>
+
+    <div class="sidebar-footer">
+      <div class="access-pass">
+        <div class="pass-top">
+          <div class="pass-avatar" id="pass-avatar">—</div>
+          <div>
+            <div class="pass-name" id="pass-name">—</div>
+            <div class="pass-role" id="pass-role">—</div>
+          </div>
+        </div>
+        <div class="pass-version" id="pass-version"></div>
+        <button class="pass-logout" onclick="cerrarSesion()">Cerrar sesión</button>
+      </div>
+    </div>
+  </aside>
+
+  <main class="main">
+    <div class="topbar">
+      <button class="mobile-menu-btn" onclick="document.getElementById('sidebar').classList.toggle('open')">☰</button>
+      <div>
+        <div class="eyebrow">Servicios</div>
+        <h1>Tipos de Servicio</h1>
+      </div>
+      <button class="btn-accent" onclick="abrirModalTipoServicio()">+ Nuevo tipo de servicio</button>
+    </div>
+
+    <p style="color:var(--color-text-muted); font-size:14px; margin:-18px 0 24px;">
+      Catálogo de servicios técnicos (instalaciones, soporte, alquiler de equipo…) con su tarifa — se usará como base al registrar servicios (próximamente).
+    </p>
+
+    <div class="table-toolbar">
+      <div style="color:var(--color-text-muted); font-size:14px;" id="contador-tipos-servicio">Cargando…</div>
+    </div>
+
+    <table class="users-table">
+      <thead>
+        <tr>
+          <th>Nombre</th>
+          <th>Descripción</th>
+          <th>Tarifa</th>
+          <th style="text-align:right;">Acciones</th>
+        </tr>
+      </thead>
+      <tbody id="tabla-tipos-servicio"></tbody>
+    </table>
+  </main>
+
+</div>
+
+<!-- Modal alta / edición -->
+<div class="modal-overlay" id="modal-overlay">
+  <div class="modal">
+    <h2 id="modal-titulo">Nuevo tipo de servicio</h2>
+    <p class="modal-sub">Se podrá elegir del listado al registrar un servicio (próximamente).</p>
+
+    <form id="form-tipo-servicio">
+      <input type="hidden" id="ts-id-edicion" />
+
+      <div class="field">
+        <label for="ts-nombre">Nombre</label>
+        <input type="text" id="ts-nombre" placeholder="Ej. Instalación de sonido básica" required />
+      </div>
+
+      <div class="field">
+        <label for="ts-descripcion">Descripción (opcional)</label>
+        <textarea id="ts-descripcion" placeholder="Qué incluye este servicio…"></textarea>
+      </div>
+
+      <div class="form-grid">
+        <div class="field"><label for="ts-tarifa">Tarifa (€)</label><input type="number" id="ts-tarifa" min="0" step="0.01" required /></div>
+        <div class="field">
+          <label for="ts-unidad">Unidad</label>
+          <select id="ts-unidad">
+            <option value="servicio">Por servicio</option>
+            <option value="hora">Por hora</option>
+            <option value="dia">Por día</option>
+            <option value="unidad">Por unidad / equipo</option>
+          </select>
+        </div>
+      </div>
+
+      <div class="field">
+        <label for="ts-notas">Notas (opcional)</label>
+        <input type="text" id="ts-notas" />
+      </div>
+
+      <div class="form-msg" id="modal-msg"></div>
+
+      <div class="modal-actions">
+        <button type="button" class="btn-ghost" onclick="cerrarModal()">Cancelar</button>
+        <button type="submit" class="btn-accent" id="btn-guardar">Crear</button>
+      </div>
+    </form>
+  </div>
+</div>
+
+<div class="toast" id="toast"><span class="dot"></span><span id="toast-msg"></span></div>
+
+<script src="https://www.gstatic.com/firebasejs/10.13.0/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.13.0/firebase-auth-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.13.0/firebase-firestore-compat.js"></script>
+<script src="js/firebase-config.js"></script>
+<script src="js/auth.js"></script>
+<script src="js/nav.js"></script>
+<script src="js/tipos-servicio.js"></script>
+</body>
+</html>

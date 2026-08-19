@@ -68,6 +68,11 @@ service cloud.firestore {
     }
 
     // ---- Clientes ----
+    // ---- Tipos de servicio técnico (instalaciones, soporte...) ----
+    match /tiposServicio/{id} {
+      allow read, write: if estoyActivo();
+    }
+
     // ---- Campañas de marketing (CM) ----
     match /campanas/{id} {
       allow read, write: if estoyActivo();

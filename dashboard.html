@@ -45,9 +45,12 @@
     <div class="stat-grid" id="stat-grid"></div>
 
     <div class="card" id="card-notificaciones" style="margin-bottom:24px; display:none;">
-      <div style="display:flex; align-items:center; justify-content:space-between; margin-bottom:14px;">
+      <div style="display:flex; align-items:center; justify-content:space-between; gap:10px; flex-wrap:wrap; margin-bottom:14px;">
         <h3 style="font-size:15px; font-family:var(--font-display);">Notificaciones</h3>
-        <button class="btn-ghost" onclick="marcarTodasLeidas()" style="font-size:12px; padding:6px 12px;">Marcar todas como leídas</button>
+        <div style="display:flex; gap:8px; flex-wrap:wrap;">
+          <button class="btn-ghost" onclick="marcarTodasLeidas()" style="font-size:12px; padding:6px 12px;">Marcar todas como leídas</button>
+          <button class="btn-ghost" onclick="eliminarTodasNotificaciones()" style="font-size:12px; padding:6px 12px;">Eliminar todas</button>
+        </div>
       </div>
       <div id="lista-notificaciones"></div>
     </div>
@@ -78,6 +81,8 @@
   </main>
 
 </div>
+
+<div class="toast" id="toast"><span class="dot"></span><span id="toast-msg"></span></div>
 
 <script src="https://www.gstatic.com/firebasejs/10.13.0/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.13.0/firebase-auth-compat.js"></script>
