@@ -1630,7 +1630,7 @@ table.doc-table td.label { font-weight: 700; background: #fafafa; width: 22%; }
   padding: 40px 20px 80px;
 }
 .propuesta-view .pv-header { text-align: center; margin-bottom: 34px; }
-.propuesta-view .pv-header img { height: 48px; margin-bottom: 18px; }
+.propuesta-view .pv-header img { height: 130px; margin-bottom: 20px; }
 .propuesta-view .pv-header h1 { font-size: 24px; margin-bottom: 6px; }
 .propuesta-view .pv-header p { color: var(--color-text-muted); font-size: 14px; }
 
@@ -1937,4 +1937,67 @@ table.doc-table td.label { font-weight: 700; background: #fafafa; width: 22%; }
   font-weight: 700;
   color: var(--color-text-muted);
   white-space: nowrap;
+}
+
+/* ---------- Campañas / Calendario CM ---------- */
+
+.plataforma-badge {
+  display: inline-block;
+  font-size: 10.5px;
+  font-weight: 700;
+  padding: 3px 9px;
+  border-radius: 20px;
+  color: #fff;
+}
+.plataforma-badge.Meta { background: #0866FF; }
+.plataforma-badge.Instagram { background: linear-gradient(45deg, #f09433, #e6683c, #dc2743, #cc2366, #bc1888); }
+.plataforma-badge.Facebook { background: #1877F2; }
+.plataforma-badge.TikTok { background: #000; }
+.plataforma-badge.GoogleAds { background: #4285F4; }
+.plataforma-badge.LinkedIn { background: #0A66C2; }
+.plataforma-badge.Otro { background: #6b6c72; }
+
+.estado-campana-badge {
+  display: inline-block;
+  font-size: 10.5px;
+  font-weight: 700;
+  padding: 3px 9px;
+  border-radius: 20px;
+}
+.estado-campana-badge.Planificada { background: #EAF6FF; color: #1560A8; }
+.estado-campana-badge.Activa { background: #E6F9EE; color: #1E8E4F; }
+.estado-campana-badge.Pausada { background: #FFF6E0; color: #A87400; }
+.estado-campana-badge.Finalizada { background: var(--color-bg-soft); color: var(--color-text-muted); }
+
+.herramientas-cm-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
+  gap: 12px;
+  margin-bottom: 24px;
+}
+.herramienta-cm-card {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+  padding: 18px 10px;
+  border: 1.5px solid var(--color-border);
+  border-radius: 12px;
+  text-decoration: none;
+  color: var(--color-text);
+  font-weight: 700;
+  font-size: 12.5px;
+  text-align: center;
+  transition: border-color 0.15s, transform 0.15s;
+}
+.herramienta-cm-card:hover { border-color: var(--color-sidebar); transform: translateY(-2px); }
+.herramienta-cm-card .herramienta-icono { font-size: 26px; }
+
+.cal-cell.has-campanas { cursor: pointer; }
+.cal-bar {
+  display: block;
+  height: 5px;
+  border-radius: 3px;
+  margin-top: 2px;
+  font-size: 0;
 }
