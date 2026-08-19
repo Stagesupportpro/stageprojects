@@ -12,6 +12,7 @@ const PREFIJOS_ID = {
   propuestaCliente: "PROV",
   booking: "BO",
   presupuesto: "PR",
+  registroServicio: "R",
 };
 
 async function generarSiguienteId(prefijo) {

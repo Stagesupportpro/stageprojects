@@ -10,6 +10,7 @@ const ETIQUETAS_PREFIJO = {
   PROV: "Propuestas",
   BO: "Bookings",
   PR: "Presupuestos",
+  R: "Registro de Servicios",
 };
 
 // Todas las colecciones que existen en la plataforma — si añades una
@@ -34,6 +35,10 @@ const COLECCIONES_BACKUP = [
   "comisiones",
   "configuracion",
   "evaluaciones",
+  "contratosConfig",
+  "campanas",
+  "tiposServicio",
+  "registroServicios",
 ];
 
 let usuarioActualBackup = null;
@@ -170,6 +175,73 @@ async function descargarBackup() {
   } finally {
     btn.disabled = false;
     btn.textContent = "⬇️ Descargar backup completo";
+  }
+}
+
+// ---------- Restaurar backup ----------
+
+let archivoBackupSeleccionado = null;
+
+function alElegirArchivoBackup(event) {
+  const archivo = event.target.files[0];
+  archivoBackupSeleccionado = archivo || null;
+  const estado = document.getElementById("backup-import-estado");
+  const btn = document.getElementById("btn-importar-backup");
+
+  if (archivo) {
+    estado.textContent = `Archivo elegido: ${archivo.name} (${(archivo.size / 1024).toFixed(0)} KB)`;
+    btn.disabled = false;
+  } else {
+    estado.textContent = "Ningún archivo seleccionado.";
+    btn.disabled = true;
+  }
+}
+
+async function importarBackup() {
+  if (!archivoBackupSeleccionado) return;
+
+  const confirmado = confirm(
+    "Esto va a SOBRESCRIBIR en la base de datos cualquier documento cuyo ID coincida con uno del archivo. No borra nada que no esté en el archivo, pero los cambios sobrescritos no se pueden deshacer.\n\n¿Seguro que quieres continuar?"
+  );
+  if (!confirmado) return;
+
+  const btn = document.getElementById("btn-importar-backup");
+  btn.disabled = true;
+  btn.textContent = "Restaurando…";
+
+  try {
+    const texto = await archivoBackupSeleccionado.text();
+    const datos = JSON.parse(texto);
+    const colecciones = datos.colecciones || {};
+
+    let totalDocs = 0;
+    for (const [nombreCol, docs] of Object.entries(colecciones)) {
+      if (!Array.isArray(docs)) continue; // p.ej. colecciones que fallaron al exportar ({error: ...})
+
+      for (let i = 0; i < docs.length; i += 400) {
+        const lote = docs.slice(i, i + 400);
+        const batch = db.batch();
+        lote.forEach((doc) => {
+          const { id, ...campos } = doc;
+          if (!id) return;
+          batch.set(db.collection(nombreCol).doc(id), campos);
+        });
+        await batch.commit();
+        totalDocs += lote.length;
+      }
+    }
+
+    mostrarToast(`Backup restaurado: ${totalDocs} documentos.`);
+    await cargarContadores();
+  } catch (err) {
+    console.error(err);
+    mostrarToast("No se pudo importar el backup. Comprueba que el archivo es válido.");
+  } finally {
+    btn.disabled = false;
+    btn.textContent = "⬆️ Restaurar backup";
+    archivoBackupSeleccionado = null;
+    document.getElementById("backup-import-input").value = "";
+    document.getElementById("backup-import-estado").textContent = "Ningún archivo seleccionado.";
   }
 }
 

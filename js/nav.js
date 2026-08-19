@@ -57,7 +57,7 @@ const NAV_ESTRUCTURA = [
   {
     grupo: "Servicios",
     items: [
-      { id: "registro-servicios", label: "Registro de servicios", href: "registro-servicios.html", roles: ["Producción", "Admin"], listo: false },
+      { id: "registro-servicios", label: "Registro de servicios", href: "registro-servicios.html", roles: ["Producción", "Admin"], listo: true },
       { id: "tipos-servicio", label: "Tipos de Servicio", href: "tipos-servicio.html", roles: ["Producción", "Admin"], listo: true },
     ],
   },
