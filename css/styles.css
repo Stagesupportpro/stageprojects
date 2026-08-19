@@ -1903,3 +1903,38 @@ table.doc-table td.label { font-weight: 700; background: #fafafa; width: 22%; }
   margin-top: 12px;
 }
 .cat-galeria-mini img { width: 100%; aspect-ratio: 1; object-fit: cover; border-radius: 8px; }
+
+/* ---------- Técnica (Producción) ---------- */
+
+.tecnica-row { grid-template-columns: 0.9fr 1.1fr 1.4fr 0.8fr 0.6fr 0.9fr auto; align-items: center; }
+.tecnica-row input[readonly] { background: var(--color-bg-soft); font-weight: 700; color: var(--color-text); cursor: default; }
+@media (max-width: 1000px) {
+  .tecnica-row { grid-template-columns: 1fr; }
+}
+
+/* ---------- Paneles del Dashboard (Activo / Propuestas / Citas) ---------- */
+
+.dash-paneles-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+  gap: 20px;
+}
+.dash-mini-row {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 10px;
+  padding: 10px 0;
+  border-bottom: 1px solid var(--color-border);
+  font-size: 13px;
+}
+.dash-mini-row:last-child { border-bottom: none; }
+.dash-mini-row .dash-mini-titulo { font-weight: 600; }
+.dash-mini-row .dash-mini-meta { color: var(--color-text-muted); font-size: 12px; margin-top: 2px; }
+.dash-mini-row .dash-mini-fecha {
+  flex-shrink: 0;
+  font-size: 11.5px;
+  font-weight: 700;
+  color: var(--color-text-muted);
+  white-space: nowrap;
+}
