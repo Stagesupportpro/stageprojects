@@ -363,29 +363,35 @@ verdad en vez de descartar posibilidades a ciegas.
 
 De 48px a 130px.
 
-## Registro de Servicios (construido completo)
+## Registro de Servicios — reestructurado a informes mensuales
 
-Ya no está en stand by — funciona igual que Producciones/Bookings:
+Cambiado el modelo, tal como pediste: los reportes al cliente son
+mensuales, así que ahora un "registro" agrupa varias **líneas** de
+servicio, en vez de ser una fila suelta por cada servicio.
 
-- **Listado** (`registro-servicios.html`) con búsqueda por texto,
-  botones **Ver** / Editar / **Crear nueva versión** (⎘) / Eliminar
-  por fila — mismo patrón que el resto de módulos con versiones.
-- **ID correlativo nuevo**: `R<año>-0001` (prefijo `R`), generado
-  igual que PRO/HR/PROV/BO/PR.
-- **Campos**: Cliente (conectado a Clientes), Servicio (conectado a
-  Tipos de Servicio — autocompleta la tarifa como importe sugerido),
-  Actuación y Localización (texto), Fecha, Importe (BI). **Forma de
-  pago**: Pendiente de confirmar / Factura / Efectivo — al elegir
-  Factura aparece el campo Núm. de factura.
-- **Totales**, debajo de la tabla, recalculados en vivo según lo que
-  esté filtrado por la búsqueda: Total Efectivo, Total Factura (BI),
-  **IVA (21%, solo sobre Factura — nunca sobre Efectivo ni
-  Pendiente)**, Total Pendiente, e **Importe a pagar** (suma de
-  todos los anteriores, incluido el IVA).
-- **Ficha "Ver"** (`registro-servicio-ver.html`) — de solo lectura,
-  con **Exportar PDF** e **Imprimir**, logo de documentos en la
-  cabecera y fecha/hora de generación en el pie, igual que en Hojas
-  de Ruta y Contratos.
+- **Listado** (`registro-servicios.html`) — uno por informe, con
+  Nombre (ej. "Diciembre 2026"), número de líneas e Importe a pagar
+  ya calculado. Búsqueda por texto, y las mismas acciones que
+  Producciones/Bookings: **Abrir** (ficha completa), **Ver**
+  (imprimir/PDF), **Crear nueva versión** (⎘), Eliminar.
+- **ID correlativo**: `R<año>-0001` (prefijo `R`), igual que
+  PRO/HR/PROV/BO/PR.
+- **Ficha completa** (`registro-servicio-detalle.html`, se abre con
+  "Abrir") — Nombre del registro arriba, y debajo tantas **líneas de
+  servicio** como haga falta, cada una con Cliente (conectado a
+  Clientes), Servicio (conectado a Tipos de Servicio — autocompleta
+  la tarifa), Actuación, Localización, Fecha, Importe (BI) y Forma de
+  pago (Pendiente / Factura — con Núm. de factura / Efectivo). Todo
+  editable línea a línea, con su propio Total calculado al momento.
+- **Totales dentro de cada registro** (ya no son globales de toda la
+  plataforma): Total Efectivo, Total Factura (BI), **IVA 21% solo
+  sobre Factura**, Total Pendiente, e **Importe a pagar** — se
+  recalculan solos según las líneas que tenga ese informe en
+  concreto.
+- **Ficha "Ver"** (`registro-servicio-ver.html`) — tabla con todas
+  las líneas del informe + los totales, lista para **Exportar PDF**
+  o **Imprimir**, con el logo de documentos y la fecha/hora de
+  generación en el pie — el documento que le mandarías al cliente.
 
 De paso, revisé el backup completo y encontré que faltaban tres
 colecciones que ya existían pero nunca se habían añadido a la lista

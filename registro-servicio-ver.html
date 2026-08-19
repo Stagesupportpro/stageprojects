@@ -47,16 +47,35 @@
     </div>
 
     <div class="card">
-      <div class="ver-field-row"><div class="ver-label">Cliente</div><div id="rv-cliente">—</div></div>
-      <div class="ver-field-row"><div class="ver-label">Servicio</div><div id="rv-servicio">—</div></div>
-      <div class="ver-field-row"><div class="ver-label">Actuación</div><div id="rv-actuacion">—</div></div>
-      <div class="ver-field-row"><div class="ver-label">Localización</div><div id="rv-localizacion">—</div></div>
-      <div class="ver-field-row"><div class="ver-label">Fecha</div><div id="rv-fecha">—</div></div>
-      <div class="ver-field-row"><div class="ver-label">Importe (BI)</div><div id="rv-importe">—</div></div>
-      <div class="ver-field-row"><div class="ver-label">IVA (21%)</div><div id="rv-iva">—</div></div>
-      <div class="ver-field-row"><div class="ver-label">Total</div><div id="rv-total">—</div></div>
-      <div class="ver-field-row"><div class="ver-label">Forma de pago</div><div id="rv-forma-pago">—</div></div>
-      <div class="ver-field-row" id="fila-rv-nfactura" style="display:none;"><div class="ver-label">Núm. factura</div><div id="rv-nfactura">—</div></div>
+      <table class="users-table">
+        <thead>
+          <tr>
+            <th>Cliente</th>
+            <th>Servicio</th>
+            <th>Actuación</th>
+            <th>Localización</th>
+            <th>Fecha</th>
+            <th>Importe (BI)</th>
+            <th>Forma de pago</th>
+            <th>Total línea</th>
+          </tr>
+        </thead>
+        <tbody id="rv-tabla-lineas"></tbody>
+      </table>
+    </div>
+
+    <div class="card">
+      <div class="hr-section-head"><h3>Totales</h3></div>
+      <div class="calc-box">
+        <div class="calc-item"><div class="calc-label">Total Efectivo</div><div class="calc-value" id="rv-total-efectivo">0,00 €</div></div>
+        <div class="calc-item"><div class="calc-label">Total Factura (BI)</div><div class="calc-value" id="rv-total-factura">0,00 €</div></div>
+        <div class="calc-item"><div class="calc-label">IVA (21%, solo factura)</div><div class="calc-value" id="rv-total-iva">0,00 €</div></div>
+        <div class="calc-item"><div class="calc-label">Total Pendiente</div><div class="calc-value" id="rv-total-pendiente">0,00 €</div></div>
+        <div class="calc-item calc-total"><div class="calc-label">Importe a pagar</div><div class="calc-value" id="rv-total-pagar">0,00 €</div></div>
+      </div>
+    </div>
+
+    <div class="card">
       <div class="ver-field-row"><div class="ver-label">Observaciones</div><div id="rv-observaciones">—</div></div>
       <div class="ver-field-row"><div class="ver-label">Creado</div><div id="rv-creado">—</div></div>
     </div>

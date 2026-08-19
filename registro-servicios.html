@@ -40,12 +40,16 @@
         <div class="eyebrow">Servicios</div>
         <h1>Registro de Servicios</h1>
       </div>
-      <button class="btn-accent" onclick="abrirModalRegistroServicio()">+ Nuevo registro</button>
+      <button class="btn-accent" onclick="abrirModalRegistro()">+ Nuevo registro</button>
     </div>
+
+    <p style="color:var(--color-text-muted); font-size:14px; margin:-18px 0 24px;">
+      Los reportes al cliente son mensuales — cada registro agrupa todas las líneas de servicio de ese periodo. Ábrelo para añadir/editar líneas; los totales se calculan dentro de cada uno.
+    </p>
 
     <div class="lista-busqueda" style="margin-bottom:14px;">
       <span class="lista-busqueda-icono">🔍</span>
-      <input type="text" id="rs-busqueda" placeholder="Buscar por cliente, servicio, actuación, ID…" oninput="aplicarFiltrosRS()" />
+      <input type="text" id="rs-busqueda" placeholder="Buscar por nombre, ID…" oninput="aplicarFiltrosRS()" />
     </div>
 
     <div class="table-toolbar">
@@ -56,101 +60,28 @@
       <thead>
         <tr>
           <th>ID</th>
-          <th>Cliente</th>
-          <th>Servicio</th>
-          <th>Actuación</th>
-          <th>Fecha</th>
-          <th>Importe (BI)</th>
-          <th>Estado</th>
+          <th>Nombre</th>
+          <th>Líneas</th>
+          <th>Importe a pagar</th>
           <th style="text-align:right;">Acciones</th>
         </tr>
       </thead>
       <tbody id="tabla-rs"></tbody>
     </table>
-
-    <div class="totales-rs-grid">
-      <div class="stat-card">
-        <div class="stat-accent"></div>
-        <div class="stat-label">Total Efectivo</div>
-        <div class="stat-value" id="rs-total-efectivo">0,00 €</div>
-      </div>
-      <div class="stat-card">
-        <div class="stat-accent"></div>
-        <div class="stat-label">Total Factura (BI)</div>
-        <div class="stat-value" id="rs-total-factura">0,00 €</div>
-      </div>
-      <div class="stat-card">
-        <div class="stat-accent"></div>
-        <div class="stat-label">IVA (21%, solo factura)</div>
-        <div class="stat-value" id="rs-total-iva">0,00 €</div>
-      </div>
-      <div class="stat-card">
-        <div class="stat-accent"></div>
-        <div class="stat-label">Total Pendiente</div>
-        <div class="stat-value" id="rs-total-pendiente">0,00 €</div>
-      </div>
-      <div class="stat-card pagar">
-        <div class="stat-accent"></div>
-        <div class="stat-label">Importe a pagar</div>
-        <div class="stat-value" id="rs-total-pagar">0,00 €</div>
-      </div>
-    </div>
-    <p style="font-size:12px; color:var(--color-text-muted); margin-top:-14px;">Los totales reflejan lo que se ve en la tabla — si buscas algo, se recalculan solo con lo filtrado.</p>
   </main>
 
 </div>
 
-<!-- Modal alta / edición -->
+<!-- Modal alta rápida (solo Nombre — el resto se rellena en la ficha completa) -->
 <div class="modal-overlay" id="modal-overlay">
-  <div class="modal modal-wide">
-    <h2 id="modal-titulo">Nuevo registro</h2>
-    <p class="modal-sub" id="modal-sub">Se le asignará automáticamente un ID correlativo (R&lt;año&gt;-0001).</p>
+  <div class="modal">
+    <h2>Nuevo registro</h2>
+    <p class="modal-sub">Se le asignará automáticamente un ID correlativo (R&lt;año&gt;-0001). Las líneas de servicio se añaden después, dentro del registro.</p>
 
     <form id="form-rs">
-      <input type="hidden" id="rs-id-edicion" />
-      <div class="field" id="campo-id-existente" style="display:none;">
-        <label>ID</label>
-        <span class="id-badge" id="rs-id-badge">—</span>
-      </div>
-
-      <div class="form-grid">
-        <div class="field">
-          <label for="rs-cliente">Cliente</label>
-          <select id="rs-cliente" required><option value="">— Selecciona un cliente —</option></select>
-        </div>
-        <div class="field">
-          <label for="rs-servicio">Servicio</label>
-          <select id="rs-servicio" onchange="alSeleccionarServicioRS()" required><option value="">— Selecciona un tipo de servicio —</option></select>
-        </div>
-      </div>
-
-      <div class="form-grid">
-        <div class="field"><label for="rs-actuacion">Actuación</label><input type="text" id="rs-actuacion" placeholder="Ej. Concierto Sala Apolo" /></div>
-        <div class="field"><label for="rs-localizacion">Localización</label><input type="text" id="rs-localizacion" placeholder="Ej. Valencia" /></div>
-      </div>
-
-      <div class="form-grid">
-        <div class="field"><label for="rs-fecha">Fecha</label><input type="date" id="rs-fecha" required /></div>
-        <div class="field"><label for="rs-importe">Importe (BI) €</label><input type="number" id="rs-importe" min="0" step="0.01" required /></div>
-      </div>
-
       <div class="field">
-        <label>Forma de pago</label>
-        <div class="origen-toggle">
-          <label><input type="radio" name="rs-forma-pago" value="" checked onchange="alCambiarFormaPagoRS()" />Pendiente de confirmar</label>
-          <label><input type="radio" name="rs-forma-pago" value="FRA" onchange="alCambiarFormaPagoRS()" />Factura</label>
-          <label><input type="radio" name="rs-forma-pago" value="EF" onchange="alCambiarFormaPagoRS()" />Efectivo</label>
-        </div>
-      </div>
-
-      <div class="field" id="campo-rs-nfactura" style="display:none;">
-        <label for="rs-nfactura">Número de factura</label>
-        <input type="text" id="rs-nfactura" placeholder="Ej. F2026-014" />
-      </div>
-
-      <div class="field">
-        <label for="rs-observaciones">Observaciones (opcional)</label>
-        <textarea id="rs-observaciones"></textarea>
+        <label for="rs-nombre">Nombre del registro</label>
+        <input type="text" id="rs-nombre" placeholder="Ej. Diciembre 2026" required />
       </div>
 
       <div class="form-msg" id="modal-msg"></div>
