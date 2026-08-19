@@ -68,6 +68,11 @@ service cloud.firestore {
     }
 
     // ---- Clientes ----
+    // ---- Campañas de marketing (CM) ----
+    match /campanas/{id} {
+      allow read, write: if estoyActivo();
+    }
+
     match /clientes/{id} {
       allow read, write: if estoyActivo();
     }

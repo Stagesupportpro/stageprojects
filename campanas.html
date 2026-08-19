@@ -1,0 +1,145 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Stage Support · Campañas</title>
+<link rel="icon" href="assets/logo_stagesupport.png" />
+<link rel="stylesheet" href="css/styles.css" />
+</head>
+<body>
+
+<div class="app-shell">
+
+  <aside class="sidebar" id="sidebar">
+    <div class="brand-mark">
+      <img src="assets/logo_stagesupport.png" alt="Stage Support" onerror="this.style.display='none'" />
+    </div>
+
+    <nav id="nav-container" style="flex:1; overflow-y:auto;"></nav>
+
+    <div class="sidebar-footer">
+      <div class="access-pass">
+        <div class="pass-top">
+          <div class="pass-avatar" id="pass-avatar">—</div>
+          <div>
+            <div class="pass-name" id="pass-name">—</div>
+            <div class="pass-role" id="pass-role">—</div>
+          </div>
+        </div>
+        <div class="pass-version" id="pass-version"></div>
+        <button class="pass-logout" onclick="cerrarSesion()">Cerrar sesión</button>
+      </div>
+    </div>
+  </aside>
+
+  <main class="main">
+    <div class="topbar">
+      <button class="mobile-menu-btn" onclick="document.getElementById('sidebar').classList.toggle('open')">☰</button>
+      <div>
+        <div class="eyebrow">Marketing</div>
+        <h1>Campañas</h1>
+      </div>
+      <button class="btn-accent" onclick="abrirModalCampana()">+ Nueva campaña</button>
+    </div>
+
+    <div class="table-toolbar">
+      <div style="color:var(--color-text-muted); font-size:14px;" id="contador-campanas">Cargando…</div>
+    </div>
+
+    <table class="users-table">
+      <thead>
+        <tr>
+          <th>Nombre</th>
+          <th>Plataforma</th>
+          <th>Estado</th>
+          <th>Fechas</th>
+          <th>Presupuesto</th>
+          <th style="text-align:right;">Acciones</th>
+        </tr>
+      </thead>
+      <tbody id="tabla-campanas"></tbody>
+    </table>
+  </main>
+
+</div>
+
+<!-- Modal alta / edición -->
+<div class="modal-overlay" id="modal-overlay">
+  <div class="modal">
+    <h2 id="modal-titulo">Nueva campaña</h2>
+    <p class="modal-sub">Se verá también en el Calendario CM, en sus fechas activas.</p>
+
+    <form id="form-campana">
+      <input type="hidden" id="cm-id-edicion" />
+
+      <div class="field">
+        <label for="cm-nombre">Nombre de la campaña</label>
+        <input type="text" id="cm-nombre" placeholder="Ej. Lanzamiento gira otoño 2026" required />
+      </div>
+
+      <div class="form-grid">
+        <div class="field">
+          <label for="cm-plataforma">Plataforma</label>
+          <select id="cm-plataforma">
+            <option value="Meta">Meta (Facebook + Instagram)</option>
+            <option value="Instagram">Instagram</option>
+            <option value="Facebook">Facebook</option>
+            <option value="TikTok">TikTok</option>
+            <option value="GoogleAds">Google Ads</option>
+            <option value="LinkedIn">LinkedIn</option>
+            <option value="Otro">Otro</option>
+          </select>
+        </div>
+        <div class="field">
+          <label for="cm-estado">Estado</label>
+          <select id="cm-estado">
+            <option value="Planificada">Planificada</option>
+            <option value="Activa">Activa</option>
+            <option value="Pausada">Pausada</option>
+            <option value="Finalizada">Finalizada</option>
+          </select>
+        </div>
+      </div>
+
+      <div class="form-grid">
+        <div class="field"><label for="cm-fecha-inicio">Fecha de inicio</label><input type="date" id="cm-fecha-inicio" required /></div>
+        <div class="field"><label for="cm-fecha-fin">Fecha de fin</label><input type="date" id="cm-fecha-fin" required /></div>
+      </div>
+
+      <div class="form-grid">
+        <div class="field"><label for="cm-presupuesto">Presupuesto (€, opcional)</label><input type="number" id="cm-presupuesto" min="0" step="0.01" /></div>
+        <div class="field"><label for="cm-enlace">Enlace al gestor de anuncios (opcional)</label><input type="url" id="cm-enlace" placeholder="https://business.facebook.com/..." /></div>
+      </div>
+
+      <div class="field">
+        <label for="cm-objetivo">Objetivo (opcional)</label>
+        <input type="text" id="cm-objetivo" placeholder="Ej. Venta de entradas, alcance, seguidores…" />
+      </div>
+
+      <div class="field">
+        <label for="cm-notas">Notas (opcional)</label>
+        <textarea id="cm-notas" placeholder="Creatividades, segmentación, aprendizajes…"></textarea>
+      </div>
+
+      <div class="form-msg" id="modal-msg"></div>
+
+      <div class="modal-actions">
+        <button type="button" class="btn-ghost" onclick="cerrarModal()">Cancelar</button>
+        <button type="submit" class="btn-accent" id="btn-guardar">Crear campaña</button>
+      </div>
+    </form>
+  </div>
+</div>
+
+<div class="toast" id="toast"><span class="dot"></span><span id="toast-msg"></span></div>
+
+<script src="https://www.gstatic.com/firebasejs/10.13.0/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.13.0/firebase-auth-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.13.0/firebase-firestore-compat.js"></script>
+<script src="js/firebase-config.js"></script>
+<script src="js/auth.js"></script>
+<script src="js/nav.js"></script>
+<script src="js/campanas.js"></script>
+</body>
+</html>

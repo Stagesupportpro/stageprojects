@@ -313,6 +313,39 @@ Como en Producción encontramos errores reales de sintaxis
   eso, nadie habría podido abrir la ficha completa de un booking por
   mucho acceso que tuviera a Bookings.
 
+## Marketing — nueva sección para el Community Manager
+
+Nuevo grupo "Marketing" en el menú, con dos páginas:
+
+- **Calendario CM** — cuadrícula mensual como la del Calendario
+  general, pero mostrando las **campañas activas cada día por rango
+  de fechas** (inicio–fin), no un único día por evento — un punto de
+  color por plataforma (Meta, Instagram, Facebook, TikTok, Google
+  Ads, LinkedIn). Arriba, una fila de **herramientas rápidas**: Meta
+  Business Suite, Ads Manager, Instagram, TikTok Ads, Google Ads,
+  Canva, Analytics y acceso directo a la Agenda personal.
+- **Campañas** — listado y ficha de cada campaña: nombre, plataforma,
+  estado (Planificada/Activa/Pausada/Finalizada), fechas de
+  inicio/fin, presupuesto, enlace al gestor de anuncios, objetivo y
+  notas.
+
+Nueva colección `campanas`, con reglas para cualquier empleado activo
+(igual que Roster o Venues).
+
+## Enviar a evaluar — mejor diagnóstico
+
+Revisado el código por tercera vez — sigue sin encontrarse ningún
+fallo real ahí ni en las reglas. Como ya van dos avisos de que sigue
+fallando, mejoré el manejo de errores: ahora, si vuelve a fallar, el
+aviso muestra el **código y mensaje real de Firebase** (y se queda
+en pantalla más tiempo, 12 segundos) en vez de un mensaje genérico —
+así, si pasa otra vez, se puede diagnosticar la causa exacta de
+verdad en vez de descartar posibilidades a ciegas.
+
+## Logo de la Propuesta — mucho más grande
+
+De 48px a 130px.
+
 ## Producción — pestaña Técnica
 
 Nueva pestaña "Técnica" con el presupuesto de proveedores técnicos:
