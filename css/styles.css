@@ -1199,7 +1199,7 @@ table.users-table {
   justify-content: space-between;
   margin-bottom: 18px;
 }
-.doc-header img.doc-logo { height: 102px; }
+.doc-header img.doc-logo { height: 140px; }
 .doc-header img.doc-logo-evento { height: 162px; width: 162px; object-fit: cover; border-radius: 50%; }
 .doc-title-block { text-align: center; margin-bottom: 16px; }
 .doc-title-block h1 { font-size: 17px; margin: 0 0 4px; }
@@ -1548,6 +1548,17 @@ table.doc-table td.label { font-weight: 700; background: #fafafa; width: 22%; }
 }
 .item-card .item-card-shared .permiso-tag { font-size: 10.5px; }
 
+.item-card.item-card-no-leida { border-left: 3px solid var(--color-accent); }
+.item-card .punto-no-leido {
+  display: inline-block;
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: var(--color-accent);
+  margin-right: 7px;
+  vertical-align: middle;
+}
+
 .share-list {
   max-height: 180px;
   overflow-y: auto;
@@ -1619,7 +1630,7 @@ table.doc-table td.label { font-weight: 700; background: #fafafa; width: 22%; }
   padding: 40px 20px 80px;
 }
 .propuesta-view .pv-header { text-align: center; margin-bottom: 34px; }
-.propuesta-view .pv-header img { height: 32px; margin-bottom: 18px; }
+.propuesta-view .pv-header img { height: 48px; margin-bottom: 18px; }
 .propuesta-view .pv-header h1 { font-size: 24px; margin-bottom: 6px; }
 .propuesta-view .pv-header p { color: var(--color-text-muted); font-size: 14px; }
 
