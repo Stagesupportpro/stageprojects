@@ -13,6 +13,7 @@ let usuarioActualRstD = null;
 let docIdRoster = null;
 let contactosRst = [];
 let etiquetasRst = [];
+let camposExtraRst = []; // [{ titulo, descripcion }]
 let redesRst = [];
 let posterDataUrl = null;
 let logoRstDataUrl = null;
@@ -122,6 +123,9 @@ async function cargarRoster() {
     document.getElementById("rst-categoria").value = d.categoria || "";
     etiquetasRst = Array.isArray(d.etiquetas) ? d.etiquetas : [];
     renderEtiquetasRst();
+
+    camposExtraRst = Array.isArray(d.camposExtra) ? d.camposExtra : [];
+    renderCamposExtraRst();
 
     contactosRst = Array.isArray(d.contactos) ? d.contactos : [];
     renderContactosRst();
@@ -309,6 +313,37 @@ function anadirEtiquetaRst() {
 function eliminarEtiquetaRst(i) {
   etiquetasRst.splice(i, 1);
   renderEtiquetasRst();
+}
+
+// ---------- Campos adicionales (título + descripción) ----------
+
+function renderCamposExtraRst() {
+  const cont = document.getElementById("lista-campos-extra-rst");
+  if (camposExtraRst.length === 0) {
+    cont.innerHTML = `<p style="color:var(--color-text-muted); font-size:13px;">Todavía no hay campos adicionales.</p>`;
+    return;
+  }
+  cont.innerHTML = camposExtraRst
+    .map(
+      (c, i) => `
+        <div class="repeat-row campo-extra-row">
+          <input placeholder="Título (Ej. Fecha de estreno)" value="${escaparAttrRstD(c.titulo)}" oninput="camposExtraRst[${i}].titulo=this.value" />
+          <input placeholder="Descripción (Ej. 29-10-2023)" value="${escaparAttrRstD(c.descripcion)}" oninput="camposExtraRst[${i}].descripcion=this.value" />
+          <button type="button" class="remove-row-btn" onclick="eliminarCampoExtraRst(${i})">✕</button>
+        </div>
+      `
+    )
+    .join("");
+}
+
+function anadirCampoExtraRst() {
+  camposExtraRst.push({ titulo: "", descripcion: "" });
+  renderCamposExtraRst();
+}
+
+function eliminarCampoExtraRst(i) {
+  camposExtraRst.splice(i, 1);
+  renderCamposExtraRst();
 }
 
 // ---------- Redes sociales ----------
@@ -843,6 +878,7 @@ async function guardarRoster() {
     logo: logoRstDataUrl,
     categoria: document.getElementById("rst-categoria").value,
     etiquetas: etiquetasRst,
+    camposExtra: camposExtraRst.filter((c) => c.titulo || c.descripcion),
     contactos: contactosRst,
     redesSociales: redesRst,
     tarifas: tarifasRst,

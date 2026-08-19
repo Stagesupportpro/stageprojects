@@ -77,6 +77,10 @@ async function cargarRV() {
       : "—";
     document.getElementById("rv-oficina").textContent = d.oficinaRepresentacion || "—";
     document.getElementById("rv-descripcion").textContent = d.descripcionComercial || "—";
+    const camposExtra = Array.isArray(d.camposExtra) ? d.camposExtra.filter((c) => c.titulo || c.descripcion) : [];
+    document.getElementById("rv-campos-extra").innerHTML = camposExtra.length
+      ? `<ul class="campos-extra-lista">${camposExtra.map((c) => `<li><strong>${escaparHtmlRV(c.titulo)}:</strong> ${escaparHtmlRV(c.descripcion)}</li>`).join("")}</ul>`
+      : "";
     document.getElementById("rv-notas").textContent = d.notas || "—";
 
     const contactos = Array.isArray(d.contactos) ? d.contactos : [];

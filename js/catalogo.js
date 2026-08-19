@@ -35,6 +35,7 @@ function cargarCatalogo() {
         descripcionComercial: d.data().descripcionComercial,
         redesSociales: d.data().redesSociales,
         categoria: d.data().categoria,
+        camposExtra: d.data().camposExtra,
         etiquetas: d.data().etiquetas,
         galeria: d.data().galeria,
         videosYoutube: d.data().videosYoutube,
@@ -133,6 +134,10 @@ function abrirModalCatalogo(id) {
   document.getElementById("cat-modal-nombre").textContent = r.nombre || "";
   document.getElementById("cat-modal-oficina").textContent = [r.categoria, r.oficinaRepresentacion].filter(Boolean).join(" · ");
   document.getElementById("cat-modal-descripcion").textContent = r.descripcionComercial || "Sin descripción todavía.";
+  const camposExtra = Array.isArray(r.camposExtra) ? r.camposExtra.filter((c) => c.titulo || c.descripcion) : [];
+  document.getElementById("cat-modal-campos-extra").innerHTML = camposExtra.length
+    ? `<ul class="campos-extra-lista">${camposExtra.map((c) => `<li><strong>${escaparHtmlCat(c.titulo)}:</strong> ${escaparHtmlCat(c.descripcion)}</li>`).join("")}</ul>`
+    : "";
 
   const img = document.getElementById("cat-modal-imagen");
   if (r.imagenCartel) {
