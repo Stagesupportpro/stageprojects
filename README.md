@@ -363,6 +363,36 @@ verdad en vez de descartar posibilidades a ciegas.
 
 De 48px a 130px.
 
+## Roster/Medios — YouTube no dejaba escribir enlaces (arreglado)
+
+Fallo real: cada letra que se escribía en el campo del enlace volvía
+a pintar toda la lista de vídeos entera (para actualizar la
+miniatura), lo que destruía y recreaba el propio campo de texto —
+perdías el foco a cada letra, casi imposible escribir un enlace
+completo de un tirón. Ahora la miniatura se actualiza aparte (al salir
+del campo), sin tocar el campo de texto mientras escribes.
+
+## Búsqueda y filtros en los listados
+
+Añadido a **Roster, Catálogo, Venues, Clientes, Producciones y Hojas
+de Ruta**:
+
+- **Roster** — búsqueda por texto (nombre, oficina) + chips de
+  Categoría.
+- **Catálogo** — búsqueda por texto añadida sobre los chips de
+  categoría/etiqueta que ya tenía.
+- **Venues** — búsqueda por texto (nombre, dirección) + chips de
+  Tipo de venue.
+- **Clientes** — búsqueda por texto (nombre, contacto, email) + chips
+  de Categoría.
+- **Producciones** — búsqueda por texto (nombre, artista, ID).
+- **Hojas de Ruta** — búsqueda por texto (nombre, producción, ID).
+
+Los chips de categoría/tipo se generan solos a partir de lo que haya
+realmente dado de alta — si no hay ningún valor de ese tipo todavía,
+no aparece ninguna fila de chips (no se sembraron categorías fijas a
+la fuerza).
+
 ## Roster — foto solapada en "Ver" (arreglado) y campos adicionales
 
 **El solape de la foto con el texto**: el estilo de la miniatura

@@ -42,6 +42,11 @@
       </div>
     </div>
 
+    <div class="lista-busqueda" style="margin-bottom:14px;">
+      <span class="lista-busqueda-icono">🔍</span>
+      <input type="text" id="prod-busqueda" placeholder="Buscar por nombre, artista, ID…" oninput="aplicarFiltrosProducciones()" />
+    </div>
+
     <div class="table-toolbar">
       <div style="color:var(--color-text-muted); font-size:14px;" id="contador-producciones">Cargando…</div>
       <button class="btn-accent" onclick="abrirModalProduccion()">+ Nueva producción</button>

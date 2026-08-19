@@ -42,6 +42,14 @@
       </div>
     </div>
 
+    <div class="lista-filtros-bar">
+      <div class="lista-busqueda">
+        <span class="lista-busqueda-icono">🔍</span>
+        <input type="text" id="roster-busqueda" placeholder="Buscar por nombre, oficina…" oninput="aplicarFiltrosRoster()" />
+      </div>
+      <div class="lista-chips-fila" id="roster-chips-categoria"></div>
+    </div>
+
     <div class="table-toolbar">
       <div style="color:var(--color-text-muted); font-size:14px;" id="contador-roster">Cargando…</div>
       <button class="btn-accent" onclick="crearRoster()">+ Nuevo espectáculo</button>
