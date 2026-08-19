@@ -68,9 +68,13 @@
             <input type="date" id="pd-fecha" />
           </div>
           <div class="field field-wide">
-            <label for="pd-artista-nombre">Artista / Grupo</label>
-            <input type="text" id="pd-artista-nombre" placeholder="Ej. The Night Prowlers" />
-            <p style="font-size:12px; color:var(--color-text-muted); margin-top:6px;">Se importa solo desde el booking vinculado; también editable a mano.</p>
+            <label for="pd-artista-select">Artista / Grupo</label>
+            <select id="pd-artista-select" onchange="alSeleccionarArtistaProd()">
+              <option value="">— Selecciona del Roster —</option>
+            </select>
+            <input type="hidden" id="pd-artista-nombre" />
+            <p style="font-size:12px; color:var(--color-text-muted); margin-top:6px;">Se rellena solo al vincular un booking (si tiene varios artistas, se muestran todos aquí abajo); también se puede elegir uno directamente del Roster.</p>
+            <p id="pd-artista-nombre-texto" style="font-size:13px; font-weight:600; margin-top:6px;"></p>
           </div>
           <div class="field field-wide">
             <label for="pd-booking">Booking vinculado (opcional)</label>

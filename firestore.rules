@@ -91,7 +91,13 @@ service cloud.firestore {
         && (resource.data.propietarioUid == request.auth.uid
             || request.auth.uid in resource.data.compartidoCon);
       allow create: if estoyActivo() && request.resource.data.propietarioUid == request.auth.uid;
-      allow update, delete: if estoyActivo() && resource.data.propietarioUid == request.auth.uid;
+      // Además del propietario, quien la recibió compartida también puede
+      // actualizarla (para marcarla leída o quitarse de la lista de
+      // compartidos) — pero solo el propietario puede borrarla del todo.
+      allow update: if estoyActivo()
+        && (resource.data.propietarioUid == request.auth.uid
+            || request.auth.uid in resource.data.compartidoCon);
+      allow delete: if estoyActivo() && resource.data.propietarioUid == request.auth.uid;
     }
 
     // ---- Notas personales (con opción de compartir) ----
@@ -100,7 +106,10 @@ service cloud.firestore {
         && (resource.data.propietarioUid == request.auth.uid
             || request.auth.uid in resource.data.compartidoCon);
       allow create: if estoyActivo() && request.resource.data.propietarioUid == request.auth.uid;
-      allow update, delete: if estoyActivo() && resource.data.propietarioUid == request.auth.uid;
+      allow update: if estoyActivo()
+        && (resource.data.propietarioUid == request.auth.uid
+            || request.auth.uid in resource.data.compartidoCon);
+      allow delete: if estoyActivo() && resource.data.propietarioUid == request.auth.uid;
     }
 
     // ---- Bookings (con ID correlativo BO<año>-0001) ----

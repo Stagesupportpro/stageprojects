@@ -313,6 +313,47 @@ Como en Producción encontramos errores reales de sintaxis
   eso, nadie habría podido abrir la ficha completa de un booking por
   mucho acceso que tuviera a Bookings.
 
+## Producción — bookings y artista, arreglados
+
+- El desplegable **"Booking vinculado"** solo mostraba bookings "como
+  promotora" — si solo tenías bookings "a caché", no aparecía
+  ninguno. Ahora muestra todos, con una etiqueta indicando el tipo.
+- El campo **Artista / Grupo** era un simple texto sin ninguna
+  conexión real — ahora es un desplegable conectado de verdad al
+  Roster (autocompleta el caché sugerido en Costes si aún no tenía
+  importe). Al vincular un booking con un único artista, se
+  selecciona solo; con varios, se muestran todos los nombres juntos.
+- De paso until: al importar un booking "a caché" se creaba una fila
+  fantasma de "Alquiler venue" a 0,00 € (ese tipo de booking no tiene
+  coste de venue) — ya no se crea esa fila en ese caso.
+
+## Hojas de Ruta — revisado
+
+Auditoría completa (sintaxis, referencias, conexión con Roster) —
+todo correcto, sin cambios necesarios. Ya conectaba bien con el
+Roster desde el principio (es el mismo patrón que acabamos de aplicar
+a Producción).
+
+## Logo más grande en documentos imprimibles
+
+Aumentado en los tres sitios donde aparece: Hoja de Ruta y Contratos
+(102px → 140px) y la vista/PDF de Propuesta (32px → 48px).
+
+## Notas — eliminar compartidas, marcar leída/no leída
+
+Las notas que otra persona te comparte ahora se pueden **quitar de tu
+lista** (no borra el original para quien la compartió ni para el
+resto), y cualquier nota (tuya o compartida) se puede marcar como
+**leída / no leída** — las no leídas llevan un punto de color y un
+borde lateral para distinguirlas de un vistazo. Al crear una nota,
+queda marcada como ya leída para quien la crea.
+
+Para esto hizo falta ampliar un poco las reglas de Firestore de
+`notas` y `agenda`: antes solo el propietario podía actualizar el
+documento — ahora también puede quien la recibe compartida (para
+poder marcarla leída o quitarse de la lista), pero **borrarla del
+todo sigue siendo solo cosa del propietario**.
+
 ## Auditoría de vinculación de datos (todas las páginas)
 
 Comparación automática, en cada página con ficha completa, entre lo
