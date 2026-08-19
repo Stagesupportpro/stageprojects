@@ -48,6 +48,7 @@
         <button type="button" data-tab="general" onclick="cambiarTabProd('general')">Información general</button>
         <button type="button" data-tab="cifras" onclick="cambiarTabProd('cifras')">Cifras</button>
         <button type="button" data-tab="personal" onclick="cambiarTabProd('personal')">Personal</button>
+        <button type="button" data-tab="tecnica" onclick="cambiarTabProd('tecnica')">Técnica</button>
         <button type="button" data-tab="taquilla" id="pd-btn-tab-taquilla" style="display:none;" onclick="cambiarTabProd('taquilla')">Taquilla</button>
         <button type="button" data-tab="documentos" onclick="cambiarTabProd('documentos')">Documentos</button>
         <button type="button" data-tab="hospitalidad" onclick="cambiarTabProd('hospitalidad')">Hospitalidad</button>
@@ -133,6 +134,7 @@
           <div class="hr-section-head"><h3>Resumen</h3></div>
           <div class="calc-box">
             <div class="calc-item"><div class="calc-label">Personal</div><div class="calc-value" id="pd-calc-resumen-personal">0,00 €</div></div>
+            <div class="calc-item"><div class="calc-label">Técnica</div><div class="calc-value" id="pd-calc-resumen-tecnica">0,00 €</div></div>
             <div class="calc-item"><div class="calc-label">Coste total (Gastos)</div><div class="calc-value" id="pd-calc-costes">0,00 €</div></div>
             <div class="calc-item"><div class="calc-label">Precio entrada</div><div class="calc-value" id="pd-calc-precio">0,00 €</div></div>
             <div class="calc-item calc-total"><div class="calc-label">Break even real</div><div class="calc-value" id="pd-calc-breakeven">—</div></div>
@@ -151,6 +153,19 @@
           <button type="button" class="add-row-link" onclick="anadirPersonalProd()">+ Añadir persona</button>
           <div class="calc-box" style="margin-top:12px;">
             <div class="calc-item calc-total"><div class="calc-label">Total personal</div><div class="calc-value" id="pd-calc-personal-total">0,00 €</div></div>
+          </div>
+        </div>
+      </div>
+
+      <!-- ============ TÉCNICA ============ -->
+      <div class="rst-tab-panel" id="pd-panel-tecnica">
+        <div class="hr-section" style="border:none;">
+          <div class="hr-section-head"><h3>Presupuesto técnico</h3></div>
+          <p style="font-size:12px; color:var(--color-text-muted); margin:-4px 0 12px;">Presupuestos de proveedores técnicos (sonido, luces, escenario...). El total se suma solo a Cifras.</p>
+          <div id="pd-lista-tecnica"></div>
+          <button type="button" class="add-row-link" onclick="anadirTecnicaProd()">+ Añadir presupuesto</button>
+          <div class="calc-box" style="margin-top:12px;">
+            <div class="calc-item calc-total"><div class="calc-label">Total técnica</div><div class="calc-value" id="pd-calc-tecnica-total">0,00 €</div></div>
           </div>
         </div>
       </div>

@@ -313,6 +313,32 @@ Como en Producción encontramos errores reales de sintaxis
   eso, nadie habría podido abrir la ficha completa de un booking por
   mucho acceso que tuviera a Bookings.
 
+## Producción — pestaña Técnica
+
+Nueva pestaña "Técnica" con el presupuesto de proveedores técnicos:
+**Núm. presupuesto, Proveedor, Concepto, BI, IVA, Total** (calculado
+solo). El total se suma a Cifras igual que Personal — ambos tienen
+ahora su propia línea visible en el Resumen ("Personal" y "Técnica"),
+además de entrar en el break even de Taquilla.
+
+## Dashboard — en vivo de verdad, con paneles nuevos
+
+**La causa de que no se mantuviera actualizado**: los indicadores y
+los accesos directos se cargaban con una sola lectura (`.get()`) al
+abrir la página — si algo cambiaba mientras la tenías abierta, no se
+enteraba. Ahora usan escucha en vivo (`onSnapshot`), igual que
+Notificaciones y Evaluaciones (que ya eran en vivo desde el
+principio).
+
+Tres paneles nuevos, todos en vivo y solo visibles si el rol tiene
+el permiso correspondiente:
+- **Activo ahora** — lo que hay en el Calendario en los próximos 14
+  días.
+- **Propuestas pendientes** — las que están en Borrador o Enviada,
+  con un clic directo a cada una.
+- **Próximas citas** — de tu Agenda (propias + compartidas), también
+  a 14 días vista.
+
 ## Producción — bookings y artista, arreglados
 
 - El desplegable **"Booking vinculado"** solo mostraba bookings "como
