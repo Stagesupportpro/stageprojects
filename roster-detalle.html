@@ -50,6 +50,7 @@
         <button type="button" data-tab="riders" onclick="cambiarTabRoster('riders')">Riders</button>
         <button type="button" data-tab="hospitalidad" onclick="cambiarTabRoster('hospitalidad')">Hospitalidad</button>
         <button type="button" data-tab="presskit" onclick="cambiarTabRoster('presskit')">PressKit</button>
+        <button type="button" data-tab="medios" onclick="cambiarTabRoster('medios')">Medios</button>
         <button type="button" data-tab="juridico" class="juridico" id="btn-tab-juridico" style="display:none;" onclick="cambiarTabRoster('juridico')">Jurídico</button>
       </div>
 
@@ -226,6 +227,22 @@
             <div id="lista-presskit-rst"></div>
             <button type="button" class="add-row-link" onclick="document.getElementById('presskit-input').click()">+ Añadir archivo (imagen o PDF)</button>
             <input type="file" id="presskit-input" accept="image/*,application/pdf" onchange="procesarPressKit(event)" style="display:none;" />
+          </div>
+        </div>
+
+        <!-- ============ MEDIOS ============ -->
+        <div class="rst-tab-panel" id="panel-medios">
+          <div class="hr-section">
+            <div class="hr-section-head"><h3>Galería (hasta 6 fotos)</h3></div>
+            <p style="font-size:12px; color:var(--color-text-muted); margin:-4px 0 12px;">Se muestran también en el Catálogo. Pulsa un hueco vacío para subir una foto.</p>
+            <div class="galeria-grid" id="galeria-rst"></div>
+          </div>
+
+          <div class="hr-section" style="border:none;">
+            <div class="hr-section-head"><h3>Vídeos de YouTube</h3></div>
+            <p style="font-size:12px; color:var(--color-text-muted); margin:-4px 0 12px;">Pega el enlace del vídeo — también aparecerán en el Catálogo.</p>
+            <div id="lista-videos-rst"></div>
+            <button type="button" class="add-row-link" onclick="anadirVideoRst()">+ Añadir vídeo</button>
           </div>
         </div>
 

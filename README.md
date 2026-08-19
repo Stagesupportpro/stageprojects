@@ -313,6 +313,29 @@ Como en Producción encontramos errores reales de sintaxis
   eso, nadie habría podido abrir la ficha completa de un booking por
   mucho acceso que tuviera a Bookings.
 
+## Auditoría de vinculación de datos (todas las páginas)
+
+Comparación automática, en cada página con ficha completa, entre lo
+que se **guarda** y lo que se **carga de vuelta** — para encontrar
+campos que se pierden al recargar. Resultado: **sin fallos reales**.
+Los dos casos que salieron en la primera pasada eran falsos
+positivos (campos usados legítimamente desde el listado, no desde la
+propia ficha). También until comprobé que no quedara ningún rastro
+del modelo antiguo de Bookings (artista único) tras el cambio a
+varios artistas — limpio.
+
+## Roster y Catálogo — Medios (galería + vídeos de YouTube)
+
+Nueva pestaña **Medios** en cada ficha del Roster:
+- **Galería**: hasta 6 fotos, cada hueco se rellena pulsando encima
+  (se comprimen automáticamente).
+- **Vídeos de YouTube**: pega el enlace y se muestra la miniatura
+  real del vídeo automáticamente (a partir del ID que se extrae del
+  propio enlace).
+
+Ambas cosas se ven también en el **Catálogo**, dentro de la ficha de
+cada espectáculo al pulsarla.
+
 ## Auditoría — errores graves en Producción (arreglados)
 
 Barrido completo del archivo (funciones definidas vs. llamadas,
