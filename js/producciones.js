@@ -8,6 +8,7 @@
 
 let usuarioActualProd = null;
 let opcionesPM = []; // [{ tipo, id, nombre }]
+let produccionesListaCache = [];
 
 (async function () {
   usuarioActualProd = await protegerPagina();
@@ -71,15 +72,26 @@ async function cargarOpcionesPM() {
 function escucharProducciones() {
   db.collection("producciones").orderBy("creadoEl", "desc").onSnapshot(
     (snap) => {
-      const filas = [];
-      snap.forEach((doc) => filas.push({ id: doc.id, ...doc.data() }));
-      pintarTablaProducciones(filas);
+      produccionesListaCache = [];
+      snap.forEach((doc) => produccionesListaCache.push({ id: doc.id, ...doc.data() }));
+      aplicarFiltrosProducciones();
     },
     (err) => {
       console.error(err);
       mostrarToast("No se pudo cargar el listado de producciones.");
     }
   );
+}
+
+function aplicarFiltrosProducciones() {
+  const texto = (document.getElementById("prod-busqueda").value || "").trim().toLowerCase();
+  const filtrados = !texto
+    ? produccionesListaCache
+    : produccionesListaCache.filter((p) => {
+        const enTexto = `${p.nombre || ""} ${p.artistaNombre || ""} ${p.idVisible || ""}`.toLowerCase();
+        return enTexto.includes(texto);
+      });
+  pintarTablaProducciones(filtrados);
 }
 
 function pintarTablaProducciones(producciones) {

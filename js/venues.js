@@ -3,6 +3,8 @@
 // =========================================================
 
 let usuarioActualVen = null;
+let venuesListaCache = [];
+let tipoActivoVenues = null;
 
 (async function () {
   usuarioActualVen = await protegerPagina(["Comercial", "Admin"]);
@@ -22,15 +24,49 @@ let usuarioActualVen = null;
 function escucharVenues() {
   db.collection("venues").orderBy("nombre").onSnapshot(
     (snap) => {
-      const filas = [];
-      snap.forEach((doc) => filas.push({ id: doc.id, ...doc.data() }));
-      pintarTablaVenues(filas);
+      venuesListaCache = [];
+      snap.forEach((doc) => venuesListaCache.push({ id: doc.id, ...doc.data() }));
+      pintarChipsTipoVenues();
+      aplicarFiltrosVenues();
     },
     (err) => {
       console.error(err);
       mostrarToast("No se pudo cargar el listado de venues.");
     }
   );
+}
+
+// ---------- Búsqueda y filtro por tipo de venue ----------
+
+function pintarChipsTipoVenues() {
+  const cont = document.getElementById("venue-chips-tipo");
+  const tipos = [...new Set(venuesListaCache.map((v) => v.tipoVenue).filter(Boolean))];
+  if (tipos.length === 0) {
+    cont.innerHTML = "";
+    return;
+  }
+  cont.innerHTML = tipos
+    .map((t) => `<button type="button" class="filter-chip ${tipoActivoVenues === t ? "active" : ""}" onclick="toggleTipoVenues('${t}')">${escaparHtmlVen(t)}</button>`)
+    .join("");
+}
+
+function toggleTipoVenues(t) {
+  tipoActivoVenues = tipoActivoVenues === t ? null : t;
+  pintarChipsTipoVenues();
+  aplicarFiltrosVenues();
+}
+
+function aplicarFiltrosVenues() {
+  const texto = (document.getElementById("venue-busqueda").value || "").trim().toLowerCase();
+  const filtrados = venuesListaCache.filter((v) => {
+    if (tipoActivoVenues && v.tipoVenue !== tipoActivoVenues) return false;
+    if (texto) {
+      const enTexto = `${v.nombre || ""} ${v.direccion || ""}`.toLowerCase();
+      if (!enTexto.includes(texto)) return false;
+    }
+    return true;
+  });
+  pintarTablaVenues(filtrados);
 }
 
 function pintarTablaVenues(venues) {

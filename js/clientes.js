@@ -11,6 +11,9 @@ const ETIQUETAS_CATEGORIA = {
   otros: "Otros",
 };
 
+let clientesListaCache = [];
+let categoriaActivaClientes = null;
+
 (async function () {
   const perfil = await protegerPagina(["Comercial", "Admin"]);
   pintarNav(perfil.rol, "clientes");
@@ -29,15 +32,52 @@ const ETIQUETAS_CATEGORIA = {
 function escucharClientes() {
   db.collection("clientes").orderBy("nombre").onSnapshot(
     (snap) => {
-      const filas = [];
-      snap.forEach((doc) => filas.push({ id: doc.id, ...doc.data() }));
-      pintarTablaClientes(filas);
+      clientesListaCache = [];
+      snap.forEach((doc) => clientesListaCache.push({ id: doc.id, ...doc.data() }));
+      pintarChipsCategoriaClientes();
+      aplicarFiltrosClientes();
     },
     (err) => {
       console.error(err);
       mostrarToast("No se pudo cargar el listado de clientes.");
     }
   );
+}
+
+// ---------- Búsqueda y filtro por categoría ----------
+
+function pintarChipsCategoriaClientes() {
+  const cont = document.getElementById("cli-chips-categoria");
+  const categorias = [...new Set(clientesListaCache.map((c) => c.categoria).filter(Boolean))];
+  if (categorias.length === 0) {
+    cont.innerHTML = "";
+    return;
+  }
+  cont.innerHTML = categorias
+    .map(
+      (cat) =>
+        `<button type="button" class="filter-chip ${categoriaActivaClientes === cat ? "active" : ""}" onclick="toggleCategoriaClientes('${cat}')">${escaparHtmlCli(ETIQUETAS_CATEGORIA[cat] || cat)}</button>`
+    )
+    .join("");
+}
+
+function toggleCategoriaClientes(cat) {
+  categoriaActivaClientes = categoriaActivaClientes === cat ? null : cat;
+  pintarChipsCategoriaClientes();
+  aplicarFiltrosClientes();
+}
+
+function aplicarFiltrosClientes() {
+  const texto = (document.getElementById("cli-busqueda").value || "").trim().toLowerCase();
+  const filtrados = clientesListaCache.filter((c) => {
+    if (categoriaActivaClientes && c.categoria !== categoriaActivaClientes) return false;
+    if (texto) {
+      const enTexto = `${c.nombre || ""} ${c.contacto || ""} ${c.email || ""}`.toLowerCase();
+      if (!enTexto.includes(texto)) return false;
+    }
+    return true;
+  });
+  pintarTablaClientes(filtrados);
 }
 
 function pintarTablaClientes(clientes) {

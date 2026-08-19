@@ -7,6 +7,7 @@
 
 let usuarioActualHR = null;
 let produccionesDisponibles = []; // [{ id, idVisible, nombre }]
+let hrListaCache = [];
 
 (async function () {
   usuarioActualHR = await protegerPagina();
@@ -41,15 +42,26 @@ async function cargarProducciones() {
 function escucharHR() {
   db.collection("hojasDeRuta").orderBy("creadoEl", "desc").onSnapshot(
     (snap) => {
-      const filas = [];
-      snap.forEach((doc) => filas.push({ id: doc.id, ...doc.data() }));
-      pintarTablaHR(filas);
+      hrListaCache = [];
+      snap.forEach((doc) => hrListaCache.push({ id: doc.id, ...doc.data() }));
+      aplicarFiltrosHR();
     },
     (err) => {
       console.error(err);
       mostrarToast("No se pudo cargar el listado de hojas de ruta.");
     }
   );
+}
+
+function aplicarFiltrosHR() {
+  const texto = (document.getElementById("hr-busqueda").value || "").trim().toLowerCase();
+  const filtrados = !texto
+    ? hrListaCache
+    : hrListaCache.filter((h) => {
+        const enTexto = `${h.nombre || ""} ${h.produccionNombre || ""} ${h.idVisible || ""}`.toLowerCase();
+        return enTexto.includes(texto);
+      });
+  pintarTablaHR(filtrados);
 }
 
 function pintarTablaHR(hojas) {

@@ -84,6 +84,11 @@ function toggleFiltroCatalogo(valor) {
 }
 
 function pasaFiltrosCatalogo(r) {
+  const texto = (document.getElementById("cat-busqueda").value || "").trim().toLowerCase();
+  if (texto) {
+    const enTexto = `${r.nombre || ""} ${r.oficinaRepresentacion || ""}`.toLowerCase();
+    if (!enTexto.includes(texto)) return false;
+  }
   if (filtrosActivosCat.size === 0) return true;
   for (const valor of filtrosActivosCat) {
     if (valor.startsWith("cat:") && r.categoria === valor.slice(4)) return true;

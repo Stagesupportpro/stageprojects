@@ -5,6 +5,8 @@
 // =========================================================
 
 let usuarioActualRoster = null;
+let rosterListaCache = [];
+let categoriaActivaRoster = null;
 
 (async function () {
   usuarioActualRoster = await protegerPagina(["Comercial", "Admin"]);
@@ -24,15 +26,49 @@ let usuarioActualRoster = null;
 function escucharRoster() {
   db.collection("roster").orderBy("nombre").onSnapshot(
     (snap) => {
-      const filas = [];
-      snap.forEach((doc) => filas.push({ id: doc.id, ...doc.data() }));
-      pintarTablaRoster(filas);
+      rosterListaCache = [];
+      snap.forEach((doc) => rosterListaCache.push({ id: doc.id, ...doc.data() }));
+      pintarChipsCategoriaRoster();
+      aplicarFiltrosRoster();
     },
     (err) => {
       console.error(err);
       mostrarToast("No se pudo cargar el roster.");
     }
   );
+}
+
+// ---------- Búsqueda y filtro por categoría ----------
+
+function pintarChipsCategoriaRoster() {
+  const cont = document.getElementById("roster-chips-categoria");
+  const categorias = [...new Set(rosterListaCache.map((r) => r.categoria).filter(Boolean))];
+  if (categorias.length === 0) {
+    cont.innerHTML = "";
+    return;
+  }
+  cont.innerHTML = categorias
+    .map((c) => `<button type="button" class="filter-chip ${categoriaActivaRoster === c ? "active" : ""}" onclick="toggleCategoriaRoster('${c}')">${escaparHtmlRoster(c)}</button>`)
+    .join("");
+}
+
+function toggleCategoriaRoster(c) {
+  categoriaActivaRoster = categoriaActivaRoster === c ? null : c;
+  pintarChipsCategoriaRoster();
+  aplicarFiltrosRoster();
+}
+
+function aplicarFiltrosRoster() {
+  const texto = (document.getElementById("roster-busqueda").value || "").trim().toLowerCase();
+  const filtrados = rosterListaCache.filter((r) => {
+    if (categoriaActivaRoster && r.categoria !== categoriaActivaRoster) return false;
+    if (texto) {
+      const enTexto = `${r.nombre || ""} ${r.oficinaRepresentacion || ""}`.toLowerCase();
+      if (!enTexto.includes(texto)) return false;
+    }
+    return true;
+  });
+  pintarTablaRoster(filtrados);
 }
 
 function pintarTablaRoster(items) {
