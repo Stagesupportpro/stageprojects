@@ -21,6 +21,8 @@ let tarifasRst = [];
 let ridersRst = [];
 let hospPdfsRst = [];
 let pressKitRst = [];
+let galeriaRst = []; // hasta 6 dataURL de fotos
+let videosYoutubeRst = []; // [{ titulo, url }]
 let contratoRst = [];
 let clausulasEspecialesRst = [];
 let juridicoyaCargado = false;
@@ -139,6 +141,12 @@ async function cargarRoster() {
 
     pressKitRst = Array.isArray(d.pressKit) ? d.pressKit : [];
     renderPressKitRst();
+
+    galeriaRst = Array.isArray(d.galeria) ? d.galeria : [];
+    renderGaleriaRst();
+
+    videosYoutubeRst = Array.isArray(d.videosYoutube) ? d.videosYoutube : [];
+    renderVideosRst();
 
     recalcular();
   } catch (err) {
@@ -630,6 +638,100 @@ function eliminarPressKit(i) {
   renderPressKitRst();
 }
 
+// ---------- Medios: galería (hasta 6 fotos) ----------
+
+function renderGaleriaRst() {
+  const cont = document.getElementById("galeria-rst");
+  const huecos = [];
+  for (let i = 0; i < 6; i++) {
+    const foto = galeriaRst[i];
+    huecos.push(`
+      <div class="galeria-slot" onclick="${foto ? "" : `document.getElementById('galeria-input-${i}').click()`}">
+        ${
+          foto
+            ? `<img src="${foto}" alt="" /><button type="button" class="galeria-quitar" onclick="event.stopPropagation(); eliminarFotoGaleriaRst(${i})" title="Quitar">✕</button>`
+            : `<span class="galeria-vacio">+ Añadir foto</span>`
+        }
+        <input type="file" id="galeria-input-${i}" accept="image/*" style="display:none;" onchange="procesarFotoGaleriaRst(${i}, event)" />
+      </div>
+    `);
+  }
+  cont.innerHTML = huecos.join("");
+}
+
+function procesarFotoGaleriaRst(i, event) {
+  const archivo = event.target.files[0];
+  if (!archivo || !archivo.type.startsWith("image/")) return;
+
+  const lector = new FileReader();
+  lector.onload = (e) => {
+    const img = new Image();
+    img.onload = () => {
+      const MAX = 700;
+      let w = img.width;
+      let h = img.height;
+      if (w > MAX || h > MAX) {
+        const ratio = Math.min(MAX / w, MAX / h);
+        w = Math.round(w * ratio);
+        h = Math.round(h * ratio);
+      }
+      const canvas = document.createElement("canvas");
+      canvas.width = w;
+      canvas.height = h;
+      canvas.getContext("2d").drawImage(img, 0, 0, w, h);
+      galeriaRst[i] = canvas.toDataURL("image/jpeg", 0.82);
+      renderGaleriaRst();
+    };
+    img.src = e.target.result;
+  };
+  lector.readAsDataURL(archivo);
+}
+
+function eliminarFotoGaleriaRst(i) {
+  galeriaRst[i] = null;
+  galeriaRst = galeriaRst.filter((f) => f); // compacta el array, sin huecos sueltos
+  renderGaleriaRst();
+}
+
+// ---------- Medios: vídeos de YouTube ----------
+
+function extraerIdYoutube(url) {
+  if (!url) return null;
+  const match = url.match(/(?:youtube\.com\/(?:watch\?v=|embed\/|shorts\/)|youtu\.be\/)([a-zA-Z0-9_-]{11})/);
+  return match ? match[1] : null;
+}
+
+function renderVideosRst() {
+  const cont = document.getElementById("lista-videos-rst");
+  if (videosYoutubeRst.length === 0) {
+    cont.innerHTML = `<p style="color:var(--color-text-muted); font-size:13px;">Todavía no hay vídeos añadidos.</p>`;
+    return;
+  }
+  cont.innerHTML = videosYoutubeRst
+    .map((v, i) => {
+      const idYt = extraerIdYoutube(v.url);
+      return `
+        <div class="repeat-row video-row">
+          <input placeholder="Título (opcional)" value="${escaparAttrRstD(v.titulo)}" oninput="videosYoutubeRst[${i}].titulo=this.value" />
+          <input placeholder="Enlace de YouTube" value="${escaparAttrRstD(v.url)}" oninput="videosYoutubeRst[${i}].url=this.value; renderVideosRst()" />
+          <button type="button" class="remove-row-btn" onclick="eliminarVideoRst(${i})">✕</button>
+        </div>
+        ${idYt ? `<a class="video-thumb-link" href="${escaparAttrRstD(v.url)}" target="_blank" style="max-width:220px; margin:6px 0 12px;"><img src="https://img.youtube.com/vi/${idYt}/hqdefault.jpg" alt="" /><span class="play-badge">▶</span></a>` : ""}
+      `;
+    })
+    .join("");
+}
+
+function anadirVideoRst() {
+  videosYoutubeRst.push({ titulo: "", url: "" });
+  renderVideosRst();
+}
+
+function eliminarVideoRst(i) {
+  videosYoutubeRst.splice(i, 1);
+  renderVideosRst();
+}
+
 // ---------- Jurídico (Admin, colección aparte) ----------
 
 function procesarContratoPdf(event) {
@@ -713,6 +815,8 @@ async function guardarRoster() {
     hospitalidadCondiciones: document.getElementById("rst-hosp-condiciones").value.trim(),
     hospitalidadPdf: hospPdfsRst,
     pressKit: pressKitRst,
+    galeria: galeriaRst.filter((f) => f),
+    videosYoutube: videosYoutubeRst.filter((v) => v.url),
   };
 
   try {
