@@ -91,15 +91,29 @@ function pintarListaNotas() {
     .map((n) => {
       const fecha = n.creadoEl && n.creadoEl.toDate ? n.creadoEl.toDate().toLocaleDateString("es-ES") : "";
       const compartidos = Array.isArray(n.compartidoConNombres) ? n.compartidoConNombres : [];
+      const leidaPor = Array.isArray(n.leidaPor) ? n.leidaPor : [];
+      const estaLeida = leidaPor.includes(usuarioActualNt.uid);
+
+      const accionesHtml = n.esMia
+        ? `
+          <button class="icon-btn" title="${estaLeida ? "Marcar como no leída" : "Marcar como leída"}" onclick="toggleLeidaNota('${n.id}', ${!estaLeida})">${estaLeida ? "✉️" : "📩"}</button>
+          <button class="icon-btn" title="Editar" onclick='abrirModalEdicionNota(${JSON.stringify(n).replace(/'/g, "&#39;")})'>✎</button>
+          <button class="icon-btn danger" title="Eliminar" onclick="confirmarEliminarNota('${n.id}')">🗑</button>
+        `
+        : `
+          <button class="icon-btn" title="${estaLeida ? "Marcar como no leída" : "Marcar como leída"}" onclick="toggleLeidaNota('${n.id}', ${!estaLeida})">${estaLeida ? "✉️" : "📩"}</button>
+          <button class="icon-btn danger" title="Quitar de mi lista" onclick="confirmarQuitarNotaCompartida('${n.id}')">🗑</button>
+        `;
+
       return `
-        <div class="item-card">
+        <div class="item-card ${!estaLeida ? "item-card-no-leida" : ""}">
           <div class="item-card-top">
-            <div class="item-card-title">${escaparHtmlNt(n.titulo)}</div>
-            ${n.esMia ? `<div class="row-actions">
-              <button class="icon-btn" title="Editar" onclick='abrirModalEdicionNota(${JSON.stringify(n).replace(/'/g, "&#39;")})'>✎</button>
-              <button class="icon-btn danger" title="Eliminar" onclick="confirmarEliminarNota('${n.id}')">🗑</button>
-            </div>` : `<span class="permiso-tag">Compartida por ${escaparHtmlNt(n.propietarioNombre || "—")}</span>`}
+            <div class="item-card-title">${!estaLeida ? `<span class="punto-no-leido" title="No leída"></span>` : ""}${escaparHtmlNt(n.titulo)}</div>
+            <div class="row-actions">
+              ${accionesHtml}
+            </div>
           </div>
+          ${!n.esMia ? `<span class="permiso-tag">Compartida por ${escaparHtmlNt(n.propietarioNombre || "—")}</span>` : ""}
           <div class="item-card-meta">${fecha}</div>
           ${n.descripcion ? `<div class="item-card-desc">${escaparHtmlNt(n.descripcion)}</div>` : ""}
           ${compartidos.length ? `<div class="item-card-shared">${compartidos.map((x) => `<span class="permiso-tag">${escaparHtmlNt(x)}</span>`).join("")}</div>` : ""}
@@ -190,6 +204,7 @@ formNota.addEventListener("submit", async (e) => {
         ...datos,
         propietarioUid: usuarioActualNt.uid,
         propietarioNombre: nombreCompletoDe(usuarioActualNt) || usuarioActualNt.email,
+        leidaPor: [usuarioActualNt.uid],
         creadoEl: firebase.firestore.FieldValue.serverTimestamp(),
       });
       mostrarToast("Nota creada.");
@@ -223,6 +238,38 @@ formNota.addEventListener("submit", async (e) => {
     btn.disabled = false;
   }
 });
+
+// ---------- Leída / no leída ----------
+
+async function toggleLeidaNota(id, marcarComoLeida) {
+  try {
+    await db.collection("notas").doc(id).update({
+      leidaPor: marcarComoLeida
+        ? firebase.firestore.FieldValue.arrayUnion(usuarioActualNt.uid)
+        : firebase.firestore.FieldValue.arrayRemove(usuarioActualNt.uid),
+    });
+  } catch (err) {
+    console.error(err);
+    mostrarToast("No se pudo actualizar.");
+  }
+}
+
+// ---------- Quitar una nota compartida de mi lista (no la borra para el resto) ----------
+
+function confirmarQuitarNotaCompartida(id) {
+  if (!confirm("¿Quitar esta nota de tu lista? Seguirá existiendo para quien la compartió y para el resto de personas con las que la compartió.")) return;
+  db.collection("notas")
+    .doc(id)
+    .update({
+      compartidoCon: firebase.firestore.FieldValue.arrayRemove(usuarioActualNt.uid),
+      compartidoConNombres: firebase.firestore.FieldValue.arrayRemove(nombreCompletoDe(usuarioActualNt) || usuarioActualNt.email),
+    })
+    .then(() => mostrarToast("Nota quitada de tu lista."))
+    .catch((err) => {
+      console.error(err);
+      mostrarToast("No se pudo quitar.");
+    });
+}
 
 function confirmarEliminarNota(id) {
   if (!confirm("¿Eliminar esta nota?")) return;

@@ -12,6 +12,7 @@ let usuarioActualPD = null;
 let docIdProd = null;
 let opcionesPMProd = [];
 let bookingsCacheProd = [];
+let rosterCacheProd = [];
 let costesProd = [];
 let personalProd = []; // [{ tipo, id, nombre, bi, jornadas }]
 let documentosProd = [];
@@ -39,7 +40,7 @@ const LIMITE_PDF_BYTES_PD = 600 * 1024;
     avatarEl.textContent = inicialesDe(nombreCompletoDe(usuarioActualPD) || usuarioActualPD.email);
   }
 
-  await Promise.all([cargarOpcionesPMProd(), cargarBookingsProd()]);
+  await Promise.all([cargarOpcionesPMProd(), cargarBookingsProd(), cargarRosterProd()]);
   await cargarProduccion();
 })();
 
@@ -89,7 +90,7 @@ async function cargarOpcionesPMProd() {
 async function cargarBookingsProd() {
   const sel = document.getElementById("pd-booking");
   try {
-    const snap = await db.collection("bookings").where("tipo", "==", "promotor").get();
+    const snap = await db.collection("bookings").get();
     bookingsCacheProd = snap.docs
       .map((d) => ({ id: d.id, ...d.data() }))
       .sort((a, b) => {
@@ -98,7 +99,10 @@ async function cargarBookingsProd() {
         return fb - fa;
       });
     const opciones = bookingsCacheProd
-      .map((b) => `<option value="${b.id}">${escaparHtmlPD(b.idVisible)} — ${escaparHtmlPD(nombresArtistasBookingProd(b))} @ ${escaparHtmlPD(b.espacio || "")}</option>`)
+      .map(
+        (b) =>
+          `<option value="${b.id}">${escaparHtmlPD(b.idVisible)} — ${escaparHtmlPD(nombresArtistasBookingProd(b))} @ ${escaparHtmlPD(b.espacio || "")} (${b.tipo === "promotor" ? "Promotor" : "A caché"})</option>`
+      )
       .join("");
     sel.innerHTML = `<option value="">— Sin vincular —</option>${opciones}`;
   } catch (err) {
@@ -114,6 +118,37 @@ function reflejarEstadoBookingProd() {
   bookingVinculado = bookingsCacheProd.find((b) => b.id === id) || null;
   document.getElementById("btn-importar-venue").style.display = bookingVinculado ? "inline-flex" : "none";
   document.getElementById("pd-btn-tab-taquilla").style.display = bookingVinculado ? "block" : "none";
+}
+
+async function cargarRosterProd() {
+  try {
+    const snap = await db.collection("roster").orderBy("nombre").get();
+    rosterCacheProd = snap.docs.map((d) => ({ id: d.id, ...d.data() }));
+    const sel = document.getElementById("pd-artista-select");
+    sel.innerHTML =
+      `<option value="">— Selecciona del Roster —</option>` +
+      rosterCacheProd.map((r) => `<option value="${r.id}">${escaparHtmlPD(r.nombre)}</option>`).join("");
+  } catch (err) {
+    console.error(err);
+  }
+}
+
+function alSeleccionarArtistaProd() {
+  const rosterId = document.getElementById("pd-artista-select").value;
+  const artista = rosterCacheProd.find((r) => r.id === rosterId);
+  document.getElementById("pd-artista-nombre").value = artista ? artista.nombre : "";
+  document.getElementById("pd-artista-nombre-texto").textContent = artista ? artista.nombre : "";
+
+  // Si todavía no hay una fila de Caché con importe, se sugiere el caché
+  // guardado en su ficha del Roster (editable después, como siempre).
+  if (artista && artista.cache != null) {
+    const filaCache = costesProd.find((c) => c.concepto === "Caché" || (c.concepto || "").startsWith("Caché —"));
+    if (filaCache && filaCache.importe == null) {
+      filaCache.importe = artista.cache;
+      filaCache.ivaPct = artista.ivaPorcentaje != null ? artista.ivaPorcentaje : 21;
+      renderCostesProd();
+    }
+  }
 }
 
 function nombresArtistasBookingProd(b) {
@@ -136,12 +171,15 @@ async function alVincularBookingProd() {
 async function importarCosteVenueProd() {
   if (!bookingVinculado) return;
 
-  // Alquiler del venue: campo propio del booking (costeVenue/costeVenueIvaPct),
-  // independiente del caché de los artistas.
-  const costeVenue = bookingVinculado.costeVenue || 0;
-  const ivaVenue = bookingVinculado.costeVenueIvaPct || 0;
+  // Alquiler del venue: solo existe como coste cuando el booking es "como
+  // promotora" — en "a caché" no hay alquiler que pagar, así que no se añade
+  // ninguna fila (evita una fila fantasma de 0,00 €).
   costesProd = costesProd.filter((c) => !(c.concepto || "").startsWith("Alquiler venue —"));
-  costesProd.push({ concepto: `Alquiler venue — ${bookingVinculado.espacio || ""}`, importe: costeVenue, ivaPct: ivaVenue, nota: "" });
+  if (bookingVinculado.tipo === "promotor") {
+    const costeVenue = bookingVinculado.costeVenue || 0;
+    const ivaVenue = bookingVinculado.costeVenueIvaPct || 0;
+    costesProd.push({ concepto: `Alquiler venue — ${bookingVinculado.espacio || ""}`, importe: costeVenue, ivaPct: ivaVenue, nota: "" });
+  }
 
   // Caché de cada artista del booking: ya viene guardado en el propio
   // booking (con su comisión/IVA ya resueltos en el momento de crearlo).
@@ -157,7 +195,12 @@ async function importarCosteVenueProd() {
   });
   renderCostesProd();
 
-  document.getElementById("pd-artista-nombre").value = artistas.map((a) => a.nombre).join(", ");
+  const nombresJuntos = artistas.map((a) => a.nombre).join(", ");
+  document.getElementById("pd-artista-nombre").value = nombresJuntos;
+  document.getElementById("pd-artista-nombre-texto").textContent = nombresJuntos;
+  // Si el booking tiene un único artista, se deja también seleccionado en
+  // el desplegable del Roster (con varios, el desplegable se deja libre).
+  document.getElementById("pd-artista-select").value = artistas.length === 1 ? artistas[0].rosterId || "" : "";
 
   document.getElementById("pd-sala-nombre").value = bookingVinculado.espacio || "";
   if (bookingVinculado.repartoPromotorPct != null) {
@@ -231,6 +274,8 @@ async function cargarProduccion() {
     renderCostesProd();
 
     document.getElementById("pd-artista-nombre").value = d.artistaNombre || "";
+    document.getElementById("pd-artista-nombre-texto").textContent = d.artistaNombre || "";
+    if (d.artistaRosterId) document.getElementById("pd-artista-select").value = d.artistaRosterId;
 
     personalProd = Array.isArray(d.personal) ? d.personal : [];
     renderPersonalProd();
@@ -581,6 +626,7 @@ async function guardarProduccion() {
     pmNombre: pmEncontrado ? pmEncontrado.nombre : "",
     bookingId: document.getElementById("pd-booking").value || null,
     artistaNombre: document.getElementById("pd-artista-nombre").value.trim(),
+    artistaRosterId: document.getElementById("pd-artista-select").value || null,
     costes: costesProd,
     personal: personalProd,
     salaNombre: document.getElementById("pd-sala-nombre").value.trim(),
