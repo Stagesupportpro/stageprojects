@@ -2161,3 +2161,75 @@ table.doc-table td.label { font-weight: 700; background: #fafafa; width: 22%; }
 }
 .leyenda-cal-roster .leyenda-punto.verde { background: #2FA84F; }
 .leyenda-cal-roster .leyenda-punto.ambar { background: #A87400; }
+
+/* ---------- Visor ampliado (Catálogo — fotos y vídeos) ---------- */
+
+.lightbox-overlay {
+  display: none;
+  position: fixed;
+  inset: 0;
+  background: rgba(10, 10, 12, 0.92);
+  z-index: 10000;
+  align-items: center;
+  justify-content: center;
+  padding: 24px;
+}
+.lightbox-overlay.show { display: flex; }
+.lightbox-overlay img {
+  max-width: 92vw;
+  max-height: 88vh;
+  border-radius: 10px;
+  object-fit: contain;
+  box-shadow: 0 10px 40px rgba(0,0,0,0.5);
+}
+.lightbox-overlay .lightbox-video-wrap {
+  width: min(90vw, 900px);
+  aspect-ratio: 16 / 9;
+  border-radius: 10px;
+  overflow: hidden;
+  box-shadow: 0 10px 40px rgba(0,0,0,0.5);
+}
+.lightbox-overlay .lightbox-video-wrap iframe { width: 100%; height: 100%; border: 0; }
+.lightbox-close {
+  position: absolute;
+  top: 22px;
+  right: 26px;
+  width: 42px;
+  height: 42px;
+  border-radius: 50%;
+  background: rgba(255,255,255,0.14);
+  color: #fff;
+  border: none;
+  font-size: 18px;
+  cursor: pointer;
+}
+.lightbox-close:hover { background: rgba(255,255,255,0.28); }
+
+/* ---------- Ficha de producto del Catálogo (clicable para ampliar) ---------- */
+
+.cat-prod-galeria {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 10px;
+  margin: 14px 0;
+}
+.cat-prod-galeria img,
+.cat-prod-poster {
+  width: 100%;
+  border-radius: 10px;
+  object-fit: cover;
+  cursor: zoom-in;
+  aspect-ratio: 1;
+}
+.cat-prod-poster { aspect-ratio: 3/4; max-width: 260px; }
+.cat-prod-videos {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+  gap: 12px;
+  margin: 14px 0;
+}
+.cat-prod-videos .video-thumb-link { cursor: pointer; }
+
+@media (max-width: 420px) {
+  .cat-prod-galeria { grid-template-columns: repeat(2, 1fr); }
+}
