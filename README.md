@@ -363,6 +363,29 @@ verdad en vez de descartar posibilidades a ciegas.
 
 De 48px a 130px.
 
+## Booking — fecha por artista (arreglado el fallo de sincronización)
+
+Confirmado: un booking puede tener varios artistas, cada uno con
+fechas distintas, pero la sincronización con el Calendario del Roster
+metía a todos bajo la misma fecha del booking. Cada artista tiene
+ahora un campo **Fecha propia (opcional)** en su fila — si se deja
+vacío, sigue usando la fecha general del booking (compatible con
+todos los bookings ya creados, que no cambian de comportamiento). Si
+el booking viene de una Propuesta con fechas distintas por ítem,
+también se importa la fecha de cada uno automáticamente. El aviso de
+conflicto también se corrigió para comprobar y mostrar la fecha
+correcta de cada artista, no una única para todos.
+
+## Calendario anual — ajustado a una sola A4
+
+El logo (140px, pensado para otros documentos) y los márgenes se
+comían demasiado espacio vertical aquí. Reducido específicamente para
+este documento (sin tocar el tamaño en Hoja de Ruta/Contratos/
+Propuesta), y quitada una regla de "pantalla estrecha" que podía
+colar 2-3 columnas por error en vez de las 12 meses en 6+6 siempre.
+El botón "Imprimir" ahora también fuerza apaisado (A4 horizontal)
+solo mientras se imprime este documento en concreto.
+
 ## Registro de Servicios — un registro = un cliente
 
 El listado y la ficha completa ya tenían el cliente a nivel de todo
