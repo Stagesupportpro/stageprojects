@@ -2105,19 +2105,22 @@ table.doc-table td.label { font-weight: 700; background: #fafafa; width: 22%; }
 
 /* ---------- Calendario anual del Roster (pantalla + imprimible) ---------- */
 
-/* Documento propio y compacto, en A4 APAISADO — 6 meses por fila, 2 filas
-   (mismo formato que la referencia en papel). Nunca se ve en pantalla
-   normal (solo dentro de #print-area, oculto salvo al imprimir/exportar),
-   así que aquí prima caber en una sola A4 por encima de los tamaños de
-   otros documentos (contrato, hoja de ruta) que sí tienen más margen. */
+/* Documento propio y compacto, en A4 VERTICAL — 6 meses por fila, 2 filas.
+   El ancho se fija en píxeles (equivalente al ancho útil de una A4
+   vertical con 8mm de margen a cada lado) en vez de depender del ancho
+   de la ventana del navegador en cada momento — así siempre cabe en una
+   sola hoja, sea cual sea el tamaño de pantalla desde el que se
+   imprima/exporte. Nunca se ve en pantalla normal (solo dentro de
+   #print-area, oculto salvo al imprimir/exportar). */
 .cal-anual-page {
-  width: 100%;
-  max-width: none;
-  padding: 8px 16px;
+  width: 734px;
+  max-width: 734px;
+  margin: 0 auto;
+  padding: 8px 0;
 }
 .cal-anual-page .doc-header { margin-bottom: 6px; }
-.cal-anual-page .doc-header img.doc-logo { height: 44px; }
-.cal-anual-page .doc-header img.doc-logo-evento { height: 52px; width: 52px; }
+.cal-anual-page .doc-header img.doc-logo { height: 40px; }
+.cal-anual-page .doc-header img.doc-logo-evento { height: 48px; width: 48px; }
 .cal-anual-page .doc-title-block { margin-bottom: 8px; }
 .cal-anual-page .doc-title-block h1 { font-size: 14px; margin: 0 0 2px; }
 .cal-anual-page .doc-title-block .doc-id-text { font-size: 10px; }
