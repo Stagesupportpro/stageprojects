@@ -309,7 +309,7 @@ function imprimirCalendarioRst() {
   const entradas = entradasPorFechaDelAnioRst(anio);
   const titulo = `Calendario ${anio} — ${document.getElementById("rst-nombre").value.trim() || "Artista"}`;
   document.getElementById("print-area").innerHTML = construirCalendarioAnualHtml(anio, entradas, titulo, logoDocumentoEmpresaRst, logoRstDataUrl);
-  imprimirCalendarioApaisado();
+  imprimirCalendarioVertical();
 }
 
 function exportarPdfCalendarioRst() {
@@ -324,10 +324,10 @@ function exportarPdfCalendarioRst() {
   html2pdf()
     .from(printArea)
     .set({
-      margin: 8,
+      margin: 6,
       filename: `Calendario_${anio}_${nombreArtista.replace(/[^\w\- ]/g, "").trim()}.pdf`,
       html2canvas: { scale: 2 },
-      jsPDF: { unit: "mm", format: "a4", orientation: "landscape" },
+      jsPDF: { unit: "mm", format: "a4", orientation: "portrait" },
     })
     .save()
     .then(() => {
