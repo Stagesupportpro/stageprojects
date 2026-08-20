@@ -43,12 +43,12 @@
     </div>
 
     <div class="card" style="margin-bottom:20px;">
-      <h3 style="font-size:15px; font-family:var(--font-display); margin-bottom:6px;">Calendario general — entradas huérfanas</h3>
+      <h3 style="font-size:15px; font-family:var(--font-display); margin-bottom:6px;">Datos huérfanos — limpieza puntual</h3>
       <p style="font-size:13px; color:var(--color-text-muted); margin-bottom:16px;">
-        Desde ahora, borrar un Booking, Producción u Hoja de Ruta quita también su marca del Calendario general automáticamente. Este botón limpia de una vez las que se quedaron sueltas <strong>antes</strong> de este arreglo (de cosas que ya borraste durante las pruebas) — comprueba una por una si el Booking/Producción/Hoja de Ruta al que apuntan ya no existe, y solo borra esas.
+        Desde ahora, cada eliminación (Booking, Producción, Hoja de Ruta, Propuesta, Roster) limpia detrás de sí misma automáticamente. Este botón revisa de una vez lo que se quedó suelto <strong>antes</strong> de estos arreglos (de cosas que ya borraste durante las pruebas): entradas del Calendario general, Evaluaciones de propuestas ya borradas, y entradas del Calendario del Roster — comprobando en cada caso si lo que referencian todavía existe.
       </p>
       <div id="resultado-limpieza-cal" style="font-size:13px; margin-bottom:12px;"></div>
-      <button class="btn-ghost" onclick="limpiarEntradasHuerfanasCalendario()" id="btn-limpiar-cal">🧹 Buscar y limpiar entradas huérfanas</button>
+      <button class="btn-ghost" onclick="limpiarEntradasHuerfanasCalendario()" id="btn-limpiar-cal">🧹 Buscar y limpiar datos huérfanos</button>
     </div>
 
     <div class="card" style="margin-bottom:20px;">

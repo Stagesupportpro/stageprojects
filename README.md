@@ -363,6 +363,31 @@ verdad en vez de descartar posibilidades a ciegas.
 
 De 48px a 130px.
 
+## Datos huérfanos al eliminar — encontrados dos huecos más y ampliada la limpieza
+
+Auditados todos los botones de eliminar del sistema. Encontrados dos
+huecos reales, además de los que ya arreglamos con Bookings/
+Producciones/Hojas de Ruta:
+
+- **Eliminar una Propuesta** no borraba su **Evaluación** (si se había
+  mandado a valorar) — se quedaba huérfana, visible en el panel de
+  Evaluaciones pendientes del Dashboard.
+- **Eliminar del Roster** no limpiaba ni sus fechas del **Calendario
+  del Roster**, ni su ficha **Jurídica** — se quedaban ambas
+  apuntando a un artista que ya no existe.
+
+Ambos arreglados de raíz — de aquí en adelante, cada eliminación
+limpia detrás de sí misma sola.
+
+La herramienta de limpieza puntual de **Administración → Información
+y Backup** ahora cubre las tres cosas de una vez (antes solo cubría
+el Calendario general): entradas del Calendario general, Evaluaciones
+de propuestas ya borradas, y entradas del Calendario del Roster —
+comprobando en cada caso si lo que referencian todavía existe de
+verdad. Es un botón de un solo uso para limpiar lo que se quedó
+suelto de las pruebas anteriores a estos arreglos; no hace falta
+repetirlo después de una eliminación normal a partir de ahora.
+
 ## Calendario anual — ahora A4 vertical, en una sola hoja
 
 Cambiado de apaisado (6 meses × 2 filas) a **vertical, 3 meses × 4
