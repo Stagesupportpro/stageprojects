@@ -180,17 +180,17 @@ function mostrarModalConflictoArtista(avisos) {
 }
 
 /**
- * El calendario anual es apaisado (A4 landscape) para caber los 6+6
- * meses en una sola hoja, a diferencia del resto de documentos
- * (contrato, hoja de ruta...) que son verticales — así que la
- * orientación de impresión se fuerza solo mientras se imprime ESTE
- * documento en concreto (una hoja de estilo temporal, quitada justo
- * después), sin tocar el resto de impresiones de la plataforma.
+ * El calendario anual va en A4 vertical, con los 6+6 meses ajustados
+ * a un ancho fijo (ver .cal-anual-page en el CSS) para que quepan
+ * siempre en una sola hoja, sin depender del ancho de la ventana del
+ * navegador en cada momento — una hoja de estilo temporal, quitada
+ * justo después de imprimir, sin tocar el resto de impresiones de
+ * la plataforma.
  */
-function imprimirCalendarioApaisado() {
+function imprimirCalendarioVertical() {
   const estilo = document.createElement("style");
-  estilo.id = "estilo-print-apaisado-temporal";
-  estilo.textContent = "@page { size: A4 landscape; margin: 8mm; }";
+  estilo.id = "estilo-print-vertical-temporal";
+  estilo.textContent = "@page { size: A4 portrait; margin: 8mm; }";
   document.head.appendChild(estilo);
   setTimeout(() => {
     window.print();

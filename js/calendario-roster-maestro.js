@@ -260,7 +260,7 @@ async function exportarPdfCalendarioMaestro() {
         margin: 6,
         filename: `Calendario_${anio}_Roster.pdf`,
         html2canvas: { scale: 2 },
-        jsPDF: { unit: "mm", format: "a4", orientation: "landscape" },
+        jsPDF: { unit: "mm", format: "a4", orientation: "portrait" },
       })
       .save();
 
