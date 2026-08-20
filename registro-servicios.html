@@ -61,6 +61,7 @@
         <tr>
           <th>ID</th>
           <th>Nombre</th>
+          <th>Cliente</th>
           <th>Líneas</th>
           <th>Importe a pagar</th>
           <th style="text-align:right;">Acciones</th>
@@ -82,6 +83,11 @@
       <div class="field">
         <label for="rs-nombre">Nombre del registro</label>
         <input type="text" id="rs-nombre" placeholder="Ej. Diciembre 2026" required />
+      </div>
+
+      <div class="field">
+        <label for="rs-cliente">Cliente</label>
+        <select id="rs-cliente" required><option value="">— Selecciona un cliente —</option></select>
       </div>
 
       <div class="form-msg" id="modal-msg"></div>
