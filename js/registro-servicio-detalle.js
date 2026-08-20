@@ -41,6 +41,8 @@ async function cargarClientesRSD() {
   try {
     const snap = await db.collection("clientes").orderBy("nombre").get();
     clientesCacheRSD = snap.docs.map((d) => ({ id: d.id, ...d.data() }));
+    document.getElementById("rsd-cliente").innerHTML =
+      `<option value="">— Selecciona un cliente —</option>` + clientesCacheRSD.map((c) => `<option value="${c.id}">${escaparHtmlRSD(c.nombre)}</option>`).join("");
   } catch (err) {
     console.error(err);
   }
@@ -70,6 +72,7 @@ async function cargarRegistroRSD() {
     document.getElementById("rsd-id-badge").textContent = `${d.idVisible || "—"} · V${d.version || 1}`;
     document.getElementById("rsd-titulo-cabecera").textContent = d.nombre || "Registro";
     document.getElementById("rsd-nombre").value = d.nombre || "";
+    document.getElementById("rsd-cliente").value = d.clienteId || "";
     document.getElementById("rsd-notas").value = d.notas || "";
 
     lineasRSD = Array.isArray(d.lineas) ? d.lineas : [];
@@ -86,13 +89,6 @@ function totalLineaRSD(l) {
   const importe = l.importe || 0;
   const iva = l.formaPago === "FRA" ? importe * 0.21 : 0;
   return importe + iva;
-}
-
-function opcionesClienteHtml(seleccionado) {
-  return (
-    `<option value="">— Selecciona un cliente —</option>` +
-    clientesCacheRSD.map((c) => `<option value="${c.id}" ${seleccionado === c.id ? "selected" : ""}>${escaparHtmlRSD(c.nombre)}</option>`).join("")
-  );
 }
 
 function opcionesServicioHtml(seleccionado) {
@@ -112,18 +108,12 @@ function renderLineasRSD() {
         const formaPago = l.formaPago || "";
         return `
           <div class="modalidad-card">
-            <div style="display:flex; gap:10px; align-items:flex-start; margin-bottom:10px;">
-              <div class="form-grid" style="flex:1;">
-                <div class="field">
-                  <label style="font-size:11px;">Cliente</label>
-                  <select onchange="alCambiarClienteLineaRSD(${i}, this.value)">${opcionesClienteHtml(l.clienteId)}</select>
-                </div>
-                <div class="field">
-                  <label style="font-size:11px;">Servicio</label>
-                  <select onchange="alCambiarServicioLineaRSD(${i}, this.value)">${opcionesServicioHtml(l.servicioId)}</select>
-                </div>
+            <div style="display:flex; gap:10px; align-items:flex-end; margin-bottom:10px;">
+              <div class="field" style="flex:1; margin-bottom:0;">
+                <label style="font-size:11px;">Servicio</label>
+                <select onchange="alCambiarServicioLineaRSD(${i}, this.value)">${opcionesServicioHtml(l.servicioId)}</select>
               </div>
-              <button type="button" class="remove-row-btn" onclick="eliminarLineaRSD(${i})" style="margin-top:22px;">✕</button>
+              <button type="button" class="remove-row-btn" onclick="eliminarLineaRSD(${i})">✕</button>
             </div>
 
             <div class="form-grid">
@@ -160,12 +150,6 @@ function renderLineasRSD() {
   recalcularTotalesRSD();
 }
 
-function alCambiarClienteLineaRSD(i, clienteId) {
-  const c = clientesCacheRSD.find((x) => x.id === clienteId);
-  lineasRSD[i].clienteId = clienteId || null;
-  lineasRSD[i].clienteNombre = c ? c.nombre : "";
-}
-
 function alCambiarServicioLineaRSD(i, servicioId) {
   const s = serviciosCacheRSD.find((x) => x.id === servicioId);
   lineasRSD[i].servicioId = servicioId || null;
@@ -189,8 +173,6 @@ function actualizarTotalLineaRSD(i) {
 
 function anadirLineaRSD() {
   lineasRSD.push({
-    clienteId: null,
-    clienteNombre: "",
     servicioId: null,
     servicioNombre: "",
     actuacion: "",
@@ -233,8 +215,17 @@ async function guardarRS() {
     return;
   }
 
+  const clienteId = document.getElementById("rsd-cliente").value;
+  if (!clienteId) {
+    mostrarToast("Elige un cliente para este registro antes de guardar.");
+    return;
+  }
+  const clienteEncontrado = clientesCacheRSD.find((c) => c.id === clienteId);
+
   const datos = {
     nombre,
+    clienteId,
+    clienteNombre: clienteEncontrado ? clienteEncontrado.nombre : "",
     notas: document.getElementById("rsd-notas").value.trim(),
     lineas: lineasRSD,
   };
