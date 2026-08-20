@@ -363,6 +363,50 @@ verdad en vez de descartar posibilidades a ciegas.
 
 De 48px a 130px.
 
+## Registro de Servicios — "Crear registro" no hacía nada
+
+Confirmado: si todavía no hay ningún cliente creado (normal estando
+en pruebas), el desplegable de Cliente se quedaba solo con el
+placeholder, y como el campo es obligatorio, el navegador bloqueaba
+el envío con un aviso nativo diminuto — parecía que el botón no hacía
+nada. Ahora, si intentas crear un registro sin cliente disponible, te
+lo dice claramente ("todavía no hay ningún cliente creado — da de
+alta uno primero"), en vez de depender de ese aviso casi invisible
+del navegador.
+
+## Calendario general — ya se mantiene actualizado al borrar
+
+Confirmado el fallo: Bookings, Producciones y Hojas de Ruta creaban
+su marca en el Calendario general al guardarse, pero **ninguno la
+borraba** al eliminar el registro — de hecho, el propio aviso de
+confirmación de Producción y Hoja de Ruta ya admitía la limitación
+("esto no borra su marca en el calendario"), sin haberse llegado a
+arreglar. Ahora sí: al eliminar cualquiera de los tres, su entrada
+del Calendario general desaparece con él (y la del Calendario del
+Roster también, en el caso de Producción, que se había quedado sin
+esa limpieza).
+
+Para las entradas que **ya** se quedaron huérfanas de cosas que
+borraste durante las pruebas (antes de este arreglo), añadí una
+herramienta puntual en **Administración → Información y Backup**:
+"🧹 Buscar y limpiar entradas huérfanas" — revisa cada entrada
+relacionada con Bookings/Producciones/Hojas de Ruta y borra solo las
+que apuntan a algo que ya no existe. Es un clic único, no hace falta
+repetirlo — de aquí en adelante se mantiene solo.
+
+## Tu flujo de trabajo
+
+Gracias por detallarlo — así puedo tenerlo en cuenta de aquí en
+adelante. Encaja bien con lo que hay construido: Catálogo → Propuesta
+(con "Enviar a evaluar" para los costes de producción antes de
+mandarla al cliente) → Booking (con Contratos y Estado
+Pendiente/Aceptado/Rechazado) → Producción (vinculando el booking, o
+actualizando la que ya existiera desde la evaluación) → Hoja de Ruta.
+El único tramo que todavía no existe es el **Cierre del evento**
+(adjuntar tickets/facturas, expediente de cierre, resumen para pasar
+a Holded) — dijiste que lo dejamos para más adelante, así que no lo
+he tocado; avísame cuando quieras que lo construyamos.
+
 ## Booking — fecha por artista (arreglado el fallo de sincronización)
 
 Confirmado: un booking puede tener varios artistas, cada uno con

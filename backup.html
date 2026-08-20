@@ -43,6 +43,15 @@
     </div>
 
     <div class="card" style="margin-bottom:20px;">
+      <h3 style="font-size:15px; font-family:var(--font-display); margin-bottom:6px;">Calendario general — entradas huérfanas</h3>
+      <p style="font-size:13px; color:var(--color-text-muted); margin-bottom:16px;">
+        Desde ahora, borrar un Booking, Producción u Hoja de Ruta quita también su marca del Calendario general automáticamente. Este botón limpia de una vez las que se quedaron sueltas <strong>antes</strong> de este arreglo (de cosas que ya borraste durante las pruebas) — comprueba una por una si el Booking/Producción/Hoja de Ruta al que apuntan ya no existe, y solo borra esas.
+      </p>
+      <div id="resultado-limpieza-cal" style="font-size:13px; margin-bottom:12px;"></div>
+      <button class="btn-ghost" onclick="limpiarEntradasHuerfanasCalendario()" id="btn-limpiar-cal">🧹 Buscar y limpiar entradas huérfanas</button>
+    </div>
+
+    <div class="card" style="margin-bottom:20px;">
       <h3 style="font-size:15px; font-family:var(--font-display); margin-bottom:6px;">Contadores de numeración</h3>
       <p style="font-size:13px; color:var(--color-text-muted); margin-bottom:16px;">
         Muestra el último número usado este año para cada tipo de documento. Reiniciar un contador hace que el próximo empiece otra vez en 0001 — <strong>solo hazlo si estás seguro de que no se van a repetir IDs ya usados</strong>.
