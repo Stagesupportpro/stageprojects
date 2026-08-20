@@ -135,11 +135,18 @@ async function crearRoster() {
 }
 
 function confirmarEliminarRoster(id, nombre) {
-  if (!confirm(`¿Eliminar "${nombre}" del roster?`)) return;
+  if (!confirm(`¿Eliminar "${nombre}" del roster? Esto también borra todas sus fechas del Calendario del Roster y su ficha Jurídica (si tiene).`)) return;
   db.collection("roster")
     .doc(id)
     .delete()
-    .then(() => mostrarToast("Eliminado del roster."))
+    .then(async () => {
+      const snapCal = await db.collection("calendarioArtistas").where("rosterId", "==", id).get();
+      const batch = db.batch();
+      snapCal.forEach((doc) => batch.delete(doc.ref));
+      if (!snapCal.empty) await batch.commit();
+      await db.collection("rosterJuridico").doc(id).delete().catch(() => {});
+      mostrarToast("Eliminado del roster.");
+    })
     .catch((err) => {
       console.error(err);
       mostrarToast("No se pudo eliminar.");

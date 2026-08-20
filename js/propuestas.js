@@ -172,7 +172,13 @@ function confirmarEliminarPropuesta(id, nombre) {
   db.collection("propuestas")
     .doc(id)
     .delete()
-    .then(() => mostrarToast("Propuesta eliminada."))
+    .then(async () => {
+      const snapEval = await db.collection("evaluaciones").where("propuestaId", "==", id).get();
+      const batch = db.batch();
+      snapEval.forEach((doc) => batch.delete(doc.ref));
+      if (!snapEval.empty) await batch.commit();
+      mostrarToast("Propuesta eliminada.");
+    })
     .catch((err) => {
       console.error(err);
       mostrarToast("No se pudo eliminar.");

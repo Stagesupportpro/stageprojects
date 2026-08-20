@@ -99,11 +99,12 @@ async function cargarContadores() {
   }
 }
 
-// ---------- Limpieza de entradas huérfanas del Calendario general ----------
-// Cubre las entradas creadas por Bookings/Producciones/Hojas de Ruta ANTES
-// de que se guardara el ID de vuelta (documentoCalendarioId) — a partir de
-// ahora, borrar el registro original ya limpia su marca en el calendario
-// solo, así que esto es una limpieza puntual, no algo que haya que repetir.
+// ---------- Limpieza de datos huérfanos (propuestas, roster, calendario) ----------
+// Cubre lo creado ANTES de que cada eliminación limpiara detrás de sí misma
+// (Propuestas → Evaluaciones, Bookings/Producciones/Hojas de Ruta → Calendario
+// general y Calendario del Roster) — a partir de ahora cada eliminación ya se
+// encarga sola, así que esto es una limpieza puntual, no algo que haya que
+// repetir después de cada borrado normal.
 async function limpiarEntradasHuerfanasCalendario() {
   const btn = document.getElementById("btn-limpiar-cal");
   const resultado = document.getElementById("resultado-limpieza-cal");
@@ -117,28 +118,58 @@ async function limpiarEntradasHuerfanasCalendario() {
   ];
 
   try {
-    const snap = await db.collection("documentos").get();
-    let borradas = 0;
-    let revisadas = 0;
+    let borradasDocumentos = 0;
+    let borradasEvaluaciones = 0;
+    let borradasCalendario = 0;
 
-    for (const doc of snap.docs) {
+    // 1) Calendario general: entradas de Bookings/Producciones/Hojas de Ruta
+    //    cuyo origen ya no existe.
+    const snapDocs = await db.collection("documentos").get();
+    for (const doc of snapDocs.docs) {
       const notas = doc.data().notas || "";
       const origen = PREFIJOS_ORIGEN.find((p) => notas.startsWith(p.prefijo));
       if (!origen) continue;
 
-      revisadas++;
       const idVisibleBuscado = notas.slice(origen.prefijo.length).trim();
       if (!idVisibleBuscado) continue;
 
       const snapOrigen = await db.collection(origen.coleccion).where("idVisible", "==", idVisibleBuscado).limit(1).get();
       if (snapOrigen.empty) {
         await db.collection("documentos").doc(doc.id).delete();
-        borradas++;
+        borradasDocumentos++;
       }
     }
 
-    resultado.textContent = `Revisadas ${revisadas} entradas relacionadas con Bookings/Producciones/Hojas de Ruta — ${borradas} estaban huérfanas y se han borrado.`;
-    mostrarToast(borradas > 0 ? `${borradas} entrada(s) huérfana(s) borradas.` : "No había ninguna entrada huérfana.");
+    // 2) Evaluaciones cuya propuesta ya no existe.
+    const snapEval = await db.collection("evaluaciones").get();
+    for (const doc of snapEval.docs) {
+      const propuestaId = doc.data().propuestaId;
+      if (!propuestaId) continue;
+      const snapProp = await db.collection("propuestas").doc(propuestaId).get();
+      if (!snapProp.exists) {
+        await db.collection("evaluaciones").doc(doc.id).delete();
+        borradasEvaluaciones++;
+      }
+    }
+
+    // 3) Calendario del Roster: entradas venidas de un Booking/Producción que
+    //    ya no existe (las manuales, con origen "manual", nunca se tocan).
+    const snapCal = await db.collection("calendarioArtistas").get();
+    for (const doc of snapCal.docs) {
+      const d = doc.data();
+      if (d.origen !== "booking" && d.origen !== "produccion") continue;
+      const coleccionOrigen = d.origen === "booking" ? "bookings" : "producciones";
+      if (!d.origenId) continue;
+      const snapOrigen = await db.collection(coleccionOrigen).doc(d.origenId).get();
+      if (!snapOrigen.exists) {
+        await db.collection("calendarioArtistas").doc(doc.id).delete();
+        borradasCalendario++;
+      }
+    }
+
+    const total = borradasDocumentos + borradasEvaluaciones + borradasCalendario;
+    resultado.textContent = `Calendario general: ${borradasDocumentos} borradas. Evaluaciones: ${borradasEvaluaciones} borradas. Calendario del Roster: ${borradasCalendario} borradas.`;
+    mostrarToast(total > 0 ? `${total} entrada(s) huérfana(s) borradas en total.` : "No había ninguna entrada huérfana.");
   } catch (err) {
     console.error(err);
     resultado.textContent = `No se pudo completar la limpieza: ${err.code || ""} ${err.message || err}`.trim();
