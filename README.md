@@ -388,16 +388,20 @@ verdad. Es un botón de un solo uso para limpiar lo que se quedó
 suelto de las pruebas anteriores a estos arreglos; no hace falta
 repetirlo después de una eliminación normal a partir de ahora.
 
-## Calendario anual — formato de la referencia (apaisado, con fines de semana marcados)
+## Calendario anual — A4 vertical, ancho fijo para que quepa siempre en una hoja
 
-Vuelto a apaisado (6 meses por fila, 2 filas), tal como el PDF de
-referencia que mandaste — la versión vertical de la ronda anterior
-quedaba muy apretada, y este formato encaja mejor y es el que
-querías. Añadido también el detalle que le faltaba: los **fines de
-semana se marcan con el número del día en gris**, igual que en la
-referencia; si ese día tiene una fecha del artista, el color del
-evento (verde/ámbar) manda por encima de la marca de fin de semana,
-igual que en el PDF original.
+Corregido: es **A4 vertical** (no apaisado), manteniendo el mismo
+reparto de 6 meses por fila en 2 filas de la referencia, y con los
+fines de semana marcados en gris en el número del día (cediendo el
+color al verde/ámbar si ese día tiene una fecha del artista).
+
+La causa real de que se cortara en dos hojas: el ancho de captura
+dependía del ancho de la ventana del navegador en ese momento, así
+que el resultado no era fiable (unas veces cabía, otras no, según la
+pantalla desde la que se exportara). Ahora el ancho está **fijado en
+píxeles** (equivalente al ancho útil real de una A4 vertical), así
+que siempre cabe en una sola hoja sin importar desde qué pantalla se
+imprima o exporte.
 
 ## Registro de Servicios — "Crear registro" no hacía nada
 
