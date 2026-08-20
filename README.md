@@ -363,6 +363,15 @@ verdad en vez de descartar posibilidades a ciegas.
 
 De 48px a 130px.
 
+## Calendario anual — ahora A4 vertical, en una sola hoja
+
+Cambiado de apaisado (6 meses × 2 filas) a **vertical, 3 meses × 4
+filas** — más natural en A4 vertical y con más margen de sobra en
+altura que en anchura. Recorté además el logo, los márgenes y el
+espaciado de las filas de días para que las 4 filas de meses quepan
+de verdad en una sola hoja (afecta tanto a Imprimir como a Exportar
+PDF, en Roster y en el Calendario Roster maestro).
+
 ## Registro de Servicios — "Crear registro" no hacía nada
 
 Confirmado: si todavía no hay ningún cliente creado (normal estando
