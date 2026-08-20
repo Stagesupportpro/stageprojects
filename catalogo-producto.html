@@ -1,0 +1,99 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Stage Support · Catálogo</title>
+<link rel="icon" href="assets/logo_stagesupport.png" />
+<link rel="stylesheet" href="css/styles.css" />
+</head>
+<body>
+
+<div class="app-shell">
+
+  <aside class="sidebar" id="sidebar">
+    <div class="brand-mark">
+      <img src="assets/logo_stagesupport.png" alt="Stage Support" onerror="this.style.display='none'" />
+    </div>
+
+    <nav id="nav-container" style="flex:1; overflow-y:auto;"></nav>
+
+    <div class="sidebar-footer">
+      <div class="access-pass">
+        <div class="pass-top">
+          <div class="pass-avatar" id="pass-avatar">—</div>
+          <div>
+            <div class="pass-name" id="pass-name">—</div>
+            <div class="pass-role" id="pass-role">—</div>
+          </div>
+        </div>
+        <div class="pass-version" id="pass-version"></div>
+        <button class="pass-logout" onclick="cerrarSesion()">Cerrar sesión</button>
+      </div>
+    </div>
+  </aside>
+
+  <main class="main">
+    <div class="topbar">
+      <button class="mobile-menu-btn" onclick="document.getElementById('sidebar').classList.toggle('open')">☰</button>
+      <div>
+        <div class="eyebrow">Comercial · <a href="catalogo.html" style="color:inherit;">Catálogo</a></div>
+        <h1 id="cp-titulo-cabecera">—</h1>
+      </div>
+    </div>
+
+    <div class="card">
+      <div style="display:flex; gap:22px; flex-wrap:wrap;">
+        <img class="cat-prod-poster" id="cp-poster" style="display:none;" onclick="abrirLightboxImagen(this.src)" />
+        <div style="flex:1; min-width:240px;">
+          <div id="cp-categoria" style="margin-bottom:8px;"></div>
+          <div id="cp-oficina" style="color:var(--color-text-muted); font-size:13px; margin-bottom:14px;"></div>
+          <p id="cp-descripcion" style="line-height:1.6;"></p>
+          <div id="cp-campos-extra"></div>
+        </div>
+      </div>
+    </div>
+
+    <div class="card" id="cp-card-galeria" style="display:none;">
+      <div class="hr-section-head"><h3>Galería</h3></div>
+      <div class="cat-prod-galeria" id="cp-galeria"></div>
+    </div>
+
+    <div class="card" id="cp-card-videos" style="display:none;">
+      <div class="hr-section-head"><h3>Vídeos</h3></div>
+      <div class="cat-prod-videos" id="cp-videos"></div>
+    </div>
+
+    <div class="card" id="cp-card-redes" style="display:none;">
+      <div class="hr-section-head"><h3>Redes sociales</h3></div>
+      <div class="cat-modal-redes" id="cp-redes"></div>
+    </div>
+  </main>
+
+</div>
+
+<!-- Visor ampliado: foto -->
+<div class="lightbox-overlay" id="lightbox-imagen-overlay" onclick="if(event.target===this) cerrarLightboxImagen()">
+  <button class="lightbox-close" onclick="cerrarLightboxImagen()">✕</button>
+  <img id="lightbox-imagen-img" src="" alt="" />
+</div>
+
+<!-- Visor ampliado: vídeo -->
+<div class="lightbox-overlay" id="lightbox-video-overlay" onclick="if(event.target===this) cerrarLightboxVideo()">
+  <button class="lightbox-close" onclick="cerrarLightboxVideo()">✕</button>
+  <div class="lightbox-video-wrap">
+    <iframe id="lightbox-video-iframe" src="" allow="autoplay; encrypted-media" allowfullscreen></iframe>
+  </div>
+</div>
+
+<div class="toast" id="toast"><span class="dot"></span><span id="toast-msg"></span></div>
+
+<script src="https://www.gstatic.com/firebasejs/10.13.0/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.13.0/firebase-auth-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.13.0/firebase-firestore-compat.js"></script>
+<script src="js/firebase-config.js"></script>
+<script src="js/auth.js"></script>
+<script src="js/nav.js"></script>
+<script src="js/catalogo-producto.js"></script>
+</body>
+</html>

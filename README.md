@@ -363,6 +363,28 @@ verdad en vez de descartar posibilidades a ciegas.
 
 De 48px a 130px.
 
+## Tipos de Servicio / Registro de Servicios — permisos
+
+Ambos errores ("permission-denied") venían de la misma causa de
+siempre: las reglas de Firestore, en tu Firebase, todavía no
+reflejaban lo último. Las reglas de nuestro archivo ya eran
+correctas (revisadas línea a línea, sin colecciones duplicadas ni
+desbalances) — solo hacía falta volver a publicarlas enteras.
+
+## Catálogo — cada producto con su propia página
+
+Antes cada espectáculo se abría en un modal encima del listado.
+Ahora cada uno tiene su **página propia** (`catalogo-producto.html`),
+con toda su información: descripción, campos adicionales, galería,
+vídeos y redes sociales.
+
+- **Fotos** (cartel y galería): al pulsarlas se abren en un **visor
+  ampliado** a pantalla completa, con botón de cerrar (✕) — también
+  se cierra con la tecla Escape o pulsando fuera de la imagen.
+- **Vídeos de YouTube**: al pulsar la miniatura se abren en ese mismo
+  visor ampliado, pero **incrustados** (no se sale de la plataforma
+  hacia YouTube) — al cerrar, el vídeo se para solo.
+
 ## Calendario de disponibilidad del Roster (sistema completo)
 
 Gran parte de esto ya estaba construido de un paso oculto anterior
