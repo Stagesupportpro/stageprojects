@@ -196,7 +196,7 @@ formHR.addEventListener("submit", async (e) => {
       });
 
       // También queda marcada en el Calendario, el día de creación.
-      await db.collection("documentos").add({
+      const refDoc = await db.collection("documentos").add({
         tipo: "HojaDeRuta",
         titulo: `${datosBase.nombre} (${idVisible})`,
         fecha: fechaISOHR(new Date()),
@@ -206,6 +206,7 @@ formHR.addEventListener("submit", async (e) => {
         creadoPorUid: usuarioActualHR.uid,
         creadoEl: firebase.firestore.FieldValue.serverTimestamp(),
       });
+      await db.collection("hojasDeRuta").doc(refNueva.id).update({ documentoCalendarioId: refDoc.id });
 
       mostrarToast(`Hoja de ruta ${idVisible} creada. Abriendo editor…`);
       window.location.href = `hojaderuta-detalle.html?id=${refNueva.id}`;
@@ -222,11 +223,18 @@ formHR.addEventListener("submit", async (e) => {
 // ---------- Eliminar ----------
 
 function confirmarEliminarHR(id, nombre) {
-  if (!confirm(`¿Eliminar la hoja de ruta "${nombre}"? Esto no borra su marca en el calendario.`)) return;
+  if (!confirm(`¿Eliminar la hoja de ruta "${nombre}"? Esto también la quita del calendario.`)) return;
   db.collection("hojasDeRuta")
     .doc(id)
-    .delete()
-    .then(() => mostrarToast("Hoja de ruta eliminada."))
+    .get()
+    .then(async (snap) => {
+      const documentoCalendarioId = snap.exists ? snap.data().documentoCalendarioId : null;
+      await db.collection("hojasDeRuta").doc(id).delete();
+      if (documentoCalendarioId) {
+        await db.collection("documentos").doc(documentoCalendarioId).delete().catch((err) => console.error(err));
+      }
+      mostrarToast("Hoja de ruta eliminada.");
+    })
     .catch((err) => {
       console.error(err);
       mostrarToast("No se pudo eliminar.");

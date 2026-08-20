@@ -475,7 +475,7 @@ async function guardarBooking() {
       if (!snapDoc.data().marcadoEnCalendario) {
         const contraparte = tipo === "promotor" ? datosBase.espacio : datosBase.clienteNombre;
         const nombresArtistas = artistasValidos.map((a) => a.nombre).join(", ");
-        await db.collection("documentos").add({
+        const refDoc = await db.collection("documentos").add({
           tipo: "Booking",
           titulo: `${nombresArtistas} — ${contraparte || "—"} (${snapDoc.data().idVisible || ""})`,
           fecha: fechaISOBk(new Date()),
@@ -485,7 +485,7 @@ async function guardarBooking() {
           creadoPorUid: usuarioActualBk.uid,
           creadoEl: firebase.firestore.FieldValue.serverTimestamp(),
         });
-        await db.collection("bookings").doc(docIdBooking).update({ marcadoEnCalendario: true });
+        await db.collection("bookings").doc(docIdBooking).update({ marcadoEnCalendario: true, documentoCalendarioId: refDoc.id });
       }
     }
 

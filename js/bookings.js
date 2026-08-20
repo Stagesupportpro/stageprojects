@@ -175,12 +175,17 @@ async function crearNuevaVersionBooking(b) {
 // ---------- Eliminar ----------
 
 function confirmarEliminarBooking(id, nombre) {
-  if (!confirm(`¿Eliminar el booking de "${nombre}"? Esto también quita su marca del Calendario del Roster.`)) return;
+  if (!confirm(`¿Eliminar el booking de "${nombre}"? Esto también lo quita del Calendario del Roster y del Calendario general.`)) return;
   db.collection("bookings")
     .doc(id)
-    .delete()
-    .then(async () => {
+    .get()
+    .then(async (snap) => {
+      const documentoCalendarioId = snap.exists ? snap.data().documentoCalendarioId : null;
+      await db.collection("bookings").doc(id).delete();
       await eliminarCalendarioArtistasDeOrigen("booking", id);
+      if (documentoCalendarioId) {
+        await db.collection("documentos").doc(documentoCalendarioId).delete().catch((err) => console.error(err));
+      }
       mostrarToast("Booking eliminado.");
     })
     .catch((err) => {

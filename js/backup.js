@@ -99,6 +99,54 @@ async function cargarContadores() {
   }
 }
 
+// ---------- Limpieza de entradas huérfanas del Calendario general ----------
+// Cubre las entradas creadas por Bookings/Producciones/Hojas de Ruta ANTES
+// de que se guardara el ID de vuelta (documentoCalendarioId) — a partir de
+// ahora, borrar el registro original ya limpia su marca en el calendario
+// solo, así que esto es una limpieza puntual, no algo que haya que repetir.
+async function limpiarEntradasHuerfanasCalendario() {
+  const btn = document.getElementById("btn-limpiar-cal");
+  const resultado = document.getElementById("resultado-limpieza-cal");
+  btn.disabled = true;
+  resultado.textContent = "Revisando…";
+
+  const PREFIJOS_ORIGEN = [
+    { prefijo: "Booking ", coleccion: "bookings" },
+    { prefijo: "Producción ", coleccion: "producciones" },
+    { prefijo: "Hoja de ruta ", coleccion: "hojasDeRuta" },
+  ];
+
+  try {
+    const snap = await db.collection("documentos").get();
+    let borradas = 0;
+    let revisadas = 0;
+
+    for (const doc of snap.docs) {
+      const notas = doc.data().notas || "";
+      const origen = PREFIJOS_ORIGEN.find((p) => notas.startsWith(p.prefijo));
+      if (!origen) continue;
+
+      revisadas++;
+      const idVisibleBuscado = notas.slice(origen.prefijo.length).trim();
+      if (!idVisibleBuscado) continue;
+
+      const snapOrigen = await db.collection(origen.coleccion).where("idVisible", "==", idVisibleBuscado).limit(1).get();
+      if (snapOrigen.empty) {
+        await db.collection("documentos").doc(doc.id).delete();
+        borradas++;
+      }
+    }
+
+    resultado.textContent = `Revisadas ${revisadas} entradas relacionadas con Bookings/Producciones/Hojas de Ruta — ${borradas} estaban huérfanas y se han borrado.`;
+    mostrarToast(borradas > 0 ? `${borradas} entrada(s) huérfana(s) borradas.` : "No había ninguna entrada huérfana.");
+  } catch (err) {
+    console.error(err);
+    resultado.textContent = `No se pudo completar la limpieza: ${err.code || ""} ${err.message || err}`.trim();
+  } finally {
+    btn.disabled = false;
+  }
+}
+
 async function reiniciarContador(id, etiqueta) {
   const confirmado = confirm(
     `¿Reiniciar el contador de ${etiqueta} (${id}) a 0000?\n\nEl próximo ${id.replace(/\d\d$/, "")} que se cree empezará otra vez en 0001. Solo hazlo si estás seguro de que no hay IDs ya usados que se puedan repetir.`

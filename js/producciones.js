@@ -225,7 +225,7 @@ formProduccion.addEventListener("submit", async (e) => {
     } else {
       const idVisible = await generarSiguienteId(PREFIJOS_ID.produccion);
 
-      await db.collection("producciones").add({
+      const ref = await db.collection("producciones").add({
         ...datosBase,
         idVisible,
         creadoPor: nombreCompletoDe(usuarioActualProd) || usuarioActualProd.email,
@@ -234,7 +234,7 @@ formProduccion.addEventListener("submit", async (e) => {
       });
 
       // También queda marcada en el Calendario, el día de creación.
-      await db.collection("documentos").add({
+      const refDoc = await db.collection("documentos").add({
         tipo: "Evento",
         titulo: `${datosBase.nombre} (${idVisible})`,
         fecha: fechaISOProd(new Date()),
@@ -244,6 +244,7 @@ formProduccion.addEventListener("submit", async (e) => {
         creadoPorUid: usuarioActualProd.uid,
         creadoEl: firebase.firestore.FieldValue.serverTimestamp(),
       });
+      await db.collection("producciones").doc(ref.id).update({ documentoCalendarioId: refDoc.id });
 
       mostrarToast(`Producción ${idVisible} creada y marcada en el calendario.`);
       cerrarModal();
@@ -285,11 +286,19 @@ async function crearNuevaVersionProduccion(p) {
 // ---------- Eliminar ----------
 
 function confirmarEliminarProduccion(id, nombre) {
-  if (!confirm(`¿Eliminar la producción "${nombre}"? Esto no borra su marca en el calendario.`)) return;
+  if (!confirm(`¿Eliminar la producción "${nombre}"? Esto también la quita del calendario.`)) return;
   db.collection("producciones")
     .doc(id)
-    .delete()
-    .then(() => mostrarToast("Producción eliminada."))
+    .get()
+    .then(async (snap) => {
+      const documentoCalendarioId = snap.exists ? snap.data().documentoCalendarioId : null;
+      await db.collection("producciones").doc(id).delete();
+      await eliminarCalendarioArtistasDeOrigen("produccion", id);
+      if (documentoCalendarioId) {
+        await db.collection("documentos").doc(documentoCalendarioId).delete().catch((err) => console.error(err));
+      }
+      mostrarToast("Producción eliminada.");
+    })
     .catch((err) => {
       console.error(err);
       mostrarToast("No se pudo eliminar.");

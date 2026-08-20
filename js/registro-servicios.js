@@ -35,9 +35,12 @@ async function cargarClientesRS() {
     const snap = await db.collection("clientes").orderBy("nombre").get();
     clientesCacheRS = snap.docs.map((d) => ({ id: d.id, ...d.data() }));
     document.getElementById("rs-cliente").innerHTML =
-      `<option value="">— Selecciona un cliente —</option>` + clientesCacheRS.map((c) => `<option value="${c.id}">${escaparHtmlRS(c.nombre)}</option>`).join("");
+      clientesCacheRS.length === 0
+        ? `<option value="">— No hay clientes creados todavía —</option>`
+        : `<option value="">— Selecciona un cliente —</option>` + clientesCacheRS.map((c) => `<option value="${c.id}">${escaparHtmlRS(c.nombre)}</option>`).join("");
   } catch (err) {
     console.error(err);
+    mostrarToast(`No se pudo cargar la lista de clientes: ${err.code || ""} ${err.message || err}`.trim());
   }
 }
 
@@ -155,10 +158,20 @@ formRS.addEventListener("submit", async (e) => {
   e.preventDefault();
   const btn = document.getElementById("btn-guardar");
   btn.disabled = true;
+  ocultarMsgRS();
 
   const nombre = document.getElementById("rs-nombre").value.trim();
   const clienteId = document.getElementById("rs-cliente").value;
   const clienteEncontrado = clientesCacheRS.find((c) => c.id === clienteId);
+
+  if (!nombre || !clienteId) {
+    document.getElementById("modal-msg").textContent = !clienteId && clientesCacheRS.length === 0
+      ? "Todavía no hay ningún cliente creado — da de alta uno primero en Booking & Management → Clientes."
+      : "Completa el nombre y elige un cliente antes de crear el registro.";
+    document.getElementById("modal-msg").className = "form-msg show error";
+    btn.disabled = false;
+    return;
+  }
 
   try {
     const idVisible = await generarSiguienteId(PREFIJOS_ID.registroServicio);
