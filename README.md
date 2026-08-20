@@ -388,14 +388,16 @@ verdad. Es un botón de un solo uso para limpiar lo que se quedó
 suelto de las pruebas anteriores a estos arreglos; no hace falta
 repetirlo después de una eliminación normal a partir de ahora.
 
-## Calendario anual — ahora A4 vertical, en una sola hoja
+## Calendario anual — formato de la referencia (apaisado, con fines de semana marcados)
 
-Cambiado de apaisado (6 meses × 2 filas) a **vertical, 3 meses × 4
-filas** — más natural en A4 vertical y con más margen de sobra en
-altura que en anchura. Recorté además el logo, los márgenes y el
-espaciado de las filas de días para que las 4 filas de meses quepan
-de verdad en una sola hoja (afecta tanto a Imprimir como a Exportar
-PDF, en Roster y en el Calendario Roster maestro).
+Vuelto a apaisado (6 meses por fila, 2 filas), tal como el PDF de
+referencia que mandaste — la versión vertical de la ronda anterior
+quedaba muy apretada, y este formato encaja mejor y es el que
+querías. Añadido también el detalle que le faltaba: los **fines de
+semana se marcan con el número del día en gris**, igual que en la
+referencia; si ese día tiene una fecha del artista, el color del
+evento (verde/ámbar) manda por encima de la marca de fin de semana,
+igual que en el PDF original.
 
 ## Registro de Servicios — "Crear registro" no hacía nada
 
