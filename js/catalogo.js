@@ -113,7 +113,7 @@ function pintarCatalogo() {
   grid.innerHTML = items
     .map(
       (r) => `
-        <div class="catalogo-card" onclick="abrirModalCatalogo('${r.id}')">
+        <div class="catalogo-card" onclick="window.location.href='catalogo-producto.html?id=${r.id}'">
           ${r.imagenCartel ? `<img class="cat-imagen" src="${r.imagenCartel}" alt="" />` : `<div class="cat-imagen-placeholder">${escaparHtmlCat(inicialesDe(r.nombre))}</div>`}
           <div class="cat-info">
             <div class="cat-nombre">${escaparHtmlCat(r.nombre)}</div>
@@ -124,58 +124,6 @@ function pintarCatalogo() {
       `
     )
     .join("");
-}
-
-function extraerIdYoutubeCat(url) {
-  if (!url) return null;
-  const match = url.match(/(?:youtube\.com\/(?:watch\?v=|embed\/|shorts\/)|youtu\.be\/)([a-zA-Z0-9_-]{11})/);
-  return match ? match[1] : null;
-}
-
-function abrirModalCatalogo(id) {
-  const r = catalogoCache.find((x) => x.id === id);
-  if (!r) return;
-
-  document.getElementById("cat-modal-nombre").textContent = r.nombre || "";
-  document.getElementById("cat-modal-oficina").textContent = [r.categoria, r.oficinaRepresentacion].filter(Boolean).join(" · ");
-  document.getElementById("cat-modal-descripcion").textContent = r.descripcionComercial || "Sin descripción todavía.";
-  const camposExtra = Array.isArray(r.camposExtra) ? r.camposExtra.filter((c) => c.titulo || c.descripcion) : [];
-  document.getElementById("cat-modal-campos-extra").innerHTML = camposExtra.length
-    ? `<ul class="campos-extra-lista">${camposExtra.map((c) => `<li><strong>${escaparHtmlCat(c.titulo)}:</strong> ${escaparHtmlCat(c.descripcion)}</li>`).join("")}</ul>`
-    : "";
-
-  const img = document.getElementById("cat-modal-imagen");
-  if (r.imagenCartel) {
-    img.src = r.imagenCartel;
-    img.style.display = "block";
-  } else {
-    img.style.display = "none";
-  }
-
-  const galeria = Array.isArray(r.galeria) ? r.galeria.filter((f) => f) : [];
-  document.getElementById("cat-modal-galeria").innerHTML = galeria.map((foto) => `<img src="${foto}" alt="" />`).join("");
-
-  const videos = Array.isArray(r.videosYoutube) ? r.videosYoutube.filter((v) => v.url) : [];
-  document.getElementById("cat-modal-videos").innerHTML = videos
-    .map((v) => {
-      const idYt = extraerIdYoutubeCat(v.url);
-      return idYt
-        ? `<a class="video-thumb-link" href="${v.url}" target="_blank" rel="noopener" style="margin-bottom:8px;"><img src="https://img.youtube.com/vi/${idYt}/hqdefault.jpg" alt="" /><span class="play-badge">▶</span></a>`
-        : `<a href="${v.url}" target="_blank" rel="noopener">${escaparHtmlCat(v.titulo || "Ver vídeo")}</a>`;
-    })
-    .join("");
-
-  const redes = Array.isArray(r.redesSociales) ? r.redesSociales : [];
-  document.getElementById("cat-modal-redes").innerHTML = redes
-    .filter((x) => x.url)
-    .map((x) => `<a href="${x.url}" target="_blank" rel="noopener">${escaparHtmlCat(x.plataforma || "Enlace")}</a>`)
-    .join("");
-
-  document.getElementById("cat-modal-overlay").classList.add("show");
-}
-
-function cerrarModalCatalogo() {
-  document.getElementById("cat-modal-overlay").classList.remove("show");
 }
 
 function escaparHtmlCat(str) {
