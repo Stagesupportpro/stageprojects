@@ -63,6 +63,7 @@ async function cargarRegistroRV() {
 
     document.getElementById("rv-id-badge").textContent = `${d.idVisible || "—"} · V${d.version || 1}`;
     document.getElementById("rv-titulo-cabecera").textContent = d.nombre || "Registro de servicio";
+    document.getElementById("rv-cliente-cabecera").textContent = d.clienteNombre ? `Cliente: ${d.clienteNombre}` : "";
 
     const lineas = Array.isArray(d.lineas) ? d.lineas : [];
 
@@ -72,7 +73,6 @@ async function cargarRegistroRV() {
             const fecha = l.fecha ? new Date(l.fecha + "T00:00:00").toLocaleDateString("es-ES") : "—";
             return `
               <tr>
-                <td style="font-weight:600;">${escaparHtmlRV(l.clienteNombre || "—")}</td>
                 <td>${escaparHtmlRV(l.servicioNombre || "—")}</td>
                 <td>${escaparHtmlRV(l.actuacion || "—")}</td>
                 <td>${escaparHtmlRV(l.localizacion || "—")}</td>
@@ -84,7 +84,7 @@ async function cargarRegistroRV() {
             `;
           })
           .join("")
-      : `<tr><td colspan="8" style="text-align:center; padding:24px; color:var(--color-text-muted);">Este registro todavía no tiene líneas de servicio.</td></tr>`;
+      : `<tr><td colspan="7" style="text-align:center; padding:24px; color:var(--color-text-muted);">Este registro todavía no tiene líneas de servicio.</td></tr>`;
 
     const totalEfectivo = lineas.filter((l) => l.formaPago === "EF").reduce((sum, l) => sum + (l.importe || 0), 0);
     const totalFactura = lineas.filter((l) => l.formaPago === "FRA").reduce((sum, l) => sum + (l.importe || 0), 0);
@@ -134,7 +134,6 @@ function construirHtmlImprimibleRS() {
       const fecha = l.fecha ? new Date(l.fecha + "T00:00:00").toLocaleDateString("es-ES") : "—";
       return `
         <tr>
-          <td>${escaparHtmlRV(l.clienteNombre || "—")}</td>
           <td>${escaparHtmlRV(l.servicioNombre || "—")}</td>
           <td>${escaparHtmlRV(l.actuacion || "—")}</td>
           <td>${fecha}</td>
@@ -153,12 +152,12 @@ function construirHtmlImprimibleRS() {
       </div>
       <div class="doc-title-block">
         <h1>${escaparHtmlRV(d.nombre || "Registro de servicio")}</h1>
-        <div class="doc-id-text">${escaparHtmlRV(d.idVisible)} · V${d.version || 1}</div>
+        <div class="doc-id-text">${escaparHtmlRV(d.idVisible)} · V${d.version || 1}${d.clienteNombre ? ` · Cliente: ${escaparHtmlRV(d.clienteNombre)}` : ""}</div>
       </div>
 
       <table class="doc-table">
-        <tr><th class="doc-section-title" colspan="7">LÍNEAS DE SERVICIO</th></tr>
-        <tr><th>Cliente</th><th>Servicio</th><th>Actuación</th><th>Fecha</th><th>Importe</th><th>Forma de pago</th><th>Total</th></tr>
+        <tr><th class="doc-section-title" colspan="6">LÍNEAS DE SERVICIO</th></tr>
+        <tr><th>Servicio</th><th>Actuación</th><th>Fecha</th><th>Importe</th><th>Forma de pago</th><th>Total</th></tr>
         ${filasHtml}
       </table>
 

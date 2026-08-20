@@ -12,6 +12,7 @@
 
 let usuarioActualRS = null;
 let rsListaCache = [];
+let clientesCacheRS = [];
 
 (async function () {
   usuarioActualRS = await protegerPagina();
@@ -25,8 +26,20 @@ let rsListaCache = [];
     avatarEl.textContent = inicialesDe(nombreCompletoDe(usuarioActualRS) || usuarioActualRS.email);
   }
 
+  await cargarClientesRS();
   escucharRS();
 })();
+
+async function cargarClientesRS() {
+  try {
+    const snap = await db.collection("clientes").orderBy("nombre").get();
+    clientesCacheRS = snap.docs.map((d) => ({ id: d.id, ...d.data() }));
+    document.getElementById("rs-cliente").innerHTML =
+      `<option value="">— Selecciona un cliente —</option>` + clientesCacheRS.map((c) => `<option value="${c.id}">${escaparHtmlRS(c.nombre)}</option>`).join("");
+  } catch (err) {
+    console.error(err);
+  }
+}
 
 // ---------- Listado y búsqueda ----------
 
@@ -48,7 +61,7 @@ function aplicarFiltrosRS() {
   const texto = (document.getElementById("rs-busqueda").value || "").trim().toLowerCase();
   const filtrados = !texto
     ? rsListaCache
-    : rsListaCache.filter((r) => `${r.nombre || ""} ${r.idVisible || ""}`.toLowerCase().includes(texto));
+    : rsListaCache.filter((r) => `${r.nombre || ""} ${r.clienteNombre || ""} ${r.idVisible || ""}`.toLowerCase().includes(texto));
   pintarTablaRS(filtrados);
 }
 
@@ -69,7 +82,7 @@ function pintarTablaRS(filas) {
   document.getElementById("contador-rs").textContent = filas.length + (filas.length === 1 ? " registro" : " registros");
 
   if (filas.length === 0) {
-    tbody.innerHTML = `<tr><td colspan="5" style="text-align:center; padding:36px; color:var(--color-text-muted);">
+    tbody.innerHTML = `<tr><td colspan="6" style="text-align:center; padding:36px; color:var(--color-text-muted);">
       Todavía no hay registros creados.
     </td></tr>`;
     return;
@@ -83,6 +96,7 @@ function pintarTablaRS(filas) {
         <tr>
           <td><span class="id-badge">${escaparHtmlRS(r.idVisible || "—")}</span> <span class="permiso-tag">V${r.version || 1}</span></td>
           <td style="font-weight:600;">${escaparHtmlRS(r.nombre)}</td>
+          <td>${escaparHtmlRS(r.clienteNombre || "—")}</td>
           <td>${numLineas}</td>
           <td style="font-weight:600;">${formatoEuroRS(totalPagar)}</td>
           <td>
@@ -143,12 +157,16 @@ formRS.addEventListener("submit", async (e) => {
   btn.disabled = true;
 
   const nombre = document.getElementById("rs-nombre").value.trim();
+  const clienteId = document.getElementById("rs-cliente").value;
+  const clienteEncontrado = clientesCacheRS.find((c) => c.id === clienteId);
 
   try {
     const idVisible = await generarSiguienteId(PREFIJOS_ID.registroServicio);
     const ref = await db.collection("registroServicios").add({
       idVisible,
       nombre,
+      clienteId: clienteId || null,
+      clienteNombre: clienteEncontrado ? clienteEncontrado.nombre : "",
       lineas: [],
       observaciones: "",
       version: 1,
