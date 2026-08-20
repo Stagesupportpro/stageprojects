@@ -16,6 +16,8 @@ const TABS_POR_PAGINA = {
     { id: "riders", label: "Riders" },
     { id: "hospitalidad", label: "Hospitalidad" },
     { id: "presskit", label: "PressKit" },
+    { id: "medios", label: "Medios" },
+    { id: "calendario", label: "Calendario" },
     { id: "juridico", label: "Jurídico" },
   ],
   producciones: [
@@ -50,7 +52,20 @@ const ROLES_POR_DEFECTO = [
   },
   {
     nombre: "Comercial",
-    permisos: { dashboard: true, calendario: true, agenda: true, notas: true, bookings: true, catalogo: true, propuestas: true, "ver-propuestas": true, clientes: true },
+    permisos: {
+      dashboard: true,
+      calendario: true,
+      agenda: true,
+      notas: true,
+      bookings: true,
+      "calendario-roster": true,
+      roster: true,
+      venues: true,
+      catalogo: true,
+      propuestas: true,
+      "ver-propuestas": true,
+      clientes: true,
+    },
   },
   {
     nombre: "Producción",

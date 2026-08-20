@@ -175,11 +175,14 @@ async function crearNuevaVersionBooking(b) {
 // ---------- Eliminar ----------
 
 function confirmarEliminarBooking(id, nombre) {
-  if (!confirm(`¿Eliminar el booking de "${nombre}"? Esto no borra su marca en el calendario.`)) return;
+  if (!confirm(`¿Eliminar el booking de "${nombre}"? Esto también quita su marca del Calendario del Roster.`)) return;
   db.collection("bookings")
     .doc(id)
     .delete()
-    .then(() => mostrarToast("Booking eliminado."))
+    .then(async () => {
+      await eliminarCalendarioArtistasDeOrigen("booking", id);
+      mostrarToast("Booking eliminado.");
+    })
     .catch((err) => {
       console.error(err);
       mostrarToast("No se pudo eliminar.");

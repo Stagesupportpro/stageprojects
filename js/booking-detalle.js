@@ -166,6 +166,23 @@ function alSeleccionarArtistaBookingRow(i, rosterId) {
     if (artista.ivaPorcentaje != null) artistasBooking[i].ivaPct = artista.ivaPorcentaje;
   }
   renderArtistasBooking();
+  comprobarDisponibilidadBk();
+}
+
+// Se llama al cambiar fecha o estado del booking, y al elegir un
+// artista — avisa (sin bloquear) si alguien ya está pendiente o
+// aceptado ese mismo día en otro booking/producción.
+async function comprobarDisponibilidadBk() {
+  const fecha = document.getElementById("bk-fecha").value;
+  const estado = document.getElementById("bk-estado").value;
+  if (!fecha || estado === "rechazado") return;
+  const artistasValidos = artistasBooking.filter((a) => a.rosterId);
+  if (artistasValidos.length === 0) return;
+  await comprobarYAvisarConflictos(artistasValidos, fecha, `booking_${docIdBooking}`);
+}
+
+function alCambiarFechaOEstadoBk() {
+  comprobarDisponibilidadBk();
 }
 
 function anadirArtistaBooking() {
@@ -365,6 +382,7 @@ async function cargarBooking() {
 
     document.getElementById("bk-fecha").value = b.fecha || "";
     document.getElementById("bk-ciudad").value = b.ciudad || "";
+    document.getElementById("bk-estado").value = b.estado || "pendiente";
     document.getElementById("bk-notas").value = b.notas || "";
 
     alCambiarTipoBooking();
@@ -388,6 +406,7 @@ async function guardarBooking() {
     artistas: artistasValidos,
     fecha: document.getElementById("bk-fecha").value,
     ciudad: document.getElementById("bk-ciudad").value.trim(),
+    estado: document.getElementById("bk-estado").value,
     notas: document.getElementById("bk-notas").value.trim(),
     espacio: (() => {
       const venueId = document.getElementById("bk-venue-id").value;
@@ -432,6 +451,17 @@ async function guardarBooking() {
 
   try {
     await db.collection("bookings").doc(docIdBooking).update(datosBase);
+
+    // Sincroniza el calendario de disponibilidad del Roster con este booking.
+    await sincronizarCalendarioArtistas({
+      origen: "booking",
+      refId: docIdBooking,
+      refIdVisible: document.getElementById("bk-id-badge").textContent.split(" · ")[0],
+      artistas: artistasValidos,
+      fecha: datosBase.fecha,
+      ciudad: datosBase.ciudad,
+      estado: datosBase.estado,
+    });
 
     // Se marca en el Calendario la primera vez que el booking tiene ya
     // al menos un artista (evita marcar bookings vacíos recién creados).

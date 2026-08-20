@@ -255,6 +255,7 @@ async function cargarProduccion() {
     document.getElementById("pd-titulo-cabecera").textContent = d.nombre || "Producción";
     document.getElementById("pd-nombre").value = d.nombre || "";
     document.getElementById("pd-fecha").value = d.fecha || "";
+    document.getElementById("pd-estado").value = d.estado || "pendiente";
     document.getElementById("pd-notas").value = d.notas || "";
     if (d.pmTipo && d.pmId) document.getElementById("pd-pm").value = `${d.pmTipo}:${d.pmId}`;
     if (d.bookingId) {
@@ -684,6 +685,7 @@ async function guardarProduccion() {
   const datos = {
     nombre: document.getElementById("pd-nombre").value.trim(),
     fecha: document.getElementById("pd-fecha").value,
+    estado: document.getElementById("pd-estado").value,
     notas: document.getElementById("pd-notas").value.trim(),
     pmTipo: pmTipo || null,
     pmId: pmId || null,
@@ -711,6 +713,22 @@ async function guardarProduccion() {
 
   try {
     await db.collection("producciones").doc(docIdProd).update(datos);
+
+    // Sincroniza el calendario de disponibilidad del Roster (si hay un
+    // artista conectado de verdad al Roster, no solo un nombre suelto).
+    const artistaRosterId = document.getElementById("pd-artista-select").value;
+    if (artistaRosterId) {
+      await sincronizarCalendarioArtistas({
+        origen: "produccion",
+        refId: docIdProd,
+        refIdVisible: document.getElementById("pd-id-badge").textContent.split(" · ")[0],
+        artistas: [{ rosterId: artistaRosterId, nombre: document.getElementById("pd-artista-nombre").value }],
+        fecha: datos.fecha,
+        ciudad: document.getElementById("pd-sala-provincia").value.trim() || document.getElementById("pd-sala-nombre").value.trim(),
+        estado: datos.estado,
+      });
+    }
+
     document.getElementById("pd-titulo-cabecera").textContent = datos.nombre || "Producción";
     mostrarToast("Producción guardada.");
   } catch (err) {

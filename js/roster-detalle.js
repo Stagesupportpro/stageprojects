@@ -24,9 +24,12 @@ let hospPdfsRst = [];
 let pressKitRst = [];
 let galeriaRst = []; // hasta 6 dataURL de fotos
 let videosYoutubeRst = []; // [{ titulo, url }]
+let calendarioRstEntradas = [];
+let logoDocumentoEmpresaRst = null;
 let contratoRst = [];
 let clausulasEspecialesRst = [];
 let juridicoyaCargado = false;
+let calendarioYaCargado = false;
 
 const LIMITE_PDF_BYTES = 600 * 1024;
 
@@ -67,6 +70,9 @@ function cambiarTabRoster(tab) {
 
   if (tab === "juridico" && usuarioActualRstD.rol === "Admin" && !juridicoyaCargado) {
     cargarJuridico();
+  }
+  if (tab === "calendario" && !calendarioYaCargado) {
+    cargarCalendarioRst();
   }
 }
 
@@ -157,6 +163,176 @@ async function cargarRoster() {
     console.error(err);
     mostrarToast("No se pudo cargar la ficha.");
   }
+}
+
+// ---------- Calendario de disponibilidad ----------
+
+async function cargarCalendarioRst() {
+  calendarioYaCargado = true;
+  poblarSelectorAnioRst();
+
+  try {
+    const snapEmpresa = await db.collection("configuracion").doc("empresa").get();
+    if (snapEmpresa.exists) logoDocumentoEmpresaRst = snapEmpresa.data().logoDocumentos || null;
+  } catch (errLogo) {
+    console.error(errLogo);
+  }
+
+  try {
+    const snap = await db.collection("calendarioArtistas").where("rosterId", "==", docIdRoster).get();
+    calendarioRstEntradas = snap.docs.map((d) => ({ id: d.id, ...d.data() }));
+    calendarioRstEntradas.sort((a, b) => (a.fecha || "").localeCompare(b.fecha || ""));
+    renderCalendarioRst();
+  } catch (err) {
+    console.error(err);
+    mostrarToast("No se pudo cargar el calendario de este artista.");
+  }
+}
+
+function poblarSelectorAnioRst() {
+  const sel = document.getElementById("rst-cal-anio");
+  const anioActual = new Date().getFullYear();
+  const anios = [anioActual - 1, anioActual, anioActual + 1, anioActual + 2];
+  sel.innerHTML = anios.map((a) => `<option value="${a}" ${a === anioActual ? "selected" : ""}>${a}</option>`).join("");
+}
+
+function renderCalendarioRst() {
+  const cont = document.getElementById("lista-calendario-rst");
+  if (calendarioRstEntradas.length === 0) {
+    cont.innerHTML = `<p style="color:var(--color-text-muted); font-size:13px;">Todavía no hay fechas para este artista.</p>`;
+    return;
+  }
+
+  cont.innerHTML = calendarioRstEntradas
+    .map((e, i) => {
+      const esManual = e.origen === "manual";
+      const estadoTexto = ETIQUETAS_ESTADO_CAL[e.estado] || "Pendiente Confirmación";
+      const claseEstado = e.estado === "aceptado" ? "EF" : e.estado === "rechazado" ? "pendiente" : "pendiente";
+
+      if (esManual) {
+        return `
+          <div class="repeat-row" style="grid-template-columns: 1fr 1.4fr 1.2fr auto; align-items:center;">
+            <input type="date" value="${e.fecha || ""}" onchange="actualizarFechaManualRst(${i}, 'fecha', this.value)" />
+            <input type="text" placeholder="Ciudad" value="${escaparAttrRst(e.ciudad)}" onblur="actualizarFechaManualRst(${i}, 'ciudad', this.value)" />
+            <select onchange="actualizarFechaManualRst(${i}, 'estado', this.value)">
+              <option value="pendiente" ${e.estado === "pendiente" || !e.estado ? "selected" : ""}>Pendiente Confirmación</option>
+              <option value="aceptado" ${e.estado === "aceptado" ? "selected" : ""}>Aceptado</option>
+              <option value="rechazado" ${e.estado === "rechazado" ? "selected" : ""}>Rechazado</option>
+            </select>
+            <button type="button" class="remove-row-btn" onclick="eliminarFechaManualRst('${e.id}')">✕</button>
+          </div>
+        `;
+      }
+
+      const fechaTexto = e.fecha ? new Date(e.fecha + "T00:00:00").toLocaleDateString("es-ES") : "—";
+      const origenTexto = e.origen === "booking" ? "Booking" : e.origen === "produccion" ? "Producción" : "Manual";
+      const enlace = e.origen === "booking" ? `booking-detalle.html?id=${e.origenId}` : e.origen === "produccion" ? `produccion-detalle.html?id=${e.origenId}` : null;
+
+      return `
+        <div class="dash-mini-row">
+          <div>
+            <div class="dash-mini-titulo">${fechaTexto} — ${escaparHtmlRstD(e.ciudad || "—")}</div>
+            <div class="dash-mini-meta">
+              <span class="estado-pago-badge ${claseEstado}">${estadoTexto}</span>
+              · ${origenTexto}${e.origenIdVisible ? ` (${escaparHtmlRstD(e.origenIdVisible)})` : ""}
+            </div>
+          </div>
+          ${enlace ? `<a class="btn-ghost" style="text-decoration:none; padding:6px 12px; font-size:12px;" href="${enlace}" target="_blank">Abrir</a>` : ""}
+        </div>
+      `;
+    })
+    .join("");
+}
+
+async function actualizarFechaManualRst(i, campo, valor) {
+  const entrada = calendarioRstEntradas[i];
+  entrada[campo] = valor;
+  try {
+    await db.collection("calendarioArtistas").doc(entrada.id).update({ [campo]: valor });
+  } catch (err) {
+    console.error(err);
+    mostrarToast("No se pudo guardar el cambio.");
+  }
+}
+
+async function anadirFechaManualRst() {
+  try {
+    const ref = await db.collection("calendarioArtistas").add({
+      rosterId: docIdRoster,
+      rosterNombre: document.getElementById("rst-nombre").value.trim() || "",
+      fecha: "",
+      ciudad: "",
+      estado: "pendiente",
+      origen: "manual",
+      origenRefId: null,
+      origenId: null,
+      origenIdVisible: "",
+      creadoEl: firebase.firestore.FieldValue.serverTimestamp(),
+    });
+    calendarioRstEntradas.push({ id: ref.id, rosterId: docIdRoster, fecha: "", ciudad: "", estado: "pendiente", origen: "manual" });
+    renderCalendarioRst();
+  } catch (err) {
+    console.error(err);
+    mostrarToast("No se pudo añadir la fecha.");
+  }
+}
+
+function eliminarFechaManualRst(id) {
+  if (!confirm("¿Quitar esta fecha del calendario del artista?")) return;
+  db.collection("calendarioArtistas")
+    .doc(id)
+    .delete()
+    .then(() => {
+      calendarioRstEntradas = calendarioRstEntradas.filter((e) => e.id !== id);
+      renderCalendarioRst();
+      mostrarToast("Fecha eliminada.");
+    })
+    .catch((err) => {
+      console.error(err);
+      mostrarToast("No se pudo eliminar.");
+    });
+}
+
+function entradasPorFechaDelAnioRst(anio) {
+  const resultado = {};
+  calendarioRstEntradas
+    .filter((e) => e.estado !== "rechazado" && (e.fecha || "").startsWith(String(anio)))
+    .forEach((e) => {
+      if (!resultado[e.fecha]) resultado[e.fecha] = [];
+      resultado[e.fecha].push({ ciudad: e.ciudad, estado: e.estado, rosterNombre: "" });
+    });
+  return resultado;
+}
+
+function imprimirCalendarioRst() {
+  const anio = parseInt(document.getElementById("rst-cal-anio").value, 10);
+  const entradas = entradasPorFechaDelAnioRst(anio);
+  const titulo = `Calendario ${anio} — ${document.getElementById("rst-nombre").value.trim() || "Artista"}`;
+  document.getElementById("print-area").innerHTML = construirCalendarioAnualHtml(anio, entradas, titulo, logoDocumentoEmpresaRst, logoRstDataUrl);
+  setTimeout(() => window.print(), 50);
+}
+
+function exportarPdfCalendarioRst() {
+  const anio = parseInt(document.getElementById("rst-cal-anio").value, 10);
+  const entradas = entradasPorFechaDelAnioRst(anio);
+  const nombreArtista = document.getElementById("rst-nombre").value.trim() || "Artista";
+  const titulo = `Calendario ${anio} — ${nombreArtista}`;
+  const printArea = document.getElementById("print-area");
+  printArea.innerHTML = construirCalendarioAnualHtml(anio, entradas, titulo, logoDocumentoEmpresaRst, logoRstDataUrl);
+  printArea.style.display = "block";
+
+  html2pdf()
+    .from(printArea)
+    .set({
+      margin: 8,
+      filename: `Calendario_${anio}_${nombreArtista.replace(/[^\w\- ]/g, "").trim()}.pdf`,
+      html2canvas: { scale: 2 },
+      jsPDF: { unit: "mm", format: "a4", orientation: "landscape" },
+    })
+    .save()
+    .then(() => {
+      printArea.style.display = "none";
+    });
 }
 
 async function cargarJuridico() {
