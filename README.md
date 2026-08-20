@@ -363,6 +363,19 @@ verdad en vez de descartar posibilidades a ciegas.
 
 De 48px a 130px.
 
+## Registro de Servicios — un registro = un cliente
+
+El listado y la ficha completa ya tenían el cliente a nivel de todo
+el registro (no por línea) — eso ya estaba bien de un paso anterior.
+La que se había quedado desactualizada era la ficha **"Ver"** (la
+que exportas en PDF): seguía mostrando "Cliente" como columna de
+cada línea, un dato que ya no existe ahí. Corregido — ahora el
+cliente aparece una sola vez, bajo el título del registro (en
+pantalla y en el PDF/impresión), y las líneas solo llevan lo que les
+corresponde: Servicio, Actuación, Localización, Fecha, Importe y
+Forma de pago. De paso, la búsqueda del listado ahora también
+encuentra por nombre de cliente, no solo por nombre del registro.
+
 ## Tipos de Servicio / Registro de Servicios — permisos
 
 Ambos errores ("permission-denied") venían de la misma causa de
