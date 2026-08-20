@@ -40,7 +40,7 @@ async function sincronizarCalendarioArtistas({ origen, refId, refIdVisible, arti
       batch.set(ref, {
         rosterId: a.rosterId,
         rosterNombre: a.nombre || "",
-        fecha: fecha || "",
+        fecha: a.fecha || fecha || "",
         ciudad: ciudad || "",
         estado: estado || "pendiente",
         origen,
@@ -108,16 +108,16 @@ async function comprobarConflictosArtista(rosterId, fecha, origenRefIdExcluir) {
  */
 async function comprobarYAvisarConflictos(artistas, fecha, origenRefIdExcluir) {
   const artistasValidos = (artistas || []).filter((a) => a.rosterId);
-  const resultados = await Promise.all(artistasValidos.map((a) => comprobarConflictosArtista(a.rosterId, fecha, origenRefIdExcluir)));
+  const resultados = await Promise.all(artistasValidos.map((a) => comprobarConflictosArtista(a.rosterId, a.fecha || fecha, origenRefIdExcluir)));
 
   const avisos = [];
   artistasValidos.forEach((a, i) => {
-    if (resultados[i].length > 0) avisos.push({ artista: a, conflictos: resultados[i] });
+    if (resultados[i].length > 0) avisos.push({ artista: a, fecha: a.fecha || fecha, conflictos: resultados[i] });
   });
 
   if (avisos.length === 0) return true;
 
-  return mostrarModalConflictoArtista(avisos, fecha);
+  return mostrarModalConflictoArtista(avisos);
 }
 
 /**
@@ -126,19 +126,18 @@ async function comprobarYAvisarConflictos(artistas, fecha, origenRefIdExcluir) {
  * día, y en qué booking/producción está cada conflicto. Devuelve una
  * Promise<boolean> — true si el usuario decide continuar igualmente.
  */
-function mostrarModalConflictoArtista(avisos, fecha) {
+function mostrarModalConflictoArtista(avisos) {
   return new Promise((resolve) => {
-    const fechaTexto = fecha ? new Date(fecha + "T00:00:00").toLocaleDateString("es-ES", { day: "numeric", month: "long", year: "numeric" }) : "";
-
     const overlay = document.createElement("div");
     overlay.className = "modal-overlay show";
     overlay.style.zIndex = "9999";
 
     const filasHtml = avisos
-      .map(
-        (av) => `
+      .map((av) => {
+        const fechaTexto = av.fecha ? new Date(av.fecha + "T00:00:00").toLocaleDateString("es-ES", { day: "numeric", month: "long", year: "numeric" }) : "";
+        return `
           <div class="conflicto-artista-bloque">
-            <div class="conflicto-artista-nombre">⚠️ ${escaparHtmlCalRoster(av.artista.nombre)}</div>
+            <div class="conflicto-artista-nombre">⚠️ ${escaparHtmlCalRoster(av.artista.nombre)}${fechaTexto ? ` — ${fechaTexto}` : ""}</div>
             ${av.conflictos
               .map(
                 (c) => `
@@ -151,14 +150,14 @@ function mostrarModalConflictoArtista(avisos, fecha) {
               )
               .join("")}
           </div>
-        `
-      )
+        `;
+      })
       .join("");
 
     overlay.innerHTML = `
       <div class="modal" style="max-width:460px;">
-        <h2>Artista ocupado ese día</h2>
-        <p class="modal-sub">${fechaTexto ? `Para el ${fechaTexto}:` : ""}</p>
+        <h2>Artista ocupado</h2>
+        <p class="modal-sub">Revisa antes de seguir:</p>
         <div style="margin: 10px 0 18px;">${filasHtml}</div>
         <div class="modal-actions">
           <button type="button" class="btn-ghost" id="conflicto-cancelar">Revisar antes de seguir</button>
@@ -178,6 +177,25 @@ function mostrarModalConflictoArtista(avisos, fecha) {
       resolve(true);
     };
   });
+}
+
+/**
+ * El calendario anual es apaisado (A4 landscape) para caber en una
+ * sola hoja, a diferencia del resto de documentos (contrato, hoja de
+ * ruta...) que son verticales — así que la orientación de impresión
+ * se fuerza solo mientras se imprime ESTE documento en concreto (una
+ * hoja de estilo temporal, quitada justo después), sin tocar el
+ * resto de impresiones de la plataforma.
+ */
+function imprimirCalendarioApaisado() {
+  const estilo = document.createElement("style");
+  estilo.id = "estilo-print-apaisado-temporal";
+  estilo.textContent = "@page { size: A4 landscape; margin: 8mm; }";
+  document.head.appendChild(estilo);
+  setTimeout(() => {
+    window.print();
+    setTimeout(() => estilo.remove(), 500);
+  }, 50);
 }
 
 function escaparHtmlCalRoster(str) {

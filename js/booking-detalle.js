@@ -4,7 +4,7 @@
 // Contratos (generación de contrato de booking en PDF/impresión).
 // Colección: /bookings/{id} → {
 //   idVisible, tipo ('cache'|'promotor'),
-//   artistas: [{ rosterId, nombre, cache, comisionPct, ivaPct }],
+//   artistas: [{ rosterId, nombre, cache, comisionPct, ivaPct, fecha }],
 //   origenCache, clienteId, clienteNombre, propuestaId, propuestaIdVisible,
 //   venueId, espacio, espacioDireccion, modalidadIndice,
 //   repartoPromotorPct, repartoVenuePct, costeVenue, costeVenueIvaPct,
@@ -130,6 +130,10 @@ function renderArtistasBooking() {
               <div class="field" style="display:${esPromotor ? "none" : "block"};"><label style="font-size:11px;">Comisión %</label><input type="number" min="0" max="100" step="0.1" value="${a.comisionPct != null ? a.comisionPct : ""}" oninput="artistasBooking[${i}].comisionPct=this.value===''?0:parseFloat(this.value); actualizarTotalArtistaBooking(${i})" /></div>
               <div class="field"><label style="font-size:11px;">IVA %</label><input type="number" min="0" max="100" step="0.1" value="${a.ivaPct != null ? a.ivaPct : ""}" oninput="artistasBooking[${i}].ivaPct=this.value===''?0:parseFloat(this.value); actualizarTotalArtistaBooking(${i})" /></div>
             </div>
+            <div class="field" style="margin-top:8px;">
+              <label style="font-size:11px;">Fecha de este artista (opcional — si se deja vacío, usa la fecha general del booking)</label>
+              <input type="date" value="${a.fecha || ""}" oninput="artistasBooking[${i}].fecha=this.value" />
+            </div>
             <div class="calc-box" style="margin-top:8px;">
               <div class="calc-item calc-total"><div class="calc-label">Total</div><div class="calc-value" id="artista-total-${i}">${formatoEuroBk(totalArtistaBooking(a, esPromotor))}</div></div>
             </div>
@@ -186,7 +190,7 @@ function alCambiarFechaOEstadoBk() {
 }
 
 function anadirArtistaBooking() {
-  artistasBooking.push({ rosterId: null, nombre: "", cache: null, comisionPct: 0, ivaPct: 21 });
+  artistasBooking.push({ rosterId: null, nombre: "", cache: null, comisionPct: 0, ivaPct: 21, fecha: null });
   renderArtistasBooking();
 }
 
@@ -292,6 +296,7 @@ function alSeleccionarPropuestaBooking() {
       cache: it.bi != null ? it.bi : null,
       comisionPct: it.comisionPct != null ? it.comisionPct : 0,
       ivaPct: it.ivaPct != null ? it.ivaPct : 21,
+      fecha: it.fecha || null,
     }));
     renderArtistasBooking();
   }

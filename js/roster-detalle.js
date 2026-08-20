@@ -309,7 +309,7 @@ function imprimirCalendarioRst() {
   const entradas = entradasPorFechaDelAnioRst(anio);
   const titulo = `Calendario ${anio} — ${document.getElementById("rst-nombre").value.trim() || "Artista"}`;
   document.getElementById("print-area").innerHTML = construirCalendarioAnualHtml(anio, entradas, titulo, logoDocumentoEmpresaRst, logoRstDataUrl);
-  setTimeout(() => window.print(), 50);
+  imprimirCalendarioApaisado();
 }
 
 function exportarPdfCalendarioRst() {
