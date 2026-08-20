@@ -68,6 +68,11 @@ service cloud.firestore {
     }
 
     // ---- Clientes ----
+    // ---- Calendario de disponibilidad del Roster (booking/producción/manual) ----
+    match /calendarioArtistas/{id} {
+      allow read, write: if estoyActivo();
+    }
+
     // ---- Registro de servicios técnicos (con ID correlativo R<año>-0001) ----
     match /registroServicios/{id} {
       allow read, create: if estoyActivo();

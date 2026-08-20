@@ -51,6 +51,7 @@
         <button type="button" data-tab="hospitalidad" onclick="cambiarTabRoster('hospitalidad')">Hospitalidad</button>
         <button type="button" data-tab="presskit" onclick="cambiarTabRoster('presskit')">PressKit</button>
         <button type="button" data-tab="medios" onclick="cambiarTabRoster('medios')">Medios</button>
+        <button type="button" data-tab="calendario" onclick="cambiarTabRoster('calendario')">Calendario</button>
         <button type="button" data-tab="juridico" class="juridico" id="btn-tab-juridico" style="display:none;" onclick="cambiarTabRoster('juridico')">Jurídico</button>
       </div>
 
@@ -251,6 +252,26 @@
           </div>
         </div>
 
+        <!-- ============ CALENDARIO ============ -->
+        <div class="rst-tab-panel" id="panel-calendario">
+          <div class="hr-section" style="border:none;">
+            <div class="hr-section-head">
+              <h3>Calendario de disponibilidad</h3>
+              <div style="display:flex; gap:8px; align-items:center;">
+                <select id="rst-cal-anio" onchange="renderCalendarioRst()" style="width:auto; padding:8px 10px;"></select>
+                <button type="button" class="btn-ghost" onclick="imprimirCalendarioRst()">🖨️ Imprimir</button>
+                <button type="button" class="btn-accent" onclick="exportarPdfCalendarioRst()">📄 Exportar PDF</button>
+              </div>
+            </div>
+            <p style="font-size:12px; color:var(--color-text-muted); margin:-4px 0 16px;">
+              Se ven aquí todas las fechas de este artista (las que vienen de Bookings/Producciones son de solo lectura — ábrelas desde ahí para cambiarlas; las manuales se pueden editar y borrar directamente).
+            </p>
+
+            <div id="lista-calendario-rst"></div>
+            <button type="button" class="add-row-link" onclick="anadirFechaManualRst()">+ Añadir fecha manual</button>
+          </div>
+        </div>
+
         <!-- ============ JURÍDICO (solo Admin) ============ -->
         <div class="rst-tab-panel" id="panel-juridico">
           <div class="hr-section">
@@ -297,14 +318,18 @@
 
 </div>
 
+<div id="print-area"></div>
+
 <div class="toast" id="toast"><span class="dot"></span><span id="toast-msg"></span></div>
 
 <script src="https://www.gstatic.com/firebasejs/10.13.0/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.13.0/firebase-auth-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.13.0/firebase-firestore-compat.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
 <script src="js/firebase-config.js"></script>
 <script src="js/auth.js"></script>
 <script src="js/nav.js"></script>
+<script src="js/calendario-roster.js"></script>
 <script src="js/roster-detalle.js"></script>
 </body>
 </html>

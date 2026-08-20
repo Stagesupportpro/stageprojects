@@ -69,6 +69,15 @@
             <label for="pd-fecha">Fecha</label>
             <input type="date" id="pd-fecha" />
           </div>
+          <div class="field">
+            <label for="pd-estado">Estado</label>
+            <select id="pd-estado">
+              <option value="pendiente">Pendiente Confirmación</option>
+              <option value="aceptado">Aceptado</option>
+              <option value="rechazado">Rechazado</option>
+            </select>
+            <p style="font-size:12px; color:var(--color-text-muted); margin-top:6px;">Se refleja en el Calendario del Roster (verde/ámbar). Si se rechaza, no aparece en ningún calendario.</p>
+          </div>
           <div class="field field-wide">
             <label for="pd-artista-select">Artista / Grupo</label>
             <select id="pd-artista-select" onchange="alSeleccionarArtistaProd()">
@@ -247,6 +256,7 @@
 <script src="js/firebase-config.js"></script>
 <script src="js/auth.js"></script>
 <script src="js/nav.js"></script>
+<script src="js/calendario-roster.js"></script>
 <script src="js/produccion-detalle.js"></script>
 </body>
 </html>

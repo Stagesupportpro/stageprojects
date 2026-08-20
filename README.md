@@ -363,6 +363,53 @@ verdad en vez de descartar posibilidades a ciegas.
 
 De 48px a 130px.
 
+## Calendario de disponibilidad del Roster (sistema completo)
+
+Gran parte de esto ya estaba construido de un paso oculto anterior
+(la lógica de sincronización, conflictos y el motor del calendario
+anual imprimible, en `js/calendario-roster.js`) — lo audité a fondo,
+estaba muy bien hecho, y completé las dos piezas que le faltaban de
+verdad: la pestaña Calendario en Roster y la página maestra de
+Booking & Management (ninguna de las dos existía todavía).
+
+**Cómo funciona, de punta a punta:**
+
+- **Bookings y Producciones** tienen un campo **Estado**: Pendiente
+  Confirmación / Aceptado / Rechazado. Al guardar, cada artista del
+  booking (o el de la producción) sincroniza sola una entrada en el
+  calendario del Roster — un documento por (origen, artista), así que
+  guardar el mismo booking dos veces nunca duplica nada, y si quitas
+  un artista, su entrada desaparece sola.
+- **Aviso de conflicto** (lo más importante, tal como dijiste): al
+  elegir un artista o cambiar la fecha/estado en un Booking o
+  Producción, si ese artista ya tiene algo Pendiente o Aceptado ese
+  mismo día en **otro** booking/producción, salta un modal avisando
+  y diciendo en qué registro está ocupado — sin bloquear del todo,
+  puedes decidir seguir igualmente si hace falta.
+- **Roster → pestaña Calendario** (nueva): todas las fechas de ese
+  artista — las que vienen de Bookings/Producciones se ven de solo
+  lectura (con enlace para abrir el origen), y además se pueden
+  añadir **fechas manuales** directamente ahí (fecha, ciudad, estado),
+  editables y eliminables sin pasar por ningún booking.
+- **Calendario Roster** (nuevo, en Booking & Management): vista
+  general en cuadrícula mensual de **todo** el Roster a la vez, con
+  un punto verde (Aceptado) o ámbar (Pendiente) por cada fecha, y
+  **filtro por texto** (artista/espectáculo). Lo Rechazado nunca
+  aparece en ningún calendario.
+- **Exportar PDF / Imprimir**, tanto desde Roster (por artista) como
+  desde el Calendario Roster maestro — genera exactamente el mismo
+  formato que tu PDF de referencia: 12 meses en cuadrícula, un día
+  por fila, coloreado por estado, con el nombre de la ciudad (y del
+  artista si son varios a la vez), logo de Stage Support **+ logo del
+  propio artista** en la cabecera, y fecha/hora de impresión en el
+  pie. Si filtras el maestro a un único artista, el PDF usa
+  automáticamente su logo, igual que si lo exportaras desde su propia
+  ficha.
+
+Nueva colección `calendarioArtistas` (las reglas ya estaban
+correctas). De paso, añadí "Medios" y "Calendario" al árbol de
+permisos de Roles (a Medios se le había olvidado en su momento).
+
 ## Registro de Servicios — reestructurado a informes mensuales
 
 Cambiado el modelo, tal como pediste: los reportes al cliente son

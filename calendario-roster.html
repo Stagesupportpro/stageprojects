@@ -1,0 +1,106 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Stage Support · Calendario Roster</title>
+<link rel="icon" href="assets/logo_stagesupport.png" />
+<link rel="stylesheet" href="css/styles.css" />
+</head>
+<body>
+
+<div class="app-shell">
+
+  <aside class="sidebar" id="sidebar">
+    <div class="brand-mark">
+      <img src="assets/logo_stagesupport.png" alt="Stage Support" onerror="this.style.display='none'" />
+    </div>
+
+    <nav id="nav-container" style="flex:1; overflow-y:auto;"></nav>
+
+    <div class="sidebar-footer">
+      <div class="access-pass">
+        <div class="pass-top">
+          <div class="pass-avatar" id="pass-avatar">—</div>
+          <div>
+            <div class="pass-name" id="pass-name">—</div>
+            <div class="pass-role" id="pass-role">—</div>
+          </div>
+        </div>
+        <div class="pass-version" id="pass-version"></div>
+        <button class="pass-logout" onclick="cerrarSesion()">Cerrar sesión</button>
+      </div>
+    </div>
+  </aside>
+
+  <main class="main">
+    <div class="topbar">
+      <button class="mobile-menu-btn" onclick="document.getElementById('sidebar').classList.toggle('open')">☰</button>
+      <div>
+        <div class="eyebrow">Booking &amp; Management</div>
+        <h1>Calendario Roster</h1>
+      </div>
+      <button class="btn-accent" onclick="exportarPdfCalendarioMaestro()">📄 Exportar PDF</button>
+    </div>
+
+    <p style="color:var(--color-text-muted); font-size:14px; margin:-18px 0 20px;">
+      Todas las fechas de todo el Roster. Verde = Aceptado, Ámbar = Pendiente de confirmación. Lo rechazado no se muestra.
+    </p>
+
+    <div class="lista-busqueda" style="margin-bottom:20px; max-width:420px;">
+      <span class="lista-busqueda-icono">🔍</span>
+      <input type="text" id="cr-busqueda" placeholder="Filtrar por artista/espectáculo…" oninput="aplicarFiltroCalendarioMaestro()" />
+    </div>
+
+    <div class="card">
+      <div class="cal-toolbar">
+        <div class="cal-nav">
+          <button onclick="cambiarMesCR(-1)" aria-label="Mes anterior">←</button>
+          <div class="cal-title" id="cal-title-cr">—</div>
+          <button onclick="cambiarMesCR(1)" aria-label="Mes siguiente">→</button>
+          <button class="btn-ghost" style="margin-left:8px;" onclick="irHoyCR()">Hoy</button>
+        </div>
+        <div class="cal-legend">
+          <span class="legend-item"><span class="legend-dot" style="background:#2FA84F;"></span>Aceptado</span>
+          <span class="legend-item"><span class="legend-dot" style="background:#D99A1B;"></span>Pendiente</span>
+        </div>
+      </div>
+
+      <div class="cal-weekdays">
+        <span>Lun</span><span>Mar</span><span>Mié</span><span>Jue</span><span>Vie</span><span>Sáb</span><span>Dom</span>
+      </div>
+
+      <div class="cal-grid" id="cal-grid-cr"></div>
+    </div>
+  </main>
+
+</div>
+
+<!-- Modal: fechas del día seleccionado -->
+<div class="modal-overlay" id="modal-dia-overlay">
+  <div class="modal modal-wide">
+    <div class="modal-title-row">
+      <h2 id="modal-dia-titulo">—</h2>
+      <button class="icon-btn" onclick="cerrarModalDiaCR()" aria-label="Cerrar">✕</button>
+    </div>
+    <p class="modal-sub">Artistas con fecha este día.</p>
+
+    <div id="lista-dia-cr"></div>
+  </div>
+</div>
+
+<div id="print-area"></div>
+
+<div class="toast" id="toast"><span class="dot"></span><span id="toast-msg"></span></div>
+
+<script src="https://www.gstatic.com/firebasejs/10.13.0/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.13.0/firebase-auth-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.13.0/firebase-firestore-compat.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
+<script src="js/firebase-config.js"></script>
+<script src="js/auth.js"></script>
+<script src="js/nav.js"></script>
+<script src="js/calendario-roster.js"></script>
+<script src="js/calendario-roster-maestro.js"></script>
+</body>
+</html>
